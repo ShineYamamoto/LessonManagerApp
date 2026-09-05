@@ -1,1 +1,9 @@
-@charset "UTF-8";
+.form-login {
+	width: 100%;
+	max-width: 350px;
+	margin: auto;
+}
+
+.countryCode {
+	max-width: 120px;
+}
