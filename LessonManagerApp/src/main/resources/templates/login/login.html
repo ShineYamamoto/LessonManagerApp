@@ -7,8 +7,9 @@
 <link rel="stylesheet" th:href="@{/css/login.css}">
 <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
 <!-- JS読込 -->
+<script th:src="@{/js/countryHandler.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
-<title>Insert title here</title>
+<title>ログイン</title>
 </head>
 <body class="bg-light">
 	<div class="text-center mt-5">
@@ -17,19 +18,20 @@
 			
 			<!-- 電話番号 -->
 			<div class="input-group">
-				<select class="form-select countryCode" name="countryCode">
-					<option th:each="country : ${countryCodeMap}"
-							th:value="${country.value}"
-							th:text="${country.key + ' ' + country.value}"
-							th:selected="${country.value == 86}">
+				<select class="form-select countryCode" name="countryCode"  id="countryCode">
+					<option th:each="country : ${countryList}"
+							th:value="${country.countryCode}"
+							th:text="${country.name + ' ' + country.countryCode}"
+							th:data-placeholder="${country.phoneExample}"
+							th:selected="${country.countryCode == '+86'}">
 					</option>
 				</select>
 				
 				<input type="tel"
 					   class="form-control"
-					   placeholder="13812345678"
+					   id="phoneNumber"
 					   name="phoneNumber"
-					   >
+				>
 			</div>
 			
 			<!-- パスワード -->

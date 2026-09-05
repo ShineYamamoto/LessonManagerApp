@@ -1,31 +1,28 @@
 package com.ShineYamamoto.LessonManagerApp.login.controller;
 
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import com.ShineYamamoto.LessonManagerApp.login.application.LoginApplicationService;
+//import com.ShineYamamoto.LessonManagerApp.login.application.LoginApplicationService;
+import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
 
 @Controller
 public class LoginController {
 	
-	private final LoginApplicationService loginApplicationService;
+	private final CountryCodeService countryCodeService;
 	
-	/** コンストラクタ */
 	@Autowired
-	public LoginController (LoginApplicationService loginApplicationService) {
-		this.loginApplicationService = loginApplicationService;
+	public LoginController (CountryCodeService countryCodeService) {
+		this.countryCodeService = countryCodeService;
 	}
 
 	/** ログイン画面を表示 */
 	@GetMapping("/login")
 	public String getLogin(Model model) {
-		// 国番号を取得
-		Map<String, String> countryCodeMap = loginApplicationService.getCountryCodeMap();
-		model.addAttribute("countryCodeMap", countryCodeMap);
+		// 国情報をmodelに格納	
+		model.addAttribute("countryList", countryCodeService.getCountryList());
 		
 		return "login/login";
 	}
