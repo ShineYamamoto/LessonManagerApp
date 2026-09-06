@@ -18,7 +18,7 @@
 			
 			<!-- 電話番号 -->
 			<div class="input-group">
-				<select class="form-select countryCode" name="countryCode"  id="countryCode">
+				<select class="form-select" name="countryCode"  id="countryCode">
 					<option th:each="country : ${countryList}"
 							th:value="${country.countryCode}"
 							th:text="${country.name + ' ' + country.countryCode}"
@@ -39,7 +39,9 @@
 				<input type="password" class="form-control" placeholder="パスワード" name="password">
 			</div>
 			<input type="submit" value="ログイン" class="btn btn-primary mt-3"><br>
-			<a th:href="@{/user/signup}">新規登録はこちら</a>
+			<div class="mt-2">
+				<a th:href="@{/user/signup}">新規登録はこちら</a>			
+			</div>
 		</form>
 	</div>
 </body>

@@ -5,7 +5,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-//import com.ShineYamamoto.LessonManagerApp.login.application.LoginApplicationService;
 import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
 
 @Controller
