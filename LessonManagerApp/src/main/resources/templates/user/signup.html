@@ -52,11 +52,11 @@
 		<div class="form-group">
 			<label for="goal" th:text="#{goal}"></label>
 			<select class="form-select" name="goal" id="goal">
-				<option>N1</option>
-				<option>N2</option>
-				<option>N3</option>
-				<option>N4</option>
-				<option>N5</option>
+				<option th:text="#{goal.placeholder}" disabled selected></option>
+				<option th:each="goal : ${goalMap}"
+						th:value="${goal.value}"
+						th:text="${goal.key}">
+				</option>
 			</select>
 		</div>
 		
@@ -66,6 +66,5 @@
 			<a th:href="@{/login}" th:text="#{link.login}"></a>
 		</div>
 	</form>
-
 </body>
 </html>
