@@ -9,15 +9,15 @@
 <!-- JS読込 -->
 <script th:src="@{/js/countryHandler.js}"></script>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
-<title>ユーザー登録</title>
+<title th:text="#{user.signup.title}"></title>
 </head>
 <body class="bg-light">
 	<form id="signup-form" method="post" action="/user/signup" class="form-signup mt-5">
-		<h2 class="text-center">ユーザー登録</h2>
+		<h2 class="text-center" th:text="#{user.signup.title}"></h2>
 		
 		<!-- 電話番号 -->
 		<div class="form-group">
-			<label for="countryCode">電話番号</label>
+			<label for="countryCode" th:text="#{phoneNumber}"></label>
 			<div class="input-group">
 				<select class="form-select" name="countryCode"  id="countryCode">
 					<option th:each="country : ${countryList}"
@@ -38,30 +38,32 @@
 		
 		<!-- パスワード -->
 		<div class="form-group">
-			<label for="password">パスワード</label>
+			<label for="password" th:text="#{password}"></label>
 			<input type="text" id="password" class="form-control">
 		</div>
 		
 		<!-- ユーザー名 -->
 		<div class="form-group">
-			<label for="userName">ユーザー名</label>
+			<label for="userName" th:text="#{userName}"></label>
 			<input type="text" id="userName" class="form-control">
 		</div>
 		
 		<!-- 目標レベル -->
 		<div class="form-group">
-			<label for="goal">目標レベル</label>
+			<label for="goal" th:text="#{goal}"></label>
 			<select class="form-select" name="goal" id="goal">
 				<option>N1</option>
 				<option>N2</option>
 				<option>N3</option>
+				<option>N4</option>
+				<option>N5</option>
 			</select>
 		</div>
 		
 		<!-- 登録ボタン -->
-		<input type="submit" value="ユーザー登録" class="btn btn-primary w-100 mt-4">
+		<input type="submit" th:value="#{user.signup.btn}" class="btn btn-primary w-100 mt-4">
 		<div class="text-center mt-2">
-			<a th:href="@{/login}">ログインはこちら</a>
+			<a th:href="@{/login}" th:text="#{link.login}"></a>
 		</div>
 	</form>
 
