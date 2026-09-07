@@ -12,14 +12,14 @@
 <title th:text="#{user.signup.title}"></title>
 </head>
 <body class="bg-light">
-	<form id="signup-form" method="post" action="/user/signup" class="form-signup mt-5">
+	<form id="signup-form" method="post" action="/user/signup" class="form-signup mt-5" th:object="${signupForm}">
 		<h2 class="text-center" th:text="#{user.signup.title}"></h2>
 		
 		<!-- 電話番号 -->
 		<div class="form-group">
 			<label for="countryCode" th:text="#{phoneNumber}"></label>
 			<div class="input-group">
-				<select class="form-select" name="countryCode"  id="countryCode">
+				<select class="form-select" th:field="*{countryCode}">
 					<option th:each="country : ${countryList}"
 							th:value="${country.countryCode}"
 							th:text="${country.name + ' ' + country.countryCode}"
@@ -30,29 +30,29 @@
 
 				<input type="tel"
 					   class="form-control"
-					   id="phoneNumber"
-					   name="phoneNumber"
+					   th:field="*{phoneNumber}"
 				>
 			</div>
-		</div>
-		
-		<!-- パスワード -->
-		<div class="form-group">
-			<label for="password" th:text="#{password}"></label>
-			<input type="text" id="password" class="form-control">
 		</div>
 		
 		<!-- ユーザー名 -->
 		<div class="form-group">
 			<label for="userName" th:text="#{userName}"></label>
-			<input type="text" id="userName" class="form-control">
+			<input type="text"class="form-control" th:field="*{userName}">
 		</div>
+		
+		<!-- パスワード -->
+		<div class="form-group">
+			<label for="password" th:text="#{password}"></label>
+			<input type="text" class="form-control" th:field="*{password}">
+		</div>
+		
 		
 		<!-- 目標レベル -->
 		<div class="form-group">
 			<label for="goal" th:text="#{goal}"></label>
-			<select class="form-select" name="goal" id="goal">
-				<option th:text="#{goal.placeholder}" disabled selected></option>
+			<select class="form-select"name=goal id="goal">
+				<option th:text="#{goal.placeholder}" value="" disabled hidden th:selected="${signupForm.goal == null}"></option>
 				<option th:each="goal : ${goalMap}"
 						th:value="${goal.value}"
 						th:text="${goal.key}">
