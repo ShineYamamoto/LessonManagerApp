@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www/thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,9 +17,15 @@
 		
 		<!-- 電話番号 -->
 		<div class="form-group">
+			
 			<label for="countryCode" th:text="#{phoneNumber}"></label>
+			
 			<div class="input-group">
-				<select class="form-select" th:field="*{countryCode}">
+				
+				<select class="form-select" 
+						th:field="*{countryCode}"
+						th:errorclass="is-invalid">
+						
 					<option th:each="country : ${countryList}"
 							th:value="${country.countryCode}"
 							th:text="${country.name + ' ' + country.countryCode}"
@@ -31,33 +37,59 @@
 				<input type="tel"
 					   class="form-control"
 					   th:field="*{phoneNumber}"
-				>
+					   th:errorclass="is-invalid">
+					   
 			</div>
+			
+			<div class="invalid-feedback d-block"
+				 th:if="${#fields.hasErrors('phoneNumber')}"
+				 th:errors="*{phoneNumber}">
+			 </div>
+			
 		</div>
 		
 		<!-- ユーザー名 -->
 		<div class="form-group">
 			<label for="userName" th:text="#{userName}"></label>
-			<input type="text"class="form-control" th:field="*{userName}">
+			<input type="text"class="form-control" th:field="*{userName}" th:errorclass="is-invalid">
+			<div class="invalid-feedback" th:errors="*{userName}"></div>
 		</div>
 		
 		<!-- パスワード -->
 		<div class="form-group">
 			<label for="password" th:text="#{password}"></label>
-			<input type="text" class="form-control" th:field="*{password}">
+			<input type="text" class="form-control" th:field="*{password}" th:errorclass="is-invalid">
+			<div class="invalid-feedback" th:errors="*{password}"></div>
 		</div>
 		
 		
 		<!-- 目標レベル -->
 		<div class="form-group">
+			
 			<label for="goal" th:text="#{goal}"></label>
-			<select class="form-select"name=goal id="goal">
-				<option th:text="#{goal.placeholder}" value="" disabled hidden th:selected="${signupForm.goal == null}"></option>
+			
+			<select class="form-select"
+					name=goal 
+					id="goal"
+					th:classappend="${#fields.hasErrors('goal')} ? 'is-invalid'">
+					
+				<option value=""
+						disabled
+						hidden
+						th:text="#{goal.placeholder}"
+						th:selected="${signupForm.goal == null}">
+				</option>
+				
 				<option th:each="goal : ${goalMap}"
 						th:value="${goal.value}"
-						th:text="${goal.key}">
+						th:text="${goal.key}"
+						th:selected="${signupForm.goal == goal.value}">
 				</option>
+
 			</select>
+			<div class="invalid-feedback"
+				 th:errors="*{goal}">
+			 </div>
 		</div>
 		
 		<!-- 登録ボタン -->
