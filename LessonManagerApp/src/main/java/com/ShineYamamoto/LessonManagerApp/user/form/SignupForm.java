@@ -6,7 +6,7 @@ import lombok.Data;
 public class SignupForm {
 	private String countryCode;
 	private String phoneNumber;
-	private int userName;
+	private String userName;
 	private String password;
 	private Integer goal;
 }
