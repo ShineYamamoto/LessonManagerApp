@@ -1,12 +1,30 @@
 package com.ShineYamamoto.LessonManagerApp.user.form;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
+import org.hibernate.validator.constraints.Length;
+
 import lombok.Data;
 
 @Data
 public class SignupForm {
+	
+	@NotBlank
 	private String countryCode;
+	
+	@NotBlank
 	private String phoneNumber;
+	
+	@NotBlank
 	private String userName;
+	
+	@NotBlank
+	@Length(min = 4, max = 100)
+	@Pattern(regexp = "^[a-zA-Z0-9]+$")
 	private String password;
+	
+	@NotNull
 	private Integer goal;
 }
