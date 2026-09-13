@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.ShineYamamoto.LessonManagerApp.user.validation.GoalCheck;
+
 import lombok.Data;
 
 @Data
@@ -26,5 +28,6 @@ public class SignupForm {
 	private String password;
 	
 	@NotNull
+	@GoalCheck
 	private Integer goal;
 }
