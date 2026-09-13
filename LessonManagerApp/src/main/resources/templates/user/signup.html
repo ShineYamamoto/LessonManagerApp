@@ -77,13 +77,13 @@
 						disabled
 						hidden
 						th:text="#{goal.placeholder}"
-						th:selected="${signupForm.goal == null}">
+						th:selected="${signupForm.goal == null or #fields.hasErrors('goal')}">
 				</option>
 				
 				<option th:each="goal : ${goalMap}"
 						th:value="${goal.value}"
 						th:text="${goal.key}"
-						th:selected="${signupForm.goal == goal.value}">
+						th:selected="${!#fields.hasErrors('goal') and signupForm.goal == goal.value}">
 				</option>
 
 			</select>
