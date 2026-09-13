@@ -22,7 +22,7 @@ public class SignupForm {
 	
 	@NotBlank
 	@Length(min = 4, max = 100)
-	@Pattern(regexp = "^[a-zA-Z0-9]+$")
+	@Pattern(regexp = "^[\\x21-\\x7E]+$")
 	private String password;
 	
 	@NotNull
