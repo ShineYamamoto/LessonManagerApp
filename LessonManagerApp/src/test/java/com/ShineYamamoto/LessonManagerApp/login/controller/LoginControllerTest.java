@@ -33,9 +33,9 @@ public class LoginControllerTest {
 		
 		List<CountryCodeModel> countryList = List.of(
 			new CountryCodeModel(
-					"中国", "+86", "例:13812345678"),
+					"中国", "+86", "CN", "例:13812345678"),
 			new CountryCodeModel(
-					"日本", "+81", "例:09012345678")
+					"日本", "+81", "JP", "例:09012345678")
 		);
 		
 		when(countryCodeService.getCountryList(locale))

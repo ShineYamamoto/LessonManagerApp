@@ -23,11 +23,11 @@
 			<div class="input-group">
 				
 				<select class="form-select" 
-						th:field="*{countryCode}"
+						th:field="*{regionCode}"
 						th:errorclass="is-invalid">
 						
 					<option th:each="country : ${countryList}"
-							th:value="${country.countryCode}"
+							th:value="${country.regionCode}"
 							th:text="${country.name + ' ' + country.countryCode}"
 							th:data-placeholder="${country.phoneExample}"
 							th:selected="${country.countryCode == '+86'}">

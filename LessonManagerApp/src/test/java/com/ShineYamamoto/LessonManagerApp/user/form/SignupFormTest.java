@@ -24,7 +24,7 @@ public class SignupFormTest {
 		
 		// 他の項目には正常な値を設定
 		SignupForm form = new SignupForm();
-		form.setCountryCode("+86");
+		form.setRegionCode("+86");
 		form.setPhoneNumber("13812345678");
 		form.setUserName("山田太郎");
 		form.setPassword("test1234");

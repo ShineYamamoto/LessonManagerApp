@@ -14,7 +14,7 @@ import lombok.Data;
 public class SignupForm {
 	
 	@NotBlank
-	private String countryCode;
+	private String regionCode;
 	
 	@NotBlank
 	private String phoneNumber;
