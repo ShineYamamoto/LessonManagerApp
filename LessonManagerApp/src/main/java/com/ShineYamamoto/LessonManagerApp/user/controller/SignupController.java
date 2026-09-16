@@ -3,7 +3,7 @@ package com.ShineYamamoto.LessonManagerApp.user.controller;
 import java.util.Locale;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,28 +14,31 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
-import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
+import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
 import com.ShineYamamoto.LessonManagerApp.user.form.SignupForm;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/user")
 @Slf4j
+@RequiredArgsConstructor
 public class SignupController {
 	
 	private final CountryCodeService countryCodeService;
 	private final UserService userService;
-	private final PhoneNumberService phoneNumberService;
+	private final ModelMapper modelMapper;
 	
 	/** コンストラクタ */
+	/*
 	@Autowired
-	public SignupController (CountryCodeService countryCodeService, UserService userService, PhoneNumberService phoneNumberService) {
+	public SignupController (CountryCodeService countryCodeService, UserService userService) {
 		this.countryCodeService = countryCodeService;
 		this.userService = userService;
-		this.phoneNumberService = phoneNumberService;
 	}
+	*/
 	
 	/** ユーザー登録画面を表示 */
 	@GetMapping("/signup")
@@ -60,10 +63,12 @@ public class SignupController {
 			return getSignup(model, form, locale);
 		}
 		
-		String phoneNumber = phoneNumberService.toE164(form.getRegionCode(), form.getPhoneNumber());
-		
 		log.info(form.toString());
-		log.info(phoneNumber);
+		// formをUserクラスに変換
+		User user = modelMapper.map(form, User.class);
+		// ユーザー登録
+		userService.signup(user);
+		
 		// ログイン画面にリダイレクト
 		return "redirect:/login";
 	}

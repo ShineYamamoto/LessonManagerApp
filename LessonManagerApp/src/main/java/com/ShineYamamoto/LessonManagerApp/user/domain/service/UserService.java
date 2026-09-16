@@ -5,8 +5,18 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
+import com.ShineYamamoto.LessonManagerApp.user.repository.UserMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class UserService {
+	
+	private final UserMapper mapper;
 	
 	/** 目標レベルのMapを生成する */
 	public Map<String, Integer> getGoalMap() {
@@ -18,5 +28,11 @@ public class UserService {
 		goalMap.put("N5", 5);
 		
 		return goalMap;
+	}
+	
+	public void signup(User user) {
+		user.setRole("ROLE_GENERAL");
+		int count = mapper.insertOne(user);
+		log.info("登録件数={}件", count);
 	}
 }

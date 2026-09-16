@@ -1,5 +1,32 @@
 spring:
+  # DB設定
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: ma
+    password: pass
+  # DB初期化
+  sql:
+    init:
+      encoding: UTF-8
+      mode: embedded
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+  # H2設定
+  h2:
+    console:
+      enabled: true
+
   messages:
     basename: "messages,ValidationMessages"
     encoding: UTF-8
     fallback-to-system-locale: false
+
+# MyBatis
+mybatis:
+  mapper-locations: classpath*:/mapper/*.xml
+
+# Log Level
+logging:
+  level:
+    '[com.ShineYamamoto.LessonManagerApp]': debug
