@@ -6,7 +6,12 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class CountryCodeModel {
+	
 	private String name;
+	
 	private String countryCode;
+	
+	private String regionCode;
+	
 	private String phoneExample;
 }

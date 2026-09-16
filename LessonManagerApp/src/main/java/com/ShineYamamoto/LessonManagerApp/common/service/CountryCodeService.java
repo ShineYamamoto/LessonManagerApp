@@ -23,11 +23,13 @@ public class CountryCodeService {
 			new CountryCodeModel(
 					messageSource.getMessage("country.china", null, locale),
 					"+86",
+					"CN",
 					"例：13812345678"
 			),
 			new CountryCodeModel(
 					messageSource.getMessage("country.japan", null, locale),
 					"+81",
+					"JP",
 					"例：09012345678"
 			)
 		);
