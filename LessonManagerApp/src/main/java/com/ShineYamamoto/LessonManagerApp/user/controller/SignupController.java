@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
+import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
 import com.ShineYamamoto.LessonManagerApp.user.form.SignupForm;
 
@@ -26,12 +27,14 @@ public class SignupController {
 	
 	private final CountryCodeService countryCodeService;
 	private final UserService userService;
+	private final PhoneNumberService phoneNumberService;
 	
 	/** コンストラクタ */
 	@Autowired
-	public SignupController (CountryCodeService countryCodeService, UserService userService) {
+	public SignupController (CountryCodeService countryCodeService, UserService userService, PhoneNumberService phoneNumberService) {
 		this.countryCodeService = countryCodeService;
 		this.userService = userService;
+		this.phoneNumberService = phoneNumberService;
 	}
 	
 	/** ユーザー登録画面を表示 */
@@ -56,7 +59,11 @@ public class SignupController {
 			// NG：ユーザー登録画面に戻る
 			return getSignup(model, form, locale);
 		}
+		
+		String phoneNumber = phoneNumberService.toE164(form.getRegionCode(), form.getPhoneNumber());
+		
 		log.info(form.toString());
+		log.info(phoneNumber);
 		// ログイン画面にリダイレクト
 		return "redirect:/login";
 	}
