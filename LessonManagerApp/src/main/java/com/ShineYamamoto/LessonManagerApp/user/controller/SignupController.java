@@ -74,8 +74,19 @@ public class SignupController {
 		// formをUserクラスに変換
 		User user = modelMapper.map(form, User.class);
 		
+		try {
+			userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
+		} catch (IllegalArgumentException e) {
+			
+			bindingResult.rejectValue(
+					"phoneNumber", "phoneNumber.invalid"
+			);
+			
+			return getSignup(model, form, locale);
+		}
+		
 		// ユーザー登録
-		userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
+		//userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
 		
 		// ログイン画面にリダイレクト
 		return "redirect:/login";
