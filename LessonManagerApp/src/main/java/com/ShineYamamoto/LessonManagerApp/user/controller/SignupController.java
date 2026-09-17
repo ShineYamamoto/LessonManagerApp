@@ -31,14 +31,6 @@ public class SignupController {
 	private final UserService userService;
 	private final ModelMapper modelMapper;
 	
-	/** コンストラクタ */
-	/*
-	@Autowired
-	public SignupController (CountryCodeService countryCodeService, UserService userService) {
-		this.countryCodeService = countryCodeService;
-		this.userService = userService;
-	}
-	*/
 	
 	/** ユーザー登録画面を表示 */
 	@GetMapping("/signup")
