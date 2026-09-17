@@ -29,5 +29,5 @@ public class SignupForm {
 	
 	@NotNull
 	@GoalCheck
-	private Integer goal;
+	private Integer goalLevelId;
 }

@@ -6,3 +6,11 @@ CREATE TABLE IF NOT EXISTS users (
   , goal INT
   , role VARCHAR(50)
 );
+
+/* 目標レベルマスタ */
+CREATE TABLE IF NOT EXISTS goal_levels (
+	id INT PRIMARY KEY
+  , level_code VARCHAR(20) NOT NULL UNIQUE
+  , display_order INT NOT NULL
+  , enabled BOOLEAN NOT NULL DEFAULT TRUE
+);

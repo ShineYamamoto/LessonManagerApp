@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd.mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ShineYamamoto.LessonManagerApp.goallevel.repository.GoalLevelMapper">
+
+	<resultMap id="goalLevelResultMap" type="com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel">
+		<id column="id" property="id" />
+		<result column="level_code" property="levelCode" />
+		<result column="display_order" property="displayOrder" />
+		<result column="enable" property="enable" />
+	</resultMap>
+	
+	<select id="findAllEnabled" resultMap="goalLevelResultMap">
+		SELECT
+			*
+		FROM
+			goal_levels
+		WHERE
+			enabled = TRUE
+		ORDER BY
+			display_order, id
+	</select>
+	
+	<select id="countEnabledById" resultType="int">
+		SELECT COUNT
+			(*)
+		FROM
+			goal_levels
+		WHERE
+			id = #{id}
+				AND
+			enabled = TRUE
+	</select>
+
+</mapper>

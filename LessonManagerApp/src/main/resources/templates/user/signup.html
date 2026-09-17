@@ -66,29 +66,29 @@
 		<!-- 目標レベル -->
 		<div class="form-group">
 			
-			<label for="goal" th:text="#{goal}"></label>
+			<label for="goalLevelId" th:text="#{goalLevel}"></label>
 			
 			<select class="form-select"
-					name=goal 
-					id="goal"
-					th:classappend="${#fields.hasErrors('goal')} ? 'is-invalid'">
+					name="goalLevelId" 
+					id="goalLevelId"
+					th:classappend="${#fields.hasErrors('goalLevelId')} ? 'is-invalid'">
 					
 				<option value=""
 						disabled
 						hidden
-						th:text="#{goal.placeholder}"
-						th:selected="${signupForm.goal == null or #fields.hasErrors('goal')}">
+						th:text="#{goalLevel.placeholder}"
+						th:selected="${signupForm.goalLevelId == null or #fields.hasErrors('goalLevelId')}">
 				</option>
 				
-				<option th:each="goal : ${goalMap}"
-						th:value="${goal.value}"
-						th:text="${goal.key}"
-						th:selected="${!#fields.hasErrors('goal') and signupForm.goal == goal.value}">
+				<option th:each="goalLevel : ${goalLevels}"
+						th:value="${goalLevel.id}"
+						th:text="${goalLevel.levelCode}"
+						th:selected="${!#fields.hasErrors('goalLevelId') and signupForm.goalLevelId == goalLevel.id}">
 				</option>
 
 			</select>
 			<div class="invalid-feedback"
-				 th:errors="*{goal}">
+				 th:errors="*{goalLevelId}">
 			 </div>
 		</div>
 		

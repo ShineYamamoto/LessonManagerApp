@@ -1,7 +1,6 @@
 package com.ShineYamamoto.LessonManagerApp.user.controller;
 
 import java.util.Locale;
-import java.util.Map;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
+import com.ShineYamamoto.LessonManagerApp.goallevel.domain.service.GoalLevelService;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
 import com.ShineYamamoto.LessonManagerApp.user.form.SignupForm;
@@ -29,18 +29,29 @@ public class SignupController {
 	
 	private final CountryCodeService countryCodeService;
 	private final UserService userService;
+	private final GoalLevelService goalLevelService;
 	private final ModelMapper modelMapper;
 	
 	
 	/** ユーザー登録画面を表示 */
 	@GetMapping("/signup")
 	public String getSignup(Model model,@ModelAttribute SignupForm form, Locale locale) {
+		
 		// 国情報をmodelに格納	
-		model.addAttribute("countryList", countryCodeService.getCountryList(locale));
+		model.addAttribute(
+				"countryList",
+				countryCodeService.getCountryList(locale)
+		);
 		
 		// 目標レベルをmodelに格納
-		Map<String, Integer> goalMap = userService.getGoalMap();
-		model.addAttribute("goalMap", goalMap);
+		model.addAttribute(
+				"goalLevels", 
+				goalLevelService.getSelectableGoalLevels()
+		);
+		
+		// 目標レベルをmodelに格納
+		//Map<String, Integer> goalMap = userService.getGoalMap();
+		//model.addAttribute("goalMap", goalMap);
 		
 		// ユーザー登録画面に画面遷移
 		return "user/signup";
@@ -66,8 +77,11 @@ public class SignupController {
 		// formをUserクラスに変換
 		User user = modelMapper.map(form, User.class);
 		
+		// ユーザー登録
 		try {
+			
 			userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
+			
 		} catch (IllegalArgumentException e) {
 			
 			bindingResult.rejectValue(
@@ -77,8 +91,6 @@ public class SignupController {
 			return getSignup(model, form, locale);
 		}
 		
-		// ユーザー登録
-		//userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
 		
 		// ログイン画面にリダイレクト
 		return "redirect:/login";

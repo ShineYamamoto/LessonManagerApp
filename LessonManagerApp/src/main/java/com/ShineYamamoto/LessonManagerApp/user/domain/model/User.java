@@ -11,7 +11,7 @@ public class User {
 	
 	private String password;
 	
-	private Integer goal;
+	private Integer goalLevelId;
 	
 	private String role;
 }
