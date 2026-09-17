@@ -56,18 +56,26 @@ public class SignupController {
 	
 	/** ユーザー登録処理 */
 	@PostMapping("/signup")
-	public String postSignup(Model model, @ModelAttribute @Validated SignupForm form, BindingResult bindingResult, Locale locale) {
+	public String postSignup(
+			Model model,
+			@ModelAttribute @Validated SignupForm form,
+			BindingResult bindingResult,
+			Locale locale) {
+		
 		// 入力チェック結果
 		if (bindingResult.hasErrors()) {
 			// NG：ユーザー登録画面に戻る
 			return getSignup(model, form, locale);
 		}
 		
+		
 		log.info(form.toString());
+		
 		// formをUserクラスに変換
 		User user = modelMapper.map(form, User.class);
+		
 		// ユーザー登録
-		userService.signup(user);
+		userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
 		
 		// ログイン画面にリダイレクト
 		return "redirect:/login";

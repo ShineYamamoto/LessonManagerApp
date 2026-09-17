@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.repository.UserMapper;
 
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
 	
 	private final UserMapper mapper;
+	private final PhoneNumberService phoneNumberService;
 	
 	/** 目標レベルのMapを生成する */
 	public Map<String, Integer> getGoalMap() {
@@ -30,8 +32,20 @@ public class UserService {
 		return goalMap;
 	}
 	
-	public void signup(User user) {
+	public void signup(
+			User user,
+			String regionCode,
+			String rawPhoneNumber) {
+		
+		// regionCodeと入力された電話番号からE.164形式を生成
+		String e164PhoneNumber = phoneNumberService.toE164 (
+				regionCode,
+				rawPhoneNumber
+		);
+		
+		user.setE164PhoneNumber(e164PhoneNumber);
 		user.setRole("ROLE_GENERAL");
+		
 		int count = mapper.insertOne(user);
 		log.info("登録件数={}件", count);
 	}

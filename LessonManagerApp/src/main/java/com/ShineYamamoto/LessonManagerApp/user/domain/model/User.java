@@ -4,10 +4,8 @@ import lombok.Data;
 
 @Data
 public class User {
-
-	private String regionCode;
 	
-	private String phoneNumber;
+	private String e164PhoneNumber;
 	
 	private String userName;
 	

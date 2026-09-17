@@ -7,16 +7,14 @@
 	<!-- ユーザー1件登録 -->
 	<insert id="insertOne">
 		INSERT INTO users (
-			region_code
-		  , phone_number
+		    e164_phone_number
 		  , user_name
 		  , password
 		  , goal
 		  , role
 		)
 		VALUES (
-			#{regionCode}
-		  , #{phoneNumber}
+		    #{e164PhoneNumber}
 		  , #{userName}
 		  , #{password}
 		  , #{goal}
