@@ -66,7 +66,7 @@
 		<!-- 目標レベル -->
 		<div class="form-group">
 			
-			<label for="goalLevelId" th:text="#{goalLevel}"></label>
+			<label for="goalLevelId" th:text="#{goalLevelId}"></label>
 			
 			<select class="form-select"
 					name="goalLevelId" 
@@ -76,7 +76,7 @@
 				<option value=""
 						disabled
 						hidden
-						th:text="#{goalLevel.placeholder}"
+						th:text="#{goalLevelId.placeholder}"
 						th:selected="${signupForm.goalLevelId == null or #fields.hasErrors('goalLevelId')}">
 				</option>
 				

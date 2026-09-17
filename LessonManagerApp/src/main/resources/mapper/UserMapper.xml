@@ -10,14 +10,14 @@
 		    e164_phone_number
 		  , user_name
 		  , password
-		  , goal
+		  , goal_level_id
 		  , role
 		)
 		VALUES (
 		    #{e164PhoneNumber}
 		  , #{userName}
 		  , #{password}
-		  , #{goal}
+		  , #{goalLevelId}
 		  , #{role}
 		)
 	</insert>
