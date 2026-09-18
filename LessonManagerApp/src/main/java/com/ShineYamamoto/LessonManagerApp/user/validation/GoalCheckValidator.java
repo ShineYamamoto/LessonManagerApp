@@ -8,7 +8,6 @@ import com.ShineYamamoto.LessonManagerApp.goallevel.domain.service.GoalLevelServ
 
 public class GoalCheckValidator implements ConstraintValidator<GoalCheck, Integer> {
 	
-	// private final UserService userService;
 	private final GoalLevelService goalLevelService;
 	
 	public GoalCheckValidator(GoalLevelService goalLevelService) {

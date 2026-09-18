@@ -1,15 +1,3 @@
-/* ユーザーマスタ */
-INSERT INTO users (
-    e164_phone_number
-  , user_name
-  , password
-  , goal
-  , role
-) VALUES
-	('+817000000000', 'ユーザー1', 'pass1', 1, 'ROLE_ADMIN')
-  , ('+817000000001', 'ユーザー2', 'pass2', 1, 'ROLE_GENERAL')
-;
-
 /* 目標レベルマスタ */
 INSERT INTO goal_levels (
 	id
@@ -23,3 +11,15 @@ INSERT INTO goal_levels (
   , (4, 'N4', 4, TRUE)
   , (5, 'N5', 5, TRUE)
  ;
+
+/* ユーザーマスタ */
+INSERT INTO users (
+    e164_phone_number
+  , user_name
+  , password
+  , goal_level_id
+  , role
+) VALUES
+	('+817000000000', 'ユーザー1', 'pass1', 1, 'ROLE_ADMIN')
+  , ('+817000000001', 'ユーザー2', 'pass2', 1, 'ROLE_GENERAL')
+;

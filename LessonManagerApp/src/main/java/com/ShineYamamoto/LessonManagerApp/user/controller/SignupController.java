@@ -49,10 +49,6 @@ public class SignupController {
 				goalLevelService.getSelectableGoalLevels()
 		);
 		
-		// 目標レベルをmodelに格納
-		//Map<String, Integer> goalMap = userService.getGoalMap();
-		//model.addAttribute("goalMap", goalMap);
-		
 		// ユーザー登録画面に画面遷移
 		return "user/signup";
 	}
