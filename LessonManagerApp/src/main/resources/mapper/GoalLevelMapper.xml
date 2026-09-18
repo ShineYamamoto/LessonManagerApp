@@ -3,14 +3,9 @@
 
 <mapper namespace="com.ShineYamamoto.LessonManagerApp.goallevel.repository.GoalLevelMapper">
 
-	<resultMap id="goalLevelResultMap" type="com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel">
-		<id column="id" property="id" />
-		<result column="level_code" property="levelCode" />
-		<result column="display_order" property="displayOrder" />
-		<result column="enable" property="enable" />
-	</resultMap>
+
 	
-	<select id="findAllEnabled" resultMap="goalLevelResultMap">
+	<select id="findAllEnabled" resultType="GoalLevel">
 		SELECT
 			*
 		FROM

@@ -25,6 +25,9 @@ spring:
 # MyBatis
 mybatis:
   mapper-locations: classpath*:/mapper/*.xml
+  type-aliases-package: com.ShineYamamoto.LessonManagerApp.*
+  configuration:
+    map-underscore-to-camel-case: true
 
 # Log Level
 logging:
