@@ -30,7 +30,7 @@ public class SignupFormTest {
 		form.setPassword("test1234");
 		
 		// 一覧にない目標レベルを設置
-		form.setGoal(-99);
+		form.setGoalLevelId(-99);
 		
 		// バリデーションを実行
 		// validator.validate(form)が、SignupFormに付いているすべてのバリデーションを実行
@@ -45,7 +45,7 @@ public class SignupFormTest {
 		// getConstraintDescriptor()は、エラーになったバリデーションの詳細情報を取得する
 		boolean hasGoalCheckError = violations.stream()
 					.anyMatch(violation ->
-						violation.getPropertyPath().toString().equals("goal")
+						violation.getPropertyPath().toString().equals("goalLevelId")
 						&& violation.getConstraintDescriptor()
 								.getAnnotation()
 								.annotationType()
