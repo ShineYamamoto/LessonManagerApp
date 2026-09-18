@@ -1,5 +1,7 @@
 package com.ShineYamamoto.LessonManagerApp.user.domain.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
@@ -33,5 +35,10 @@ public class UserService {
 		
 		int count = mapper.insertOne(user);
 		log.info("登録件数={}件", count);
+	}
+	
+	/** ユーザー取得 */
+	public List<User> getUsers() {
+		return mapper.findMany();
 	}
 }

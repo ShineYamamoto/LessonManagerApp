@@ -21,4 +21,12 @@
 		  , #{role}
 		)
 	</insert>
+	
+	<!-- ユーザー複数件取得 -->
+	<select id="findMany" resultType="User">
+		SELECT
+			*
+		FROM
+			users
+	</select>
 </mapper>
