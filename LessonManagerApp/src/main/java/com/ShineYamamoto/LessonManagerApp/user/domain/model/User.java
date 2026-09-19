@@ -1,5 +1,7 @@
 package com.ShineYamamoto.LessonManagerApp.user.domain.model;
 
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -14,4 +16,8 @@ public class User {
 	private Integer goalLevelId;
 	
 	private String role;
+	
+	private LocalDateTime createdAt;
+	
+	private LocalDateTime updatedAt;
 }

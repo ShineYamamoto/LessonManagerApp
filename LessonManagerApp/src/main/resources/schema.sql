@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS users (
   , password VARCHAR(100)
   , goal_level_id INT
   , role VARCHAR(50)
+  , created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  , updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
   , CONSTRAINT fk_users_goal_level
   		FOREiGN KEY (goal_level_id)
   		REFERENCES goal_levels(id)
