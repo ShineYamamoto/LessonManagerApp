@@ -15,8 +15,7 @@
 	</select>
 	
 	<select id="countEnabledById" resultType="int">
-		SELECT COUNT
-			(*)
+		SELECT COUNT(*)
 		FROM
 			goal_levels
 		WHERE
