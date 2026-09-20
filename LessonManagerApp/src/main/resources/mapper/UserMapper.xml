@@ -49,4 +49,23 @@
 		WHERE
 			user_id = #{userId}
 	</select>
+	
+	<!-- ユーザー1件更新 -->
+	<update id="updateById">
+		UPDATE
+			users
+		SET
+			password = #{password}
+		  , user_name = #{userName}
+		WHERE
+			user_id = #{userId}
+	</update>
+	
+	<!-- ユーザー1件削除 -->
+	<delete id="deleteById">
+		DELETE FROM
+			users
+		WHERE
+			user_id = #{userId}
+	</delete>
 </mapper>

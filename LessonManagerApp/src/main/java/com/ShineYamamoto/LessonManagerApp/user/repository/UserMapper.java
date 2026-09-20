@@ -17,4 +17,10 @@ public interface UserMapper {
 	
 	/** ユーザーIDから1件取得 */
 	public User findById(Long userId);
+	
+	/** ユーザー更新(1件) */
+	public int updateById(Long userId, String password, String userName);
+	
+	/** ユーザー削除（1件） */
+	public int deleteById(Long userId);
 }

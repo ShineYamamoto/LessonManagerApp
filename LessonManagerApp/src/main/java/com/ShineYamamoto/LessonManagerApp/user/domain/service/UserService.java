@@ -46,4 +46,16 @@ public class UserService {
 	public User getUserById(Long userId) {
 		return mapper.findById(userId);
 	}
+	
+	/** ユーザー更新（1件） */
+	public void updateUserById(Long userId, String password, String userName) {
+		int count = mapper.updateById(userId, password, userName);
+		log.info("更新件数={}", count);
+	}
+	
+	/** ユーザー削除（1件） */
+	public void deleteUserById(Long userId) {
+		int count = mapper.deleteById(userId);
+		log.info("削除件数={}", count);
+	}
 }
