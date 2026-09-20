@@ -57,6 +57,7 @@
 		SET
 			password = #{password}
 		  , user_name = #{userName}
+		  , updated_at = CURRENT_TIMESTAMP
 		WHERE
 			user_id = #{userId}
 	</update>
