@@ -18,6 +18,7 @@
 						<th class="th-width">電話番号</th>
 						<th class="th-width">ユーザー名</th>
 						<th class="th-width">目標レベル</th>
+						<th class="th-width"></th>
 					</tr>
 				</head>
 				<tbody>
@@ -25,10 +26,16 @@
 						<td th:text="${user.e164PhoneNumber}"></td>
 						<td th:text="${user.userName}"></td>
 						<td th:text="${user.goalLevelId}"></td>
+						<td>
+							<a class="btn btn-primary" th:href="@{'/admin/user/detail/' + ${user.userId}}">
+								詳細
+							</a>
+						</td>
 					</tr>
 				</tbody>
 			</table> 
 		</div>
+		<div th:text="${userList}"></div>
 	</div>
 </body>
 </html>

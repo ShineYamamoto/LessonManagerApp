@@ -33,4 +33,20 @@
 		FROM
 			users
 	</select>
+	
+	<!-- ユーザーIDから1件取得 -->
+	<select id="findById" resultType="User">
+		SELECT
+			user_id
+		  , e164_phone_number
+		  , user_name
+		  , goal_level_id
+		  , role
+		  , created_at
+		  , updated_at
+		FROM
+			users
+		WHERE
+			user_id = #{userId}
+	</select>
 </mapper>

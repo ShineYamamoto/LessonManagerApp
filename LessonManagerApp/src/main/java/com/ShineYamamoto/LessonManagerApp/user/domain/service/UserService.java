@@ -41,4 +41,9 @@ public class UserService {
 	public List<User> getUsers() {
 		return mapper.findMany();
 	}
+	
+	/** ユーザーIDから1件取得 */
+	public User getUserById(Long userId) {
+		return mapper.findById(userId);
+	}
 }

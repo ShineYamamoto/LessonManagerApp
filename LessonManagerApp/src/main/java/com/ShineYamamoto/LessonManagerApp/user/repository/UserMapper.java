@@ -14,4 +14,7 @@ public interface UserMapper {
 	
 	/** ユーザー取得（複数） */
 	public List<User> findMany();
+	
+	/** ユーザーIDから1件取得 */
+	public User findById(Long userId);
 }
