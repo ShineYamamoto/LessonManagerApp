@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<title>ユーザー詳細画面</title>
+</head>
+<body>
+	<div layout:fragment="content">
+		
+		<div class="header border-botom">
+			<h1 class="h2">ユーザー詳細</h1>
+		</div>
+		
+		<form id="admin-user-detail-form" method="post" th:action="@{/user/detail}" class="form-signup" th:object="${userDetailForm}">
+			<!-- ユーザー詳細画面 -->
+			<table class="table table-bordered table-hover">
+				<tbody>
+					<tr>
+						<th class="w-25">ユーザーID</th>
+						<td th:text="*{userId}"></td>
+					</tr>
+					<tr>
+					<th>電話番号</th>
+						<td th:text="*{e164PhoneNumber}"></td>
+					</tr>
+					<tr>
+						<th>ユーザー名</th>
+						<td>
+							<input type="text" class="form-control" th:field="*{userName}">
+						</td>
+					</tr>
+					<tr>
+						<th>パスワード</th>
+						<td>
+							<input type="text" class="form-control" th:field="*{password}">
+						</td>
+					<tr>
+						<th>目標レベル</th>
+						<td>
+							<input type="text" class="form-control" th:field="*{goalLevelId}">
+						</td>
+					</tr>
+					<tr>
+						<th>アカウント作成日</th>
+						<td th:text="*{createdAt}"></td>
+					</tr>
+					<tr>
+						<th>アカウント最終更新日</th>
+						<td th:text="*{updatedAt}"></td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+		
+	</div>
+</body>
+</html>
