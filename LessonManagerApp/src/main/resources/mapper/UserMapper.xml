@@ -5,7 +5,11 @@
 <mapper namespace="com.ShineYamamoto.LessonManagerApp.user.repository.UserMapper">
 
 	<!-- ユーザー1件登録 -->
-	<insert id="insertOne">
+	<insert id="insertOne"
+			 useGeneratedKeys="true"
+			 keyProperty="userId"
+			 keyColumn="user_id">
+			 
 		INSERT INTO users (
 		    e164_phone_number
 		  , user_name
