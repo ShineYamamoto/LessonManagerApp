@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("admin/user")
 @RequiredArgsConstructor
-public class UserListController {
+public class AdminUserController {
 	
 	private final UserService userService;
 
