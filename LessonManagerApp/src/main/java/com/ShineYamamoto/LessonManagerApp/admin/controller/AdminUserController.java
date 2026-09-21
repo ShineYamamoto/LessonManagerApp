@@ -6,10 +6,12 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ShineYamamoto.LessonManagerApp.admin.user.form.AdminUserDetailForm;
+import com.ShineYamamoto.LessonManagerApp.admin.user.form.AdminUserListForm;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
 
@@ -26,10 +28,12 @@ public class AdminUserController {
 
 	/** ユーザー一覧画面を表示 */
 	@GetMapping("/list")
-	public String getUserList(Model model) {
+	public String getUserList(Model model, @ModelAttribute AdminUserListForm form) {
 		
+		// formをUserクラスに変換
+		User user = modelMapper.map(form, User.class);
 		// ユーザー一覧取得
-		List<User> userList = userService.getUsers();
+		List<User> userList = userService.getUsers(user);
 		
 		// Modelに登録
 		model.addAttribute("userList", userList);

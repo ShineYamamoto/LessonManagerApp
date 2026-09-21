@@ -38,8 +38,8 @@ public class UserService {
 	}
 	
 	/** ユーザー取得 */
-	public List<User> getUsers() {
-		return mapper.findMany();
+	public List<User> getUsers(User user) {
+		return mapper.findMany(user);
 	}
 	
 	/** ユーザーIDから1件取得 */

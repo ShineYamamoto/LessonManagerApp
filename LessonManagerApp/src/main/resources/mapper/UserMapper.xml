@@ -29,9 +29,23 @@
 	<!-- ユーザー複数件取得 -->
 	<select id="findMany" resultType="User">
 		SELECT
-			*
+			user_id
+		  , e164_phone_number
+		  , user_name
+		  , goal_level_id
+		  , role
+		  , created_at
+		  , updated_at
 		FROM
 			users
+		<where>
+			<if test="userName != null">
+				user_name like '%' || #{userName} || '%'
+			</if>
+			<if test="goalLevelId != null">
+				AND goal_level_id like '%' || #{goalLevelId} || '%'
+			</if>
+		</where>
 	</select>
 	
 	<!-- ユーザーIDから1件取得 -->
