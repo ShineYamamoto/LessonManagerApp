@@ -40,10 +40,10 @@
 			users
 		<where>
 			<if test="userName != null">
-				user_name like '%' || #{userName} || '%'
+				user_name LIKE CONCAT('%', #{userName}, '%')
 			</if>
 			<if test="goalLevelId != null">
-				AND goal_level_id like '%' || #{goalLevelId} || '%'
+				AND goal_level_id = #{goalLevelId}
 			</if>
 		</where>
 	</select>

@@ -13,12 +13,12 @@
 		
 		<!-- 検索 -->
 		<div class="mb-4">
-			<form id="user-search-form" method="get" th:action="@{/admin/user/list}" class="row" th:object="${AdminUserListForm}">
+			<form id="user-search-form" method="get" th:action="@{/admin/user/list}" class="row" th:object="${adminUserListForm}">
 				<div class="col-sm">
 					<input type="text" class="form-control" placeholder="ユーザー名" th:field="*{userName}">
 				</div>
 				<div class="col-sm">
-					<input type="number" class="form-contro;" placeholder="目標レベル" th:field="*{goalLevelId}">
+					<input type="number" class="form-control" placeholder="目標レベル" th:field="*{goalLevelId}">
 				</div>
 				<div class="col-sm">
 					<button class="btn btn-primary" type="submit">
