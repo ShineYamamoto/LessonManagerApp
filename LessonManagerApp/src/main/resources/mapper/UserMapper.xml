@@ -26,6 +26,22 @@
 		)
 	</insert>
 	
+	<!-- ユーザー件数取得 -->
+	<select id="count" resultType="int">
+		SELECT
+			count(*)
+		FROM
+			users
+		<where>
+			<if test="userName != null and userName != ''">
+				user_name LIKE CONCAT('%', #{userName}, '%')
+			</if>
+			<if test="goalLevelId != null">
+				AND goal_level_id = #{goalLevelId}
+			</if>
+		</where>
+	</select>
+	
 	<!-- ユーザー複数件取得 -->
 	<select id="findMany" resultType="User">
 		SELECT
@@ -39,13 +55,17 @@
 		FROM
 			users
 		<where>
-			<if test="userName != null">
-				user_name LIKE CONCAT('%', #{userName}, '%')
+			<if test="user.userName != null and user.userName != ''">
+				user_name LIKE CONCAT('%', #{user.userName}, '%')
 			</if>
-			<if test="goalLevelId != null">
-				AND goal_level_id = #{goalLevelId}
+			<if test="user.goalLevelId != null">
+				AND goal_level_id = #{user.goalLevelId}
 			</if>
 		</where>
+		<if test="pageable != null and pageable.pageSize > 0">
+			LIMIT #{pageable.pageSize}
+			OFFSET #{pageable.offset}
+		</if>
 	</select>
 	
 	<!-- ユーザーIDから1件取得 -->

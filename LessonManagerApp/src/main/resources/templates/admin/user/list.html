@@ -52,6 +52,38 @@
 				</tbody>
 			</table> 
 		</div>
+		
+		<!-- ページネーション -->
+		<nav aria-label="Page navigation">
+			<th:block th:if="${page.totalPages > 1}">
+				<ul class="pagination justify-content-center">
+					<!-- 前へ -->
+					<li class="page-item" th:classappend="${page.first ? 'disabled': ''}">
+						<span th:if="${page.first}" class="page-link">前へ</span>
+						<a th:if="${!page.first}" th:href="@{/admin/user/list(page = ${page.number} - 1)}" class="page-link" aria-label="Previous">
+							前へ
+						</a>
+					</li>
+					<!-- ページ番号 -->
+					<th:block th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}">
+						<li class="page-item" th:classappend="${i == page.number ? 'active': ''}">
+							<span th:if="${i} == ${page.number}" th:text="${i + 1}" class="page-link"></span>
+							<a th:if="${i} != ${page.number}" th:href="@{/admin/user/list(page = ${i})}" class="page-link">
+								<span th:text="${i+1}">ページ番号</span>
+							</a>
+						</li>
+					</th:block>
+					<!-- 次へ -->
+					<li class="page-item" th:classappend="${page.last ? 'disabled': ''}">
+						<span th:if="${page.last}" class="page-link">次へ</span>
+						<a th:if="${!page.last}" th:href="@{/admin/user/list(page = ${page.number} + 1)}" class="page-link" aria-label="Next">
+							<span aria-hidden="true">次へ</span>
+						</a>
+					</li>
+				</ul>
+			</th:block>
+
+		</nav>
 	</div>
 </body>
 </html>

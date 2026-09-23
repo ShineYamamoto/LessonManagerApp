@@ -22,5 +22,10 @@ INSERT INTO users (
 ) VALUES
 	('+817000000000', 'ユーザー1', 'pass1', 1, 'ROLE_ADMIN')
   , ('+817000000001', 'ユーザー2', 'pass2', 1, 'ROLE_GENERAL')
-  , ('+869012345678', 'ユーザー3', 'pass3', 2, 'ROLE_GENERAL')
+  , ('+817000000002', 'ユーザー3', 'pass3', 2, 'ROLE_GENERAL')
+  , ('+817000000003', 'ユーザー4', 'pass4', 3, 'ROLE_GENERAL')
+  , ('+817000000004', 'ユーザー5', 'pass5', 1, 'ROLE_GENERAL')
+  , ('+817000000005', 'ユーザー6', 'pass6', 5, 'ROLE_GENERAL')
+  , ('+817000000006', 'ユーザー7', 'pass7', 1, 'ROLE_GENERAL')
+  , ('+869012345678', 'ユーザー8', 'pass8', 2, 'ROLE_GENERAL')
 ;

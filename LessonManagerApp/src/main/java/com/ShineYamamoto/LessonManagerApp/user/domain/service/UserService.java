@@ -2,6 +2,9 @@ package com.ShineYamamoto.LessonManagerApp.user.domain.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
@@ -38,8 +41,13 @@ public class UserService {
 	}
 	
 	/** ユーザー取得 */
-	public List<User> getUsers(User user) {
-		return mapper.findMany(user);
+	public Page<User> getUsers(User user, Pageable pageable) {
+		// ユーザー一覧取得
+		List<User> userList = mapper.findMany(user, pageable);
+		// ユーザー一覧の件数取得
+		int count = mapper.count(user);
+		// Pageのインスタンス生成
+		return new PageImpl<User>(userList, pageable, count);
 	}
 	
 	/** ユーザーIDから1件取得 */
