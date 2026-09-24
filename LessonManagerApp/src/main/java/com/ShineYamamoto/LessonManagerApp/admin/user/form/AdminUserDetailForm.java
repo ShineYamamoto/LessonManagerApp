@@ -2,6 +2,8 @@ package com.ShineYamamoto.LessonManagerApp.admin.user.form;
 
 import java.time.LocalDateTime;
 
+import com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel;
+
 import lombok.Data;
 
 @Data
@@ -14,4 +16,5 @@ public class AdminUserDetailForm {
 	private Integer goalLevelId;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private GoalLevel goallevel;
 }

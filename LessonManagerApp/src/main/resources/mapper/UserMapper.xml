@@ -9,7 +9,6 @@
 		<id column="user_id" property="userId" />
 		<result column="e164_phone_number" property="e164PhoneNumber" />
 		<result column="user_name" property="userName" />
-		<result column="password" property="password" />
 		<result column="goal_level_id" property="goalLevelId" />
 		<result column="role" property="role" />
 		<result column="created_at" property="createdAt" />
@@ -99,19 +98,25 @@
 	</select>
 	
 	<!-- ユーザーIDから1件取得 -->
-	<select id="findById" resultType="User">
+	<select id="findById" resultMap="userMap">
 		SELECT
-			user_id
-		  , e164_phone_number
-		  , user_name
-		  , goal_level_id
-		  , role
-		  , created_at
-		  , updated_at
+			users.user_id
+		  , users.e164_phone_number
+		  , users.user_name
+		  , users.goal_level_id
+		  , users.role
+		  , users.created_at
+		  , users.updated_at
+		  , goal_levels.id AS gl_id
+		  , goal_levels.level_code AS gl_level_code
+		  , goal_levels.display_order AS gl_display_order
+		  , goal_levels.enabled AS gl_enabled
 		FROM
 			users
+			LEFT JOIN goal_levels
+				ON users.goal_level_id = goal_levels.id
 		WHERE
-			user_id = #{userId}
+			users.user_id = #{userId}
 	</select>
 	
 	<!-- ユーザー1件更新 -->
