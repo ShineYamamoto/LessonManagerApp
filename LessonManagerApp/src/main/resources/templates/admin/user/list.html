@@ -42,7 +42,9 @@
 					<tr th:each="user: ${userList}">
 						<td th:text="${user.e164PhoneNumber}"></td>
 						<td th:text="${user.userName}"></td>
-						<td th:text="${user.goalLevelId}"></td>
+						<td>
+							<span th:if="*{goalLevel != null}" th:text="*{goalLevel.levelCode}"></span>
+						</td>
 						<td>
 							<a class="btn btn-primary" th:href="@{'/admin/user/detail/' + ${user.userId}}">
 								詳細

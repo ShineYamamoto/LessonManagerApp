@@ -3,6 +3,27 @@
 
 <!--  Mapperとxmlのマッピング -->
 <mapper namespace="com.ShineYamamoto.LessonManagerApp.user.repository.UserMapper">
+	
+	<!-- マッピング定義（ユーザー） -->
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.user.domain.model.User" id="userMap">
+		<id column="user_id" property="userId" />
+		<result column="e164_phone_number" property="e164PhoneNumber" />
+		<result column="unser_name" property="userName" />
+		<result column="password" property="password" />
+		<result column="goal_level_id" property="goalLevelId" />
+		<result column="role" property="role" />
+		<result column="created_at" property="createdAt" />
+		<result column="updated_at" property="updatedAt" />
+		<assosiation property="goalLevela" resultMap="goalLevelMap" columnPrefix="goal_levels_" />
+	</resultMap>
+	
+	<!-- マッピング定義 -->
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.user.domain.model.GoalLevel" id="goalLevelMap">
+		<id column="id" property="id" />
+		<result column="level_code" property="levelCode" />
+		<result column="display_order" property="displayOrder" />
+		<result column="enabled" property="enabled" />
+	</resultMap>
 
 	<!-- ユーザー1件登録 -->
 	<insert id="insertOne"
@@ -43,17 +64,23 @@
 	</select>
 	
 	<!-- ユーザー複数件取得 -->
-	<select id="findMany" resultType="User">
+	<select id="findMany" resultType="userMap">
 		SELECT
-			user_id
-		  , e164_phone_number
-		  , user_name
-		  , goal_level_id
-		  , role
-		  , created_at
-		  , updated_at
+			users.user_id
+		  , users.e164_phone_number
+		  , users.user_name
+		  , users.goal_level_id
+		  , users.role
+		  , users.created_at
+		  , users.updated_at
+		  , goal_levels.id AS goal_levels_goal_level_id
+		  , goal_levels.level_code AS goal_levels_level_code
+		  , goal_levels.display_order AS goal_levels_display_order
+		  , goal_levels.enabled AS goal_levels_enabled
 		FROM
 			users
+			LEFT JOIN goal_levels
+				ON users.goal_level_id = goal_levels.id
 		<where>
 			<if test="user.userName != null and user.userName != ''">
 				user_name LIKE CONCAT('%', #{user.userName}, '%')
