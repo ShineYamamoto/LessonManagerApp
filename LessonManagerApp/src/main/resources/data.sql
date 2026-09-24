@@ -29,3 +29,28 @@ INSERT INTO users (
   , ('+817000000006', 'ユーザー7', 'pass7', 1, 'ROLE_GENERAL')
   , ('+869012345678', 'ユーザー8', 'pass8', 2, 'ROLE_GENERAL')
 ;
+
+/* ユーザー1の予約 */
+INSERT INTO reservations (
+	user_id
+  , starts_at
+  , ends_at
+) SELECT
+	user_id
+  , '2026-10-01 10:00:00'
+  , '2026-10-01 11:00:00'
+FROM users
+WHERE e164_phone_number = '+817000000000'
+;
+
+INSERT INTO reservations (
+	user_id
+  , starts_at
+  , ends_at
+) SELECT
+	user_id
+  , '2026-10-08 10:00:00'
+  , '2026-10-08 11:00:00'
+FROM users
+WHERE e164_phone_number = '+817000000000'
+;
