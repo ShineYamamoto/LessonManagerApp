@@ -89,6 +89,9 @@
 				AND goal_level_id = #{user.goalLevelId}
 			</if>
 		</where>
+		
+		ORDER BY
+			users.user_id ASC
 		<if test="pageable != null and pageable.pageSize > 0">
 			LIMIT #{pageable.pageSize}
 			OFFSET #{pageable.offset}
