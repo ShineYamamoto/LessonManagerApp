@@ -2,6 +2,8 @@ package com.ShineYamamoto.LessonManagerApp.user.domain.model;
 
 import java.time.LocalDateTime;
 
+import com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel;
+
 import lombok.Data;
 
 @Data

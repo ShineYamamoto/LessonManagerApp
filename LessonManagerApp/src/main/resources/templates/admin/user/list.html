@@ -43,7 +43,7 @@
 						<td th:text="${user.e164PhoneNumber}"></td>
 						<td th:text="${user.userName}"></td>
 						<td>
-							<span th:if="*{goalLevel != null}" th:text="*{goalLevel.levelCode}"></span>
+							<span th:if="${user.goalLevel != null}" th:text="${user.goalLevel.levelCode}"></span>
 						</td>
 						<td>
 							<a class="btn btn-primary" th:href="@{'/admin/user/detail/' + ${user.userId}}">
@@ -86,6 +86,7 @@
 			</th:block>
 
 		</nav>
+		
 	</div>
 </body>
 </html>

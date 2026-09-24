@@ -8,17 +8,17 @@
 	<resultMap type="com.ShineYamamoto.LessonManagerApp.user.domain.model.User" id="userMap">
 		<id column="user_id" property="userId" />
 		<result column="e164_phone_number" property="e164PhoneNumber" />
-		<result column="unser_name" property="userName" />
+		<result column="user_name" property="userName" />
 		<result column="password" property="password" />
 		<result column="goal_level_id" property="goalLevelId" />
 		<result column="role" property="role" />
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
-		<assosiation property="goalLevela" resultMap="goalLevelMap" columnPrefix="goal_levels_" />
+		<association property="goalLevel" resultMap="goalLevelMap" columnPrefix="gl_" />
 	</resultMap>
 	
 	<!-- マッピング定義 -->
-	<resultMap type="com.ShineYamamoto.LessonManagerApp.user.domain.model.GoalLevel" id="goalLevelMap">
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel" id="goalLevelMap">
 		<id column="id" property="id" />
 		<result column="level_code" property="levelCode" />
 		<result column="display_order" property="displayOrder" />
@@ -64,7 +64,7 @@
 	</select>
 	
 	<!-- ユーザー複数件取得 -->
-	<select id="findMany" resultType="userMap">
+	<select id="findMany" resultMap="userMap">
 		SELECT
 			users.user_id
 		  , users.e164_phone_number
@@ -73,10 +73,10 @@
 		  , users.role
 		  , users.created_at
 		  , users.updated_at
-		  , goal_levels.id AS goal_levels_goal_level_id
-		  , goal_levels.level_code AS goal_levels_level_code
-		  , goal_levels.display_order AS goal_levels_display_order
-		  , goal_levels.enabled AS goal_levels_enabled
+		  , goal_levels.id AS gl_id
+		  , goal_levels.level_code AS gl_level_code
+		  , goal_levels.display_order AS gl_display_order
+		  , goal_levels.enabled AS gl_enabled
 		FROM
 			users
 			LEFT JOIN goal_levels
