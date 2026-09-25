@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd.mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!--  Mapperとxmlのマッピング -->
 <mapper namespace="com.ShineYamamoto.LessonManagerApp.user.repository.UserMapper">
@@ -14,14 +14,25 @@
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
 		<association property="goalLevel" resultMap="goalLevelMap" columnPrefix="gl_" />
+		<collection property="reservationList" resultMap="reservationMap" columnPrefix="r_" />
 	</resultMap>
 	
-	<!-- マッピング定義 -->
+	<!-- マッピング定義（目標レベル） -->
 	<resultMap type="com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel" id="goalLevelMap">
 		<id column="id" property="id" />
 		<result column="level_code" property="levelCode" />
 		<result column="display_order" property="displayOrder" />
 		<result column="enabled" property="enabled" />
+	</resultMap>
+	
+	<!-- マッピング定義（予約） -->
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation" id="reservationMap">
+		<id column="reservation_id" property="reservationId" />
+		<result column="uesr_id" property="userId" />
+		<result column="starts_at" property="startsAt" />
+		<result column="ends_at" property="endsAt" />
+		<result column="created_at" property="createdAt" />
+		<result column="updated_at" property="updatedAt" />
 	</resultMap>
 
 	<!-- ユーザー1件登録 -->
@@ -107,14 +118,24 @@
 		  , users.role
 		  , users.created_at
 		  , users.updated_at
+		  
 		  , goal_levels.id AS gl_id
 		  , goal_levels.level_code AS gl_level_code
 		  , goal_levels.display_order AS gl_display_order
 		  , goal_levels.enabled AS gl_enabled
+		  
+		  , reservations.reservation_id AS r_reservation_id
+		  , reservations.user_id AS r_user_id
+		  , reservations.starts_at AS r_starts_at
+		  , reservations.ends_at AS r_ends_at
+		  , reservations.created_at AS r_created_at
+		  , reservations.updated_at AS r_updated_at
 		FROM
 			users
 			LEFT JOIN goal_levels
 				ON users.goal_level_id = goal_levels.id
+			LEFT JOIN reservations
+				ON reservations.user_id = users.user_id
 		WHERE
 			users.user_id = #{userId}
 	</select>

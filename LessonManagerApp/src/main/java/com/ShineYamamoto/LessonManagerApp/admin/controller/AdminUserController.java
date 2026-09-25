@@ -71,6 +71,7 @@ public class AdminUserController {
 		
 		// Modelに登録
 		model.addAttribute("userDetailForm", form);
+		model.addAttribute("reservationList", user.getReservationList());
 		
 		// ユーザー詳細画面を表示
 		return "admin/user/detail";

@@ -1,8 +1,10 @@
 package com.ShineYamamoto.LessonManagerApp.user.domain.model;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.ShineYamamoto.LessonManagerApp.goallevel.domain.model.GoalLevel;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 
 import lombok.Data;
 
@@ -26,4 +28,6 @@ public class User {
 	private LocalDateTime updatedAt;
 	
 	private GoalLevel goalLevel;
+	
+	private List<Reservation> reservationList;
 }
