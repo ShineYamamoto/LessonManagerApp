@@ -35,7 +35,7 @@ public class UserDetailController {
 		
 		// Modelに登録
 		model.addAttribute("userDetailForm", form);
-		model.addAttribute("reservationList", user.getReservationList());
+		//model.addAttribute("reservationList", user.getReservationList());
 		
 		// ユーザー詳細画面を表示
 		return "user/detail";

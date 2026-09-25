@@ -1,6 +1,9 @@
 package com.ShineYamamoto.LessonManagerApp.user.form;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 
 import lombok.Data;
 
@@ -14,4 +17,5 @@ public class UserDetailForm {
 	private Integer goalLevelId;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
+	private List<Reservation> reservationList;
 }

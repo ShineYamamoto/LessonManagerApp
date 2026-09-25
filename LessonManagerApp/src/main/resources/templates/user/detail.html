@@ -73,11 +73,11 @@
 				<h1 class="h2">予約一覧</h1>
 			</div>
 			
-			<p th:if="${#lists.isEmpty(reservationList)}">
+			<p th:if="${#lists.isEmpty(userDetailForm.reservationList)}">
 				予約はありません
 			</p>
 			
-			<div class="table-responsive" th:unless="${#lists.isEmpty(reservationList)}">
+			<div class="table-responsive" th:unless="${#lists.isEmpty(userDetailForm.reservationList)}">
 				
 				<table class="table table-striped table-bordered">
 					<thead>
@@ -89,7 +89,7 @@
 					</thead>
 					
 					<tbody>
-						<tr th:each="reservation : ${reservationList}">
+						<tr th:each="reservation : ${userDetailForm.reservationList}">
 							<td th:text="${reservation.reservationId}"></td>
 							
 							<td th:text="${#temporals.format(
