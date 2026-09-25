@@ -68,6 +68,42 @@
 			
 		</form>
 		
+		<section class="mt-4">
+			<div class="header border-bottom mb-3">
+				<h1 class="h2">予約一覧</h1>
+			</div>
+			
+			<p th:if="${#lists.isEmpty(reservationList)}">
+				予約はありません
+			</p>
+			
+			<div class="table-responsive" th:unless="${#lists.isEmpty(reservationList)}">
+				
+				<table class="table table-striped table-bordered">
+					<thead>
+						<tr>
+							<th>予約ID</th>
+							<th>開始時間</th>
+							<th>終了日時</th>
+						</tr>
+					</thead>
+					
+					<tbody>
+						<tr th:each="reservation : ${reservationList}">
+							<td th:text="${reservation.reservationId}"></td>
+							
+							<td th:text="${#temporals.format(
+								reservation.startsAt, 'yyyy/MM/dd HH:mm')}">
+							</td>
+							
+							<td th:text="${#temporals.format(
+								reservation.endsAt, 'yyyy/MM/dd HH:mm')}">
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</section>
 	</div>
 </body>
 </html>

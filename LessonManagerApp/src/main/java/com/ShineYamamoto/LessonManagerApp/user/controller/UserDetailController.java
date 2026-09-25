@@ -35,6 +35,7 @@ public class UserDetailController {
 		
 		// Modelに登録
 		model.addAttribute("userDetailForm", form);
+		model.addAttribute("reservationList", user.getReservationList());
 		
 		// ユーザー詳細画面を表示
 		return "user/detail";
@@ -44,7 +45,7 @@ public class UserDetailController {
 	@PostMapping(value = "/detail", params = "update")
 	public String updateUser(UserDetailForm form, Model model) {
 		
-		// ユーザーを鵜更新
+		// ユーザーを更新
 		userService.updateUserById(
 				form.getUserId(),
 				form.getPassword(),
