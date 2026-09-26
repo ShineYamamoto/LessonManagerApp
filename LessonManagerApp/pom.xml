@@ -92,6 +92,11 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
+		<!-- AOP -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
 		<!-- h2database -->
 		<dependency>
 			<groupId>com.h2database</groupId>
