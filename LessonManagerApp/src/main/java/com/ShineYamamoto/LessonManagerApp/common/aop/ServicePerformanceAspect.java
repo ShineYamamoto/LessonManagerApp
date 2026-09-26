@@ -32,7 +32,7 @@ public class ServicePerformanceAspect {
 	}
 	
 	@Around(
-			"execution(public *"
+			"execution(public * "
 			+ "com.ShineYamamoto.LessonManagerApp..domain.service..*.*(..))"
 	)
 	public Object measure(ProceedingJoinPoint joinPoint) throws Throwable {
