@@ -28,7 +28,7 @@
 	<!-- マッピング定義（予約） -->
 	<resultMap type="com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation" id="reservationMap">
 		<id column="reservation_id" property="reservationId" />
-		<result column="uesr_id" property="userId" />
+		<result column="user_id" property="userId" />
 		<result column="starts_at" property="startsAt" />
 		<result column="ends_at" property="endsAt" />
 		<result column="created_at" property="createdAt" />
