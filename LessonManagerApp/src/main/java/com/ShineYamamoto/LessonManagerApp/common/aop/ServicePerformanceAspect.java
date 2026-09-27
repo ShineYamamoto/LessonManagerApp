@@ -32,8 +32,7 @@ public class ServicePerformanceAspect {
 	}
 	
 	@Around(
-			"execution(public * "
-			+ "com.ShineYamamoto.LessonManagerApp..domain.service..*.*(..))"
+			"execution(* com.ShineYamamoto.LessonManagerApp..domain.service..*.*(..))"
 	)
 	public Object measure(ProceedingJoinPoint joinPoint) throws Throwable {
 		
@@ -50,6 +49,7 @@ public class ServicePerformanceAspect {
 			throw ex;
 		} finally {
 			
+			// 処理時間を計算しナノ秒からミリ秒に変換する
 			long elapsedMs = TimeUnit.NANOSECONDS.toMillis(
 					System.nanoTime() - start);
 			
