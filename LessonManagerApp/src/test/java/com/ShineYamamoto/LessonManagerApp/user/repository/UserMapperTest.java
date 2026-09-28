@@ -200,7 +200,10 @@ public class UserMapperTest {
 		assertEquals(OLD_TIME, other.getUpdatedAt());
 	}
 	
-
+	@Test
+	void updateByIdで存在しないIDは更新件数0になる() {
+		assertEquals(0, mapper.updateById(-1L, "pssword", "名前"));
+	}
 	
 	
 	
