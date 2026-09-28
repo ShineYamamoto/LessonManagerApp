@@ -217,6 +217,11 @@ public class UserMapperTest {
 		assertEquals(1, mapper.count(new User()));
 	}
 	
+	@Test
+	void deleteByIdで存在しないIDは削除件数0になる() {
+		assertEquals(0, mapper.deleteById(-1L));
+	}
+	
 	
 	/* 共通で処理するメソッド */
 	// 取得・更新テストの準備には自作したinsertOneを使わず登録処理の不具合と切り離す。
