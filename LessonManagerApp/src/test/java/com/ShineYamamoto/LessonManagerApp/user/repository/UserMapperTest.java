@@ -205,6 +205,17 @@ public class UserMapperTest {
 		assertEquals(0, mapper.updateById(-1L, "pssword", "名前"));
 	}
 	
+	@Test
+	void deleteByIdで予約がないユーザーは削除できる() {
+		
+		insertUser(101L, "削除対象", 1);
+		insertUser(102L, "残すユーザー", 2);
+		
+		assertEquals(1, mapper.deleteById(101L));
+		assertNull(mapper.findById(101L));
+		assertNotNull(mapper.findById(102L));
+		assertEquals(1, mapper.count(new User()));
+	}
 	
 	
 	/* 共通で処理するメソッド */
