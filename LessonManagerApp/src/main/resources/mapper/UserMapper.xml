@@ -138,6 +138,9 @@
 				ON reservations.user_id = users.user_id
 		WHERE
 			users.user_id = #{userId}
+		ORDER BY
+			reservations.starts_at ASC,
+			reservations.reservation_id asc
 	</select>
 	
 	<!-- ユーザー1件更新 -->
