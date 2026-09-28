@@ -223,6 +223,7 @@ public class UserMapperTest {
 	}
 	
 	
+	
 	/* 共通で処理するメソッド */
 	// 取得・更新テストの準備には自作したinsertOneを使わず登録処理の不具合と切り離す。
 	private void insertUser(long id, String name, int goalId ) {
