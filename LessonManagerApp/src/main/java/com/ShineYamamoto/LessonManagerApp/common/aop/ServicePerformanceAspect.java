@@ -31,6 +31,7 @@ public class ServicePerformanceAspect {
 		this.slowThresholdMs = slowThresholdMs;
 	}
 	
+	// ビジネスロジックの作業時間が1000ミリ秒を超える場合はwarn表示する
 	@Around(
 			"execution(* com.ShineYamamoto.LessonManagerApp..domain.service..*.*(..))"
 	)
