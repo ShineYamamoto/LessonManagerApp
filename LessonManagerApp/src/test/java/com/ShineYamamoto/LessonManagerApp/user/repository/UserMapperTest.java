@@ -157,6 +157,25 @@ public class UserMapperTest {
 		assertSearch("該当なし", null, List.of());
 	}
 	
+	@Test
+	void findManyでページを切り替えても重複せず総数は変わらない() {
+		
+		for (long id = 101; id <= 105; id++) {
+			insertUser(id, "ユーザー" + id, 1);
+		}
+		User condition = new User();
+		
+		assertEquals(
+				List.of(101L, 102L, 103L),
+				ids(mapper.findMany(condition, PageRequest.of(0, 3)))
+		);
+		assertEquals(
+				List.of(104L, 105L),
+				ids(mapper.findMany(condition, PageRequest.of(1, 3)))
+		);
+		assertTrue(mapper.findMany(condition, PageRequest.of(2, 3)).isEmpty());
+		assertEquals(5, mapper.count(condition));
+	}
 	
 	
 	/* 共通で処理するメソッド */
