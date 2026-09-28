@@ -177,6 +177,32 @@ public class UserMapperTest {
 		assertEquals(5, mapper.count(condition));
 	}
 	
+	@Test
+	void updateByIdで指定ユーザーだけ更新し作成日時は維持する() {
+		
+		insertUser(101L, "更新前", 1);
+		insertUser(102L, "変更しない", 2);
+		
+		assertEquals(1, mapper.updateById(101L, "newPassword", "更新後"));
+		
+		User actual = mapper.findById(101L);
+		assertAll(
+				() -> assertEquals("更新後", actual.getUserName()),
+				() -> assertEquals("newPassword", passwordOf(101L)),
+				() -> assertEquals(OLD_TIME, actual.getCreatedAt()),
+				() -> assertTrue(actual.getUpdatedAt().isAfter(OLD_TIME)),
+				() -> assertEquals(phoneOf(101L), actual.getE164PhoneNumber()),
+				() -> assertEquals(1, actual.getGoalLevelId())
+		);
+		User other = mapper.findById(102L);
+		assertEquals("変更しない", other.getUserName());
+		assertEquals("beforePassword", passwordOf(102L));
+		assertEquals(OLD_TIME, other.getUpdatedAt());
+	}
+	
+
+	
+	
 	
 	/* 共通で処理するメソッド */
 	// 取得・更新テストの準備には自作したinsertOneを使わず登録処理の不具合と切り離す。
