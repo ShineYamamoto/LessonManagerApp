@@ -222,6 +222,21 @@ public class UserMapperTest {
 		assertEquals(0, mapper.deleteById(-1L));
 	}
 	
+	@Test
+	void deleteByIdで予約があるユーザーは外部キー制約で削除できない() {
+		
+		insertUser(101L, "予約あり", 1);
+		insertReservation(201L, 101L, START);
+		
+		assertThrows(DataIntegrityViolationException.class, () -> mapper.deleteById(101L));
+		
+		// 例外後のデータをMyBatisのキャッシュに依存せず直接確認する
+		assertEquals(1, jdbc.queryForObject(
+				"SELECT COUNT(*) FROM users WHERE user_id = 101", Integer.class));
+		assertEquals(1, jdbc.queryForObject(
+				"SELECT COUNT(*) FROM reservations WHERE user_id = 101", Integer.class));
+	}
+	
 	
 	
 	/* 共通で処理するメソッド */
