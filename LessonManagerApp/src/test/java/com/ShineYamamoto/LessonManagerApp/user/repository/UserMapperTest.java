@@ -3,6 +3,7 @@ package com.ShineYamamoto.LessonManagerApp.user.repository;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,6 +126,37 @@ public class UserMapperTest {
 		
 	}
 	
+	@Test
+	void insertOneで電話番号の重複は拒否される() {
+		
+		insertUser(101L, "登録済み", 1);
+		
+		User user = new User();
+		user.setE164PhoneNumber(phoneOf(101L));
+		user.setUserName("重複ユーザー");
+		user.setPassword("test1234");
+		user.setGoalLevelId(1);
+		user.setRole("ROLE_GENERAL");
+		
+		assertThrows(DataIntegrityViolationException.class, () -> mapper.insertOne(user));
+		assertEquals(1, mapper.count(new User()));
+	}
+	
+	@Test
+	void findManyとcountで検索条件が一致する() {
+		
+		insertUser(101L, "山田太郎", 1);
+		insertUser(102L, "山田花子", 2);
+		insertUser(103L, "佐藤太郎", 1);
+		
+		assertSearch(null, null, List.of(101L, 102L, 103L));
+		assertSearch("", null, List.of(101L, 102L, 103L));
+		assertSearch("山田", null, List.of(101L, 102L));
+		assertSearch(null, 1, List.of(101L, 103L));
+		assertSearch("山田", 1, List.of(101L));
+		assertSearch("該当なし", null, List.of());
+	}
+	
 	
 	
 	/* 共通で処理するメソッド */
@@ -151,6 +185,26 @@ public class UserMapperTest {
 					(reservation_id, user_id, starts_at, ends_at, created_at, updated_at)
 				VALUES (?, ?, ?, ?, ?, ?)
 				""", id, userId, start, start.plusHours(1), OLD_TIME, OLD_TIME);
+	}
+	
+	private List<Long> ids(List<User> users) {
+		
+		List<Long> userIds = new ArrayList<>();
+		
+		for (User user : users) {
+			userIds.add(user.getUserId());
+		}
+		
+		return userIds;
+	}
+	
+	private void assertSearch(String name, Integer goalId, List<Long> expectedIds) {
+		
+		User condition = new User();
+		condition.setUserName(name);
+		condition.setGoalLevelId(goalId);
+		
+		assertEquals(expectedIds, ids(mapper.findMany(condition, PageRequest.of(0, 100))));
 	}
 	
 	private void assertReservation(Reservation actual, long id, long userId, LocalDateTime start) {
