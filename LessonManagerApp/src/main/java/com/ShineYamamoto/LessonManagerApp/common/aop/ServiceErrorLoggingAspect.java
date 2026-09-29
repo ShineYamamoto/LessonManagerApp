@@ -13,11 +13,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ServiceErrorLoggingAspect {
 
-	@Pointcut("execution(* *..*UserService.*(..))")
-	public void userService() {}
+	@Pointcut("execution(* com.ShineYamamoto.LessonManagerApp..domain.service..*.*(..))")
+	public void domainService() {}
 	
 	
-	@AfterThrowing(value = "userService()", throwing = "ex")
+	@AfterThrowing(value = "domainService()", throwing = "ex")
 	public void logError(JoinPoint joinPoint, Exception ex) {
 		
 		log.error(

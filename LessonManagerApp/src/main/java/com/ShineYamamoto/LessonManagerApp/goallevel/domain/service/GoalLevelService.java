@@ -19,6 +19,7 @@ public class GoalLevelService {
 		return mapper.findAllEnabled();
 	}
 	
+	// バリデーション用メソッド
 	public boolean isSelectable(Integer goalLevelId) {
 		if (goalLevelId == null) {
 			return false;
