@@ -92,6 +92,9 @@
 			 </div>
 		</div>
 		
+		<!-- エラーメッセージ -->
+		<p th:if="${errorMessage != null}" class="text-danger mt-3" th:text="${errorMessage}"></p>
+		
 		<!-- 登録ボタン -->
 		<input type="submit" th:value="#{user.signup.btn}" class="btn btn-primary w-100 mt-4">
 		<div class="text-center mt-2">

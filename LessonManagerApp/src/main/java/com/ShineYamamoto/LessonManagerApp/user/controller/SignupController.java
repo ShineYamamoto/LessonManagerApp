@@ -2,15 +2,20 @@ package com.ShineYamamoto.LessonManagerApp.user.controller;
 
 import java.util.Locale;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.modelmapper.ModelMapper;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.CountryCodeService;
 import com.ShineYamamoto.LessonManagerApp.goallevel.domain.service.GoalLevelService;
@@ -49,6 +54,7 @@ public class SignupController {
 				goalLevelService.getSelectableGoalLevels()
 		);
 		
+		
 		// ユーザー登録画面に画面遷移
 		return "user/signup";
 	}
@@ -68,20 +74,22 @@ public class SignupController {
 		}
 		
 		
-		log.info(form.toString());
-		
 		// formをUserクラスに変換
 		User user = modelMapper.map(form, User.class);
 		
 		// ユーザー登録
 		try {
 			
-			userService.signup(user, form.getRegionCode(), form.getPhoneNumber());
+			userService.signup(
+					user,
+					form.getRegionCode(),
+					form.getPhoneNumber());
 			
 		} catch (IllegalArgumentException e) {
 			
 			bindingResult.rejectValue(
-					"phoneNumber", "phoneNumber.invalid"
+					"phoneNumber",
+					"phoneNumber.invalid"
 			);
 			
 			return getSignup(model, form, locale);
@@ -90,5 +98,38 @@ public class SignupController {
 		
 		// ログイン画面にリダイレクト
 		return "redirect:/login";
+	}
+	
+	/** ユーザーID重複の例外処理 */
+	@ExceptionHandler(DuplicateKeyException.class)
+	public String duplicateExceptionHandler (
+			DuplicateKeyException e, 
+			Model model,
+			HttpServletRequest request,
+			RedirectAttributes redirectAttributes) {
+		
+		// 入力内容の取得
+		SignupForm form = generateFormFormRequest(request);
+		redirectAttributes.addFlashAttribute("signupForm", form);
+		
+		// エラーメッセージ
+		String errorMessage = "このユーザーIDは既に使用されています";
+		redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+		
+		return "redirect:/user/signup";
+	}
+	
+	/** リクエストからSignupFormを生成する */
+	private SignupForm generateFormFormRequest(HttpServletRequest request) {
+		
+		// リクエストの値をFormにセットする
+		SignupForm form = new SignupForm();
+		form.setRegionCode(request.getParameter("regionCode"));
+		form.setPhoneNumber(request.getParameter("phoneNumber"));
+		form.setUserName(request.getParameter("userName"));
+		form.setGoalLevelId(
+				Integer.valueOf(request.getParameter("goalLevelId")));
+		
+		return form;
 	}
 }

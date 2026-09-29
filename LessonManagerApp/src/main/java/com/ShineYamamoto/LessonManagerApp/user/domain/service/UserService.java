@@ -49,7 +49,6 @@ public class UserService {
 		// ユーザー一覧の件数取得
 		int count = mapper.count(user);
 		// Pageのインスタンス生成
-		int i = 1/0;
 		return new PageImpl<User>(userList, pageable, count);
 	}
 	
