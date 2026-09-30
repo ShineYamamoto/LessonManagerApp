@@ -100,6 +100,7 @@ public class SignupController {
 		return "redirect:/login";
 	}
 	
+	
 	/** ユーザーID重複の例外処理 */
 	@ExceptionHandler(DuplicateKeyException.class)
 	public String duplicateExceptionHandler (
@@ -114,6 +115,25 @@ public class SignupController {
 		
 		// エラーメッセージ
 		String errorMessage = "このユーザーIDは既に使用されています";
+		redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
+		
+		return "redirect:/user/signup";
+	}
+	
+	/** その他の例外処理 */
+	@ExceptionHandler(Exception.class)
+	public String allExceptionHandler(
+			Exception e,
+			Model model,
+			HttpServletRequest request,
+			RedirectAttributes redirectAttributes) {
+		
+		// 入力内容の取得
+		SignupForm form = generateFormFormRequest(request);
+		redirectAttributes.addFlashAttribute("signupForm", form);
+		
+		// エラーメッセージ
+		String errorMessage = "システムエラーが発生しました";
 		redirectAttributes.addFlashAttribute("errorMessage", errorMessage);
 		
 		return "redirect:/user/signup";
