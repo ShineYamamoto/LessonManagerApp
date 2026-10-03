@@ -14,11 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ControllerLoggingAspect {
 
 	/** GetMappingを対象にする */
-	@Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping")
+	@Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping)")
 	public void getMapping() {}
 	
 	/** PostMappingを対象にする */
-	@Pointcut("@annotation(org.springframework.web.bind.annotation.PostMapping")
+	@Pointcut("@annotation(org.springframework.web.bind.annotation.PostMapping)")
 	public void postMapping() {}
 	
 	/** Controllerの開始・終了をログ出力する */
@@ -48,6 +48,12 @@ public class ControllerLoggingAspect {
 			return result;
 			
 		} catch (Throwable ex) {
+			
+			log.warn(
+				"controller_aborted method={} exception={}",
+				method,
+				ex.getClass().getSimpleName()
+			);
 			
 			// エラーの再スロー
 			throw ex;

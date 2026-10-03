@@ -20,7 +20,7 @@ public class ServiceErrorLoggingAspect {
 	@AfterThrowing(value = "domainService()", throwing = "ex")
 	public void logError(JoinPoint joinPoint, Exception ex) {
 		
-		log.error(
+		log.warn(
 				"service_error method={}, exception={}",
 				joinPoint.getSignature().toShortString(),
 				ex.getClass().getSimpleName()
