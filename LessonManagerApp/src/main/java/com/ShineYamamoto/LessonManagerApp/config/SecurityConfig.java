@@ -24,6 +24,13 @@ public class SecurityConfig {
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
 				.anyRequest().authenticated()
+			).formLogin(login -> login
+				.loginPage("/login")
+				.usernameParameter("phoneNumber")
+				.passwordParameter("password")
+				.defaultSuccessUrl("/home")
+				.failureUrl("/login?error")
+				.permitAll()
 			);
 		
 		// CSRFを無効（一次無効）

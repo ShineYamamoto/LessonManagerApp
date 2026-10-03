@@ -15,6 +15,11 @@
 	<div class="text-center mt-5">
 		<form method="post" th:action="@{/login}" class="form-login">
 			<h2 th:text="#{login.title}"></h2>
+			<p th:if="${session.SPRING_SECURITY_LAST_EXCEPTION} != null"
+				th:text="${session.SPRING_SECURITY_LAST_EXCEPTION.message}"
+				class="text-danger">
+				ログインエラーメッセージ
+			</p>
 			
 			<!-- 電話番号 -->
 			<div class="form-group">
