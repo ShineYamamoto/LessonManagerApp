@@ -97,6 +97,17 @@
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-aop</artifactId>
 		</dependency>
+		<!-- SpringSecurity -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<!-- Thymeleaf拡張ライブラリ（セキュリティ) -->
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-springsecurity6</artifactId>
+		</dependency>
+		
 		<!-- h2database -->
 		<dependency>
 			<groupId>com.h2database</groupId>
