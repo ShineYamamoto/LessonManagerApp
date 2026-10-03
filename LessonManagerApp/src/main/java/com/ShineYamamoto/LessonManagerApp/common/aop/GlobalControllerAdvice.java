@@ -6,12 +6,19 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import lombok.extern.slf4j.Slf4j;
+
 @ControllerAdvice
+@Slf4j
 public class GlobalControllerAdvice {
 
 	/** データベース関連の例外処理 */
 	@ExceptionHandler(DataAccessException.class)
 	public String dataAccessExceptionHandler(DataAccessException e, Model model) {
+		
+		// エラーログを出力
+		log.error("data_access_error", e);
+		
 		// 空文字をセット
 		model.addAttribute("error", "");
 		// メッセージをModelに登録
@@ -26,6 +33,9 @@ public class GlobalControllerAdvice {
 	/** その他の例外処理 */
 	@ExceptionHandler(Exception.class)
 	public String exceptionHandler(Exception e, Model model) {
+		
+		// エラーログを出力
+		log.error("unexpected_error", e);
 		
 		// 空文字をセット
 		model.addAttribute("error", "");

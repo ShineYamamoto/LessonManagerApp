@@ -21,9 +21,9 @@ public class ServiceErrorLoggingAspect {
 	public void logError(JoinPoint joinPoint, Exception ex) {
 		
 		log.error(
-				"service_error method={}",
+				"service_error method={}, exception={}",
 				joinPoint.getSignature().toShortString(),
-				ex
+				ex.getClass().getSimpleName()
 		);
 	}
 	
