@@ -60,7 +60,6 @@ public class UserService {
 	/** ユーザー更新（1件） */
 	public void updateUserById(Long userId, String password, String userName) {
 		int count = mapper.updateById(userId, password, userName);
-		int i = 1/0;
 		log.info("更新件数={}", count);
 	}
 	
