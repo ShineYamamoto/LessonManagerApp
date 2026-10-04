@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class UserService {
 	
 	private final UserMapper mapper;
 	private final PhoneNumberService phoneNumberService;
+	private final PasswordEncoder encoder;
 	
 	public void signup(
 			User user,
@@ -34,6 +36,10 @@ public class UserService {
 				regionCode,
 				rawPhoneNumber
 		);
+		
+		// パスワードのハッシュ化
+		String hashPassword = user.getPassword();
+		user.setPassword(encoder.encode(hashPassword));
 		
 		user.setE164PhoneNumber(e164PhoneNumber);
 		user.setRole("ROLE_GENERAL");
@@ -59,7 +65,10 @@ public class UserService {
 	
 	/** ユーザー更新（1件） */
 	public void updateUserById(Long userId, String password, String userName) {
-		int count = mapper.updateById(userId, password, userName);
+		
+		// パスワードのハッシュ化
+		String hashPassword = encoder.encode(password);
+		int count = mapper.updateById(userId, hashPassword, userName);
 		log.info("更新件数={}", count);
 	}
 	
