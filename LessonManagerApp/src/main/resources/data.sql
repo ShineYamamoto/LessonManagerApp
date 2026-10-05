@@ -20,7 +20,7 @@ INSERT INTO users (
   , goal_level_id
   , role
 ) VALUES
-	('+817000000000', 'ユーザー1', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 1, 'ROLE_ADMIN')
+	('+817012345678', 'ユーザー1', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 1, 'ROLE_ADMIN')
   , ('+817000000001', 'ユーザー2', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 1, 'ROLE_GENERAL')
   , ('+817000000002', 'ユーザー3', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 2, 'ROLE_GENERAL')
   , ('+817000000003', 'ユーザー4', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 3, 'ROLE_GENERAL')
