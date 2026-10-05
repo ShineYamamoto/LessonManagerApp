@@ -9,7 +9,7 @@ import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 @Service
 public class PhoneNumberService {
 	
-	private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
+	private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance(); 
 	
 	/** 入力された電話番号をE.164形式に変換する */
 	public String toE164 (
@@ -23,7 +23,8 @@ public class PhoneNumberService {
 			
 			if (!phoneNumberUtil.isValidNumber(parsedNumber)) {
 				throw new IllegalArgumentException(
-						"電話番号が正しくありません");
+						"電話番号が正しくありません" +
+						phoneNumber + ' ' + regionCode);
 			}
 			
 			return phoneNumberUtil.format(

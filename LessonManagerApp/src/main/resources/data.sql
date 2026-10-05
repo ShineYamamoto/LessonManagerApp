@@ -27,7 +27,7 @@ INSERT INTO users (
   , ('+817000000004', 'ユーザー5', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 1, 'ROLE_GENERAL')
   , ('+817000000005', 'ユーザー6', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 5, 'ROLE_GENERAL')
   , ('+817000000006', 'ユーザー7', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 1, 'ROLE_GENERAL')
-  , ('+869012345678', 'ユーザー8', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 2, 'ROLE_GENERAL')
+  , ('+8613800000000', 'ユーザー8', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 2, 'ROLE_GENERAL')
 ;
 
 /* ユーザー1の予約 */

@@ -3,6 +3,7 @@ package com.ShineYamamoto.LessonManagerApp.config;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
 import com.ShineYamamoto.LessonManagerApp.security.PhoneNumberAuthenticationFilter;
@@ -92,7 +94,13 @@ public class SecurityConfig {
 				);
 		
 		// URLへのリクエストを認証対象にするかを設定
-		filter.setFilterProcessesUrl("/login");
+		//filter.setFilterProcessesUrl("/login");
+		filter.setRequiresAuthenticationRequestMatcher(
+				new AntPathRequestMatcher(
+					"/login",
+					HttpMethod.POST.name()
+				)
+		);
 		
 		// ログイン前にアクセスしようとしていたページがあれば、そこへ戻すためのHandler
 		filter.setAuthenticationSuccessHandler(
