@@ -25,6 +25,9 @@ public interface UserMapper {
 	/** ユーザーIDから1件取得 */
 	public User findById(Long userId);
 	
+	/** E164PhoneNumberから1件取得 */
+	public User findByE164PhoneNumber(String e164PhoneNumber);
+	
 	/** ユーザー更新(1件) */
 	public int updateById(
 			@Param("userId") Long userId,

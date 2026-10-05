@@ -9,6 +9,7 @@
 		<id column="user_id" property="userId" />
 		<result column="e164_phone_number" property="e164PhoneNumber" />
 		<result column="user_name" property="userName" />
+		<result column="password" property="password" />
 		<result column="goal_level_id" property="goalLevelId" />
 		<result column="role" property="role" />
 		<result column="created_at" property="createdAt" />
@@ -141,6 +142,23 @@
 		ORDER BY
 			reservations.starts_at ASC,
 			reservations.reservation_id asc
+	</select>
+	
+	<!-- E164電話番号からユーザー1件取得 -->
+	<select id="findByE164PhoneNumber" resultMap="userMap">
+		SELECT
+			user_id
+		  , e164_phone_number
+		  , user_name
+		  , password
+		  , goal_level_id
+		  , role
+		  , created_at
+		  , updated_at
+		FROM
+			users
+		WHERE
+			e164_phone_number = #{e164PhoneNumber}
 	</select>
 	
 	<!-- ユーザー1件更新 -->
