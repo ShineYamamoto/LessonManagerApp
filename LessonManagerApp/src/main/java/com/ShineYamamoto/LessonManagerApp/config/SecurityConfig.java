@@ -8,19 +8,15 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
 import com.ShineYamamoto.LessonManagerApp.security.PhoneNumberAuthenticationFilter;
@@ -94,12 +90,10 @@ public class SecurityConfig {
 				);
 		
 		// URLへのリクエストを認証対象にするかを設定
-		//filter.setFilterProcessesUrl("/login");
 		filter.setRequiresAuthenticationRequestMatcher(
-				new AntPathRequestMatcher(
-					"/login",
-					HttpMethod.POST.name()
-				)
+			PathPatternRequestMatcher.withDefaults()
+				.matcher(HttpMethod.POST, "/login")
+
 		);
 		
 		// ログイン成功時の処理
@@ -126,21 +120,5 @@ public class SecurityConfig {
 				new HttpSessionSecurityContextRepository());
 		
 		return filter;
-	}
-	
-	// @Bean
-	UserDetailsService userDetailsService() {
-		// 一般ユーザー
-		UserDetails user = User.withDefaultPasswordEncoder()
-			.username("user")
-			.password("pass")
-			.roles("GENERAL")
-			.build();
-		UserDetails admin = User.withDefaultPasswordEncoder()
-				.username("admin")
-				.password("pass")
-				.roles("GENERAL", "ADMIN")
-				.build();
-		return new InMemoryUserDetailsManager(user, admin);
 	}
 }
