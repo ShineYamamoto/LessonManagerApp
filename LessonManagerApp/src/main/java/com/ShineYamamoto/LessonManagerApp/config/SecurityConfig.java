@@ -63,10 +63,8 @@ public class SecurityConfig {
 				UsernamePasswordAuthenticationFilter.class
 			);
 		
-		// CSRFを無効（一次無効）
-		http.csrf(csrf -> csrf.disable());
 		// ヘッダー設定
-		http.headers(headers -> headers.frameOptions(option -> option.disable()));
+		// http.headers(headers -> headers.frameOptions(option -> option.disable()));
 		
 		return http.build();
 	}
