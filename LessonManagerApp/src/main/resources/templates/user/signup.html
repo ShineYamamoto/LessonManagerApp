@@ -12,7 +12,7 @@
 <title th:text="#{user.signup.title}"></title>
 </head>
 <body class="bg-light">
-	<form id="signup-form" method="post" action="/user/signup" class="form-signup mt-5" th:object="${signupForm}">
+	<form id="signup-form" method="post" th:action="@{/user/signup}" class="form-signup mt-5" th:object="${signupForm}">
 		<h2 class="text-center" th:text="#{user.signup.title}"></h2>
 		
 		<!-- 電話番号 -->
