@@ -15,9 +15,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
@@ -48,13 +50,11 @@ public class SecurityConfig {
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
 				.anyRequest().authenticated()
-			).formLogin(login -> login
-				.loginPage("/login")
-				.usernameParameter("phoneNumber")
-				.passwordParameter("password")
-				.defaultSuccessUrl("/hello")
-				.failureUrl("/login?error")
-				.permitAll()
+			).formLogin(form -> form.disable()
+			).exceptionHandling(exception -> exception
+				.authenticationEntryPoint(
+					new LoginUrlAuthenticationEntryPoint("/login")
+				)
 			);
 		
 		// 自作したFilterをSpring Securityの認証処理の流れに組み込む
@@ -102,16 +102,28 @@ public class SecurityConfig {
 				)
 		);
 		
-		// ログイン前にアクセスしようとしていたページがあれば、そこへ戻すためのHandler
-		filter.setAuthenticationSuccessHandler(
-				new SavedRequestAwareAuthenticationSuccessHandler()
-		);
+		// ログイン成功時の処理
+		SavedRequestAwareAuthenticationSuccessHandler successHandler = 
+				new SavedRequestAwareAuthenticationSuccessHandler();
 		
+		// ログイン前のアクセス先が保存されていなければ以下の設定urlへ遷移
+		successHandler.setDefaultTargetUrl("/hello");
+		
+		// 保存済みのアクセス先より /hello を優先する
+		successHandler.setAlwaysUseDefaultTargetUrl(true);
+		
+		filter.setAuthenticationSuccessHandler(successHandler);
+		
+		// ログイン失敗時の遷移先
 		filter.setAuthenticationFailureHandler(
 				new SimpleUrlAuthenticationFailureHandler(
 					"/login?error"
 				)
 		);
+		
+		// 承認情報をセッションに保存し、次のリクエストでもログイン状態を維持
+		filter.setSecurityContextRepository(
+				new HttpSessionSecurityContextRepository());
 		
 		return filter;
 	}
