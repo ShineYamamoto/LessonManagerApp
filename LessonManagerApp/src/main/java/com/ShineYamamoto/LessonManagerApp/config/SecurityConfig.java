@@ -51,6 +51,9 @@ public class SecurityConfig {
 				.authenticationEntryPoint(
 					new LoginUrlAuthenticationEntryPoint("/login")
 				)
+			).logout(logout -> logout
+				.logoutUrl("/logout")
+				.logoutSuccessUrl("/login?logout")
 			);
 		
 		// 自作したFilterをSpring Securityの認証処理の流れに組み込む
