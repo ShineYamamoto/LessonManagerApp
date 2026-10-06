@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -66,10 +67,17 @@ public class SecurityConfig {
 				UsernamePasswordAuthenticationFilter.class
 			);
 		
-		// ヘッダー設定
-		// http.headers(headers -> headers.frameOptions(option -> option.disable()));
+		// Spring Securityの設定を構築する
+		SecurityFilterChain filterChain = http.build();
 		
-		return http.build();
+		// rememberMe設定によって作成されたサービスを取得する
+		RememberMeServices rememberMeServices = http.getSharedObject(RememberMeServices.class);
+		
+		// 自作フィルターにログイン成功時のCookie発行処理を設定する
+		phoneNumberAuthenticationFilter.setRememberMeServices(rememberMeServices);
+		
+		
+		return filterChain;
 	}
 	
 	@Bean
