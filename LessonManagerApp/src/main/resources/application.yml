@@ -33,3 +33,9 @@ mybatis:
 logging:
   level:
     '[com.ShineYamamoto.LessonManagerApp]': debug
+
+# Tomcat設定
+server:
+  servlet:
+    session:
+      timeout: 1m

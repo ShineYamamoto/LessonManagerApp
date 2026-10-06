@@ -46,6 +46,13 @@
 			<div class="form-group mt-3">
 				<input type="password" class="form-control" th:placeholder="#{password}" name="password">
 			</div>
+			
+			<!-- Remember-Me -->
+			<div class="form-group mt-3">
+				<input class="form-check-input" type="checkbox" id="remember-me" name="remember-me">
+				<label class="form-check-label" for="remember-me">ログイン状態を維持する</label>
+			</div>
+			
 			<input type="submit" th:value="#{login.btn}" class="btn btn-primary mt-3"><br>
 			<div class="mt-2">
 				<a th:href="@{/user/signup}" th:text="#{link.signup}"></a>			
