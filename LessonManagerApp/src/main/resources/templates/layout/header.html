@@ -8,11 +8,21 @@
 			<div class="navbar-header">
 				<a class="navbar-brand" href="#">予約管理アプリ</a>
 			</div>
-			<form method="post" th:action="@{/logout}">
-				<button class="btn btn-link pull-right navbar-brand" type="submit">
-					ログアウト
-				</button>
-			</form>
+			
+			<!-- 中のみ表示 -->
+			<div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
+				
+				<div class="pull-right navbar-brand">
+					<span th:text="${#authentication.principal.displayUserName}">name</span>
+				</div>
+
+				<form method="post" th:action="@{/logout}">
+					<button class="btn btn-link pull-right navbar-brand" type="submit">
+						ログアウト
+					</button>
+				</form>	
+						
+			</div>
 		</div>
 	</nav>
 </body>

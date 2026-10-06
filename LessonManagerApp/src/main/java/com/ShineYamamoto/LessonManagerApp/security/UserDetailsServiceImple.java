@@ -1,5 +1,10 @@
 package com.ShineYamamoto.LessonManagerApp.security;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,16 +26,24 @@ public class UserDetailsServiceImple implements UserDetailsService {
 		
 		User loginUser = userMapper.findByE164PhoneNumber(e164PhoneNumber);
 		
-		if (loginUser ==null) {
+		if (loginUser == null) {
 			throw new UsernameNotFoundException(
 				"user not found"
 			);
 		}
 		
-		return org.springframework.security.core.userdetails.User
-				.withUsername(loginUser.getE164PhoneNumber())
-				.password(loginUser.getPassword())
-				.authorities(loginUser.getRole())
-				.build();
+		// ロールList作成
+		GrantedAuthority authority = new SimpleGrantedAuthority(loginUser.getRole());
+		List<GrantedAuthority> authorities = new ArrayList<>();
+		authorities.add(authority);
+		
+		// UserDetails生成
+		UserDetails userDetails = new LoginUser(
+				loginUser.getE164PhoneNumber(),
+				loginUser.getPassword(),
+				authorities,
+				loginUser.getUserName());
+		
+		return userDetails;
 	}
 }
