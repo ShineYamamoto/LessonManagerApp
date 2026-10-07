@@ -36,7 +36,7 @@ public class ControllerLoggingAspect {
 		
 		// 開始ログ
 		// ログインユーザーによる処理か確認
-		if ("LoginUser".equals(authClassName)) {
+		if (authentication != null && "LoginUser".equals(authClassName)) {
 			loginUser = (LoginUser) authentication.getPrincipal();
 			log.info(
 					"controller_start, user_name={}, method={}",
@@ -58,7 +58,7 @@ public class ControllerLoggingAspect {
 			Object result = joinPoint.proceed();
 			
 			// 終了ログ
-			if ("LoginUser".equals(authClassName)) {
+			if (authentication != null && "LoginUser".equals(authClassName)) {
 				loginUser = (LoginUser) authentication.getPrincipal();
 				log.info(
 						"controller_end, user_name={}, method={}",
@@ -79,7 +79,7 @@ public class ControllerLoggingAspect {
 			
 		} catch (Throwable ex) {
 			
-			if ("LoginUser".equals(authClassName)) {
+			if (authentication != null && "LoginUser".equals(authClassName)) {
 				loginUser = (LoginUser) authentication.getPrincipal();
 				log.warn(
 						"controller_aborted, user_name={}, method={}, exception={}",
