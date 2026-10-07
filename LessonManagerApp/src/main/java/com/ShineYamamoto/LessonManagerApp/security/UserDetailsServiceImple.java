@@ -43,7 +43,7 @@ public class UserDetailsServiceImple implements UserDetailsService {
 				loginUser.getPassword(),
 				authorities,
 				loginUser.getUserName());
-		
+
 		return userDetails;
 	}
 }

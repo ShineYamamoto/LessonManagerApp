@@ -51,7 +51,6 @@ public class AdminUserController {
 		// Modelに登録
 		model.addAttribute("userList", userPage.getContent());
 		model.addAttribute("page", userPage);
-		
 		// ユーザー一覧画面を表示
 		return "admin/user/list";
 	}

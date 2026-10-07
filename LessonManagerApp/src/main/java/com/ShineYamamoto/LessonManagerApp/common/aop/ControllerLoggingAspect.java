@@ -4,7 +4,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,13 +29,28 @@ public class ControllerLoggingAspect {
 	@Around("getMapping() || postMapping()")
 	public Object logging(ProceedingJoinPoint joinPoint) throws Throwable {
 		
-		String method = joinPoint.getSignature().toShortString();
+		String methodName = joinPoint.getSignature().toShortString();
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		String authClassName = authentication.getPrincipal().getClass().getSimpleName();
+		LoginUser loginUser; // ログインユーザーの情報を格納する用
 		
 		// 開始ログ
-		log.info(
-			"controller_start method={}",
-			method
-		);
+		// ログインユーザーによる処理か確認
+		if ("LoginUser".equals(authClassName)) {
+			loginUser = (LoginUser) authentication.getPrincipal();
+			log.info(
+					"controller_start, user_name={}, method={}",
+					loginUser.getDisplayUserName(),
+					methodName
+			);
+		} else {
+			log.info(
+					"controller_start, user_name={}, method={}",
+					"anonymous",
+					methodName
+			);
+		}
+		
 		
 		try {
 			
@@ -39,22 +58,44 @@ public class ControllerLoggingAspect {
 			Object result = joinPoint.proceed();
 			
 			// 終了ログ
-			log.info(
-				"controller_end method={}",
-				method
-			);
+			if ("LoginUser".equals(authClassName)) {
+				loginUser = (LoginUser) authentication.getPrincipal();
+				log.info(
+						"controller_end, user_name={}, method={}",
+						loginUser.getDisplayUserName(),
+						methodName
+				);
+			} else {
+				log.info(
+						"controller_end, user_name={}, method={}",
+						"anonymous",
+						methodName
+				);
+			}
+			
 			
 			// 実行結果を呼び出し元に返却
 			return result;
 			
 		} catch (Throwable ex) {
 			
-			log.warn(
-				"controller_aborted method={} exception={}",
-				method,
-				ex.getClass().getSimpleName()
-			);
-			
+			if ("LoginUser".equals(authClassName)) {
+				loginUser = (LoginUser) authentication.getPrincipal();
+				log.warn(
+						"controller_aborted, user_name={}, method={}, exception={}",
+						loginUser.getDisplayUserName(),
+						methodName,
+						ex.getClass().getSimpleName()
+				);
+			} else {
+				log.warn(
+						"controller_aborted, user_name={}, method={}, exception={}",
+						"anonymous",
+						methodName,
+						ex.getClass().getSimpleName()
+				);
+			}
+
 			// エラーの再スロー
 			throw ex;
 		}
