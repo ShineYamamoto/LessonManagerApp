@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +50,7 @@ public class UserService {
 	}
 	
 	/** ユーザー取得 */
+	@PreAuthorize("hasRole('ADMIN')")
 	public Page<User> getUsers(User user, Pageable pageable) {
 		// ユーザー一覧取得
 		List<User> userList = mapper.findMany(user, pageable);
