@@ -23,8 +23,7 @@ public class PhoneNumberService {
 			
 			if (!phoneNumberUtil.isValidNumber(parsedNumber)) {
 				throw new IllegalArgumentException(
-						"電話番号が正しくありません" +
-						phoneNumber + ' ' + regionCode);
+						"電話番号が正しくありません");
 			}
 			
 			return phoneNumberUtil.format(

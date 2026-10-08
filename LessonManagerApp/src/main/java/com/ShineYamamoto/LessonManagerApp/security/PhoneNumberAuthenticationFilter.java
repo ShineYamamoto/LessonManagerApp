@@ -3,6 +3,7 @@ package com.ShineYamamoto.LessonManagerApp.security;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -39,9 +40,21 @@ public class PhoneNumberAuthenticationFilter extends UsernamePasswordAuthenticat
 		String password = request.getParameter("password");
 		
 		// 電話番号をE.164へ変換
-		String e164PhoneNumber = phoneNumberService.toE164(
-				regionCode, phoneNumber
-		);
+		String e164PhoneNumber;
+		
+		try {
+			
+			e164PhoneNumber = phoneNumberService.toE164(
+					regionCode, phoneNumber
+			);
+			
+		} catch (IllegalArgumentException e) {
+			// 電話番号の入力エラーを、Spring Securityの認証失敗として扱う
+			throw new BadCredentialsException(
+			"電話番号が正しくありません。国・地域と電話番号を確認してください。",
+			e);
+		}
+
 		
 		// 承認情報を作成
 		// Spring Security内部で認証情報を持ち回るためのオブジェクト
