@@ -46,6 +46,7 @@ public class SecurityConfig {
 				.requestMatchers("/user/signup").permitAll()
 				.requestMatchers("/error").permitAll()
 				.requestMatchers("/h2-console/**").permitAll()
+				.requestMatchers("/admin/user/list").hasAuthority("ROLE_ADMIN")
 				.anyRequest().authenticated()
 			).formLogin(form -> form.disable()
 			).exceptionHandling(exception -> exception
