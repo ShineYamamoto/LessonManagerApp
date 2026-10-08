@@ -1,13 +1,14 @@
 package com.ShineYamamoto.LessonManagerApp.user.controller;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
 import com.ShineYamamoto.LessonManagerApp.user.form.UserDetailForm;
@@ -24,14 +25,16 @@ public class UserDetailController {
 	private final ModelMapper modelMapper;
 	
 	/** ユーザー詳細画面を表示 */
-	@GetMapping("/detail/{userId}")
-	public String getUserDetail(UserDetailForm form, Model model, @PathVariable("userId") Long userId) {
+	@GetMapping("/detail")
+	public String getUserDetail(
+			@AuthenticationPrincipal LoginUser loginUser,
+			Model model) {
 		
 		// ユーザー1件取得
-		User user = userService.getUserById(userId);
+		User user = userService.getUserById(loginUser.getUserId());
 		
 		// Userをformに変換
-		form = modelMapper.map(user, UserDetailForm.class);
+		UserDetailForm form = modelMapper.map(user, UserDetailForm.class);
 		
 		// Modelに登録
 		model.addAttribute("userDetailForm", form);

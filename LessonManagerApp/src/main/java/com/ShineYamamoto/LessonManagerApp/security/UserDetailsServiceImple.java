@@ -39,6 +39,7 @@ public class UserDetailsServiceImple implements UserDetailsService {
 		
 		// UserDetails生成
 		UserDetails userDetails = new LoginUser(
+				loginUser.getUserId(),
 				loginUser.getE164PhoneNumber(),
 				loginUser.getPassword(),
 				authorities,
