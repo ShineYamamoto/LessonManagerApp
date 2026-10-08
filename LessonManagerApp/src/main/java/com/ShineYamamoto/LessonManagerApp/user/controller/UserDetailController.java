@@ -46,25 +46,31 @@ public class UserDetailController {
 	
 	/** ユーザー更新処理 */
 	@PostMapping(value = "/detail", params = "update")
-	public String updateUser(UserDetailForm form, Model model) {
+	public String updateUser(
+			UserDetailForm form,
+			@AuthenticationPrincipal LoginUser loginUser,
+			Model model) {
 		
 		// ユーザーを更新
 		userService.updateUserById(
-				form.getUserId(),
+				loginUser.getUserId(),
 				form.getPassword(),
 				form.getUserName()
 		);
 		
 		// ユーザー詳細画面にリダイレクト
-		return "redirect:/user/detail/" + form.getUserId();
+		return "redirect:/user/detail/";
 	}
 	
 	/** ユーザー削除処理 */
 	@PostMapping(value = "/detail", params = "delete")
-	public String deleteUser(UserDetailForm form, Model model) {
+	public String deleteUser(
+			UserDetailForm form,
+			@AuthenticationPrincipal LoginUser loginUser,
+			Model model) {
 		
 		// ユーザーを削除
-		userService.deleteUserById(form.getUserId());
+		userService.deleteUserById(loginUser.getUserId());
 		
 		// サインアップ画面にリダイレクト
 		return "redirect:/user/signup";
