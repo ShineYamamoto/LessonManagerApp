@@ -1,5 +1,8 @@
 package com.ShineYamamoto.LessonManagerApp.user.controller;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -62,15 +65,17 @@ public class UserDetailController {
 		return "redirect:/user/detail/";
 	}
 	
-	/** ユーザー削除処理 */
+	/** ユーザー削除処理し、ログアウトする */
 	@PostMapping(value = "/detail", params = "delete")
 	public String deleteUser(
-			UserDetailForm form,
 			@AuthenticationPrincipal LoginUser loginUser,
-			Model model) {
+			HttpServletRequest request) throws ServletException {
 		
 		// ユーザーを削除
 		userService.deleteUserById(loginUser.getUserId());
+		
+		// セッション・認証情報・remember-meを終了
+		request.logout();
 		
 		// サインアップ画面にリダイレクト
 		return "redirect:/user/signup";
