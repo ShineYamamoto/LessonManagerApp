@@ -114,9 +114,9 @@ public class SecurityConfig {
 				new SavedRequestAwareAuthenticationSuccessHandler();
 		
 		// ログイン前のアクセス先が保存されていなければ以下の設定urlへ遷移
-		successHandler.setDefaultTargetUrl("/hello");
+		successHandler.setDefaultTargetUrl("/home");
 		
-		// 保存済みのアクセス先より /hello を優先する
+		// 保存済みのアクセス先より /home を優先する
 		successHandler.setAlwaysUseDefaultTargetUrl(true);
 		
 		filter.setAuthenticationSuccessHandler(successHandler);
