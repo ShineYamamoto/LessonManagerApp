@@ -200,6 +200,17 @@ public class SecurityIntegrationTest {
 			.andExpect(authenticated().withUsername(SELF_PHONE));
 	}
 	
+	@Test
+	void パスワードが違う場合はログインできない() throws Exception {
+		mockMvc.perform(post("/login")
+				.with(csrf())
+				.param("regionCode", "JP")
+				.param("phoneNumber", "09012345678")
+				.param("password", "WrongPassword"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/login?error"))
+			.andExpect(unauthenticated());
+	}
 	
 	// ---------- テスト準備用の共通処理 ----------
 	
