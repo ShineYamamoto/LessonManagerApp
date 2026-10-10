@@ -18,6 +18,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
@@ -51,6 +52,8 @@ public class SecurityIntegrationTest {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	//private java.util.function.BooleanSupplier jdkCheck = () -> true;
 	
 	@BeforeEach
 	void setUp() {
@@ -135,6 +138,66 @@ public class SecurityIntegrationTest {
 		assertEquals("変更後の本人", nameOf(SELF_ID));
 		assertTrue(passwordEncoder.matches(
 			"NewPassword123!", passwordOf(SELF_ID)));
+		
+		// 他人の情報は更新されない
+		assertEquals("他人", nameOf(OTHER_ID));
+		assertEquals(otherPasswordBefore, passwordOf(OTHER_ID));
+	}
+	
+	@Test
+	void CSRFトークン無しでは更新できない() throws Exception {
+		String passwordBefore = passwordOf(SELF_ID);
+		
+		mockMvc.perform(post("/user/detail")
+				.with(user(loginUser("ROLE_GENERAL")))
+				.param("update", "")
+				.param("userName", "不正な変更")
+				.param("password", "NewPassword123!"))
+			.andExpect(status().isForbidden());
+		
+		assertEquals("本人", nameOf(SELF_ID));
+		assertEquals(passwordBefore, passwordOf(SELF_ID));
+	}
+	
+	@Test
+	void 不正なSCRFトークンでは更新できない() throws Exception {
+		String passwordBefore = passwordOf(SELF_ID);
+		
+		mockMvc.perform(post("/user/detail")
+				.with(user(loginUser("ROLE_GENERAL")))
+				.with(csrf().useInvalidToken())
+				.param("update", "")
+				.param("userName", "不正な変更")
+				.param("password", "NewPassword123!"))
+			.andExpect(status().isForbidden());
+		
+		assertEquals("本人", nameOf(SELF_ID));
+		assertEquals(passwordBefore, passwordOf(SELF_ID));
+	}
+	
+	@Test
+	void 正しい情報でログインでき次のリクエストでも承認が維持される() throws Exception {
+		
+		MvcResult result = mockMvc.perform(post("/login")
+				.with(csrf())
+				.param("regionCode", "JP")
+				.param("phoneNumber", "09012345678")
+				.param("password", PASSWORD))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/home"))
+			.andExpect(authenticated().withUsername(SELF_PHONE))
+			.andReturn();
+				
+		MockHttpSession session = (MockHttpSession) result.getRequest().getSession(false);
+		
+		assertNotNull(session);
+		
+		// ここでは.with(user(...))を付けない
+		// ログイン時に保存されたセッションだけで認証できるか確認する
+		mockMvc.perform(get("/user/detail").session(session))
+			.andExpect(status().isOk())
+			.andExpect(view().name("user/detail"))
+			.andExpect(authenticated().withUsername(SELF_PHONE));
 	}
 	
 	

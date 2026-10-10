@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.ShineYamamoto.LessonManagerApp.common.service.PhoneNumberService;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
@@ -18,6 +19,7 @@ public class UserServiceTest {
 	private UserMapper mapper;
 	private PhoneNumberService phoneNumberService;
 	private UserService userService;
+	private PasswordEncoder encoder;
 	
 	// テスト対象の生成は@BeforeEachにまとめる
 	@BeforeEach
@@ -25,7 +27,7 @@ public class UserServiceTest {
 		mapper = mock(UserMapper.class);
 		phoneNumberService = mock(PhoneNumberService.class);
 		
-		userService = new UserService(mapper, phoneNumberService);
+		userService = new UserService(mapper, phoneNumberService, encoder);
 	}
 	
 	
