@@ -224,6 +224,24 @@ public class SecurityIntegrationTest {
 			.andExpect(unauthenticated());
 	}
 	
+	@Test
+	void セッションがなくなってもrememberMeCookieで承認できる() throws Exception {
+		
+		MvcResult loginResult = loginWithRememberMe();
+		
+		var rememberMeCookie = loginResult.getResponse().getCookie("remember-me");
+		
+		assertNotNull(rememberMeCookie);
+		assertTrue(rememberMeCookie.getMaxAge() > 0); //Cookieの MaxAge = 0 は、ブラウザへ削除を指示していることを表す。
+		
+		// sessionを渡さず、cookieだけでアクセスする
+		mockMvc.perform(get("/user/detail")
+				.cookie(rememberMeCookie))
+			.andExpect(status().isOk())
+			.andExpect(view().name("user/detail"))
+			.andExpect(authenticated().withUsername(SELF_PHONE));
+	}
+	
 	// ---------- テスト準備用の共通処理 ----------
 	
 	private void insertUser(long id, String phone, String name) {
@@ -259,5 +277,19 @@ public class SecurityIntegrationTest {
 				String.class,
 				userId
 		);
+	}
+	
+	private MvcResult loginWithRememberMe() throws Exception {
+		return mockMvc.perform(post("/login")
+				.with(csrf())
+				.param("regionCode", "JP")
+				.param("phoneNumber", "09012345678")
+				.param("password", PASSWORD)
+				.param("remember-me", "on"))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/home"))
+			.andExpect(authenticated())
+			.andExpect(cookie().exists("remember-me"))
+			.andReturn();
 	}
 }
