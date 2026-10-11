@@ -26,6 +26,7 @@ public class UserServiceTest {
 	void setUp() {
 		mapper = mock(UserMapper.class);
 		phoneNumberService = mock(PhoneNumberService.class);
+		encoder = mock(PasswordEncoder.class);
 		
 		userService = new UserService(mapper, phoneNumberService, encoder);
 	}
@@ -37,11 +38,20 @@ public class UserServiceTest {
 		// 準備
 		User user = new User();
 		
+		String rawPassword = "pass";
+		String expectedHashPassword = "encoder-password";
+		user.setPassword(rawPassword);
+		
 		String regionCode = "JP";
 		String rawPhoneNumber = "09012345678";
 		String expectedE164PhoneNumber = "+819012345678";
 		
+		// ハッシュ化処理の戻り値を設定する
+		when(encoder.encode(rawPassword))
+			.thenReturn(expectedHashPassword);
+		
 		when(mapper.insertOne(user)).thenReturn(1);
+		
 		when(phoneNumberService.toE164(
 				regionCode, 
 				rawPhoneNumber
@@ -53,6 +63,7 @@ public class UserServiceTest {
 		// 確認
 		assertEquals("ROLE_GENERAL", user.getRole());
 		assertEquals("+819012345678", user.getE164PhoneNumber());
+		assertEquals(expectedHashPassword, user.getPassword());
 		
 		//signup()を実行したとき、toE164メソッドが1回呼び出されたことを確認
 		verify(phoneNumberService).toE164(
@@ -61,5 +72,8 @@ public class UserServiceTest {
 		);
 		// signup()を実行したとき、Mapperの登録処理が1回呼び出されたことを確認
 		verify(mapper).insertOne(user);
+		
+		// signup()を実行したとき、encode処理が1回呼び出されたことを確認
+		verify(encoder).encode(rawPassword);
 	}
 }
