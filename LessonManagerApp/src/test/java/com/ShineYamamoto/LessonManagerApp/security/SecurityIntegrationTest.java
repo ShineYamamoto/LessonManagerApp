@@ -266,6 +266,30 @@ public class SecurityIntegrationTest {
 		assertTrue(session.isInvalid());
 	}
 	
+	@Test
+	void 他人のIDを送っても本人だけ削除されログアウトする() throws Exception {
+		
+		MvcResult loginResult = loginWithRememberMe();
+		
+		MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+		
+		var rememberMeCookie = loginResult.getResponse().getCookie("remember-me");
+		
+		assertNotNull(session);
+		assertNotNull(rememberMeCookie);
+		
+		mockMvc.perform(post("/user/detail")
+				.session(session)
+				.cookie(rememberMeCookie)
+				.with(csrf())
+				.param("delete", "")
+				.param("userId", String.valueOf(OTHER_ID)))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/user/signup"))
+			.andExpect(cookie().maxAge("remember-me", 0))
+			.andExpect(unauthenticated());
+	}
+	
 	// ---------- テスト準備用の共通処理 ----------
 	
 	private void insertUser(long id, String phone, String name) {
