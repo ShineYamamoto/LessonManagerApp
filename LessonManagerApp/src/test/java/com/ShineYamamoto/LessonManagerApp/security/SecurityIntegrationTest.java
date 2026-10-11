@@ -242,6 +242,30 @@ public class SecurityIntegrationTest {
 			.andExpect(authenticated().withUsername(SELF_PHONE));
 	}
 	
+	@Test
+	void ログアウトするとセッションとrememberMeCookieが終了する() throws Exception {
+		
+		MvcResult loginResult = loginWithRememberMe();
+		
+		MockHttpSession session = (MockHttpSession) loginResult.getRequest().getSession(false);
+		
+		var rememberMeCookie = loginResult.getResponse().getCookie("remember-me");
+		
+		assertNotNull(session);
+		assertNotNull(rememberMeCookie);
+		
+		mockMvc.perform(post("/logout")
+				.session(session)
+				.cookie(rememberMeCookie)
+				.with(csrf()))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/login?logout"))
+			.andExpect(cookie().maxAge("remember-me", 0))
+			.andExpect(unauthenticated());
+		
+		assertTrue(session.isInvalid());
+	}
+	
 	// ---------- テスト準備用の共通処理 ----------
 	
 	private void insertUser(long id, String phone, String name) {
