@@ -212,6 +212,18 @@ public class SecurityIntegrationTest {
 			.andExpect(unauthenticated());
 	}
 	
+	@Test
+	void 不正な電話番号はエラー画面ではなくログイン画面へ戻る() throws Exception {
+		mockMvc.perform(post("/login")
+				.with(csrf())
+				.param("regionCode", "JP")
+				.param("phoneNumber", "07000000000")
+				.param("password", PASSWORD))
+			.andExpect(status().is3xxRedirection())
+			.andExpect(redirectedUrl("/login?error"))
+			.andExpect(unauthenticated());
+	}
+	
 	// ---------- テスト準備用の共通処理 ----------
 	
 	private void insertUser(long id, String phone, String name) {
