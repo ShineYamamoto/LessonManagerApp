@@ -52,6 +52,7 @@ const ReservationRules = (() => {
 		return node;
 	}
 	
+	// カレンダーのベースを作成
 	function renderCalendar() {
 		byId('month-label').textContent = `${state.year}年${state.month + 1}月`;
 		const today = R.todayKey();
@@ -97,6 +98,24 @@ const ReservationRules = (() => {
 		}
 		byId('calendar-days').replaceChildren(fragment);
 	}
+	
+	
+	function changeMonth(offset) {
+		const target = new Date(Date.UTC(state.year, state.month + offset, 1));
+		if (R.keyFromDate(target).slice(0, 7) < R.todayKey().slice(0, 7)) return;
+		state.year = target.getUTCFullYear();
+		state.month = target.getUTCMonth();
+		renderCalendar();
+	}
+	
+	byId('previous-month').addEventListener('click', () => changeMonth(-1));
+	byId('next-month').addEventListener('click', () => changeMonth(1));
+	byId('current-month').addEventListener('click', () => {
+		const today = R.todayKey();
+		state.year = Number(today.slice(0, 4));
+		state.month = Number(today.slice(5, 7)) -1;
+		renderCalendar();
+	})
 	
 	renderCalendar();
 })();
