@@ -1,10 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>授業予約</title>
+<link rel="stylesheet"  th:href="@{/css/reservation.css}">
 </head>
 <body>
-
+	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
+	<main id="booking-app" class="booking-app" layout:fragment="content" data-lesson-minutes="60" aria-labelledby="page-title">
+		<header class="page-heading">
+			<div>
+				<p class="eyebrow">授業予約 / 1回ずつ予約</p>
+				<h1 id="page-title">授業を予約する</h1>
+				<p class="lead-text">カレンダーから日付を選び、開いている時間を選択してください。</p>
+			</div>
+			<div class="profile-chip">
+				<span>あなたの授業時間</span>
+				<strong><span data-duration-label>60</span>
+					<small>分 / 回</small>
+				</strong>
+				<span>日本時間（UTC+09:00）</span>
+			</div>
+		</header>
+	</main>
 </body>
 </html>
