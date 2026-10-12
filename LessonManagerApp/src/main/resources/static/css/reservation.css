@@ -1,0 +1,36 @@
+.booking-app {
+    --blue: #185bd0; --blue-dark: #12459b; --ink: #1c2d45; --muted: #626f81; --line: #dce3ed;
+    max-width: 1220px; margin: 0 auto; padding: 32px 24px 48px; color: var(--ink);
+    font: 14px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", Meiryo, sans-serif;
+}
+.booking-app, .booking-app *, .booking-app *::before, .booking-app *::after { box-sizing: border-box; }
+.booking-app [hidden] { display: none !important; }
+.booking-app h1, .booking-app h2, .booking-app h3, .booking-app p { margin: 0; }
+.booking-app button { font: inherit; cursor: pointer; }
+.booking-app button:disabled { cursor: not-allowed; }
+.booking-app :focus-visible { outline: 3px solid #b96900; outline-offset: 3px; }
+.booking-app .page-heading { display: flex; justify-content: space-between; gap: 24px; align-items: center; }
+.booking-app .eyebrow { color: var(--muted); font-size: 12px; letter-spacing: .06em; margin-bottom: 5px; }
+.booking-app h1 { font-size: clamp(24px, 3vw, 32px); line-height: 1.5; font-weight: 700; }
+.booking-app .lead-text { color: var(--muted); margin-top: 7px; }
+.booking-app .profile-chip { flex-shrink: 0; min-width: 180px; padding: 12px 18px; border: 1px solid var(--line); border-radius: 10px; background: #f7f9fc; }
+.booking-app .profile-chip > span { display: block; font-size: 11px; color: var(--muted); }
+.booking-app .profile-chip strong { display: block; font-size: 26px; line-height: 1.5; color: var(--blue-dark); }
+.booking-app .profile-chip small { font-size: 13px; color: var(--ink); font-weight: 500; }
+.booking-app .mode-nav { display: flex; align-items: stretch; gap: 24px; margin: 24px 0 18px; border-bottom: 1px solid var(--line); }
+.booking-app .mode-current { padding: 11px 3px; border-bottom: 3px solid var(--blue); color: var(--blue-dark); font-weight: 700; }
+.booking-app .mode-future { padding: 11px 0; border: 0; background: transparent; color: var(--muted); }
+.booking-app .mode-future small { margin-left: 6px; padding: 2px 5px; background: #edf0f4; border-radius: 3px; font-size: 10px; }
+.booking-app .booking-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr); gap: 24px; align-items: start; }
+.booking-app .calendar-card, .booking-app .summary-card { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+.booking-app .calendar-card { padding: 24px; }
+.booking-app .card-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.booking-app .card-heading h2 { font-size: 18px; font-weight: 700; }
+.booking-app .step-label { font-size: 10px; letter-spacing: .13em; color: var(--muted); }
+.booking-app .month-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 25px 0 17px; }
+.booking-app .month-toolbar h3 { font-size: 23px; font-weight: 700; white-space: nowrap; }
+.booking-app .month-toolbar h3 { font-size: 23px; font-weight: 700; white-space: nowrap; }
+.booking-app .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--ink); font-size: 25px; }
+.booking-app .icon-button:disabled { color: #aeb7c3; background: #f5f6f8; }
+.booking-app .text-button { min-height: 40px; padding: 6px 10px; background: #fff; border: 0; border-radius: 7px; color: var(--muted); font-size: 12px; }
+.booking-app .icon-button:not(:disabled):hover, .booking-app .text-button:hover { background: #edf4ff; }

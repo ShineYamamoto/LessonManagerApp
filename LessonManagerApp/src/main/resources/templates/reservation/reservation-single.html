@@ -23,6 +23,51 @@
 				<span>日本時間（UTC+09:00）</span>
 			</div>
 		</header>
+		
+		<nav class="mode-nav" aria-label="予約方法">
+			<span class="mode-current" aria-current="page">1回ずつ予約</span>
+			<button type="button" class="mode-future" disabled>かんたん予約 <small>準備中</small></button>
+		</nav>
+		
+		<!-- JSが「授業時間の設定が不正」「ブラウザがモーダル機能に未対応」と判定したとき、メッセージを入れて表示する -->
+		<p id="configuration-error" class="error-box" role="alert" hidden></p>
+		<!-- ブラウザでJavaScriptが無効な場合に、案内文を表示 -->
+		<noscript><p class="error-box">このサンプルを操作するには、JavaScriptを有効にしてください。</p></noscript>
+		
+		<div class="booking-layout">
+			<section class="calendar-card" aria-labelledby="calendar-heading">
+				<div class="card-heading">
+					<h2 id="calendar-heading">日付を選ぶ</h2>
+					<span class="step-label">STEP 01</span>
+				</div>
+				<div class="month-toolbar">
+					<h3 id="month-label" aria-live="polite" aria-atomic="true"></h3>
+					<div class="month-controls">
+						<button id="previous-month" type="button" class="icon-button" aria-label="前の月"><</button>
+						<button id="current-month" type="button" class="text-button">今月</button>
+						<button id="next-month" type="button" class="icon-button" aria-label="次の月">></button>
+					</div>
+				</div>
+				<!-- カレンダー用のtableをJavaScriptで構築する -->
+				<table class="calendar-table" aria-labelledby="month-label" aria-describedby="calendar-help">
+					<thead><tr>
+						<th scope="col" class="sunday">日</th>
+						<th scope="col">月</th>
+						<th scope="col">火</th>
+						<th scope="col">水</th>
+						<th scope="col">木</th>
+						<th scope="col">金</th>
+						<th scope="col" class="saturday">土</th>
+					</tr></thead>
+					<tbody id="calendar-days"></tbody>
+				</table>
+				<p id="calendar-help" class="calendar-help">日付を押すと、時間を選ぶ画面が開きます。</p>
+				<div class="calendar-legend">
+					<span><i class="mini-bot" aria-hidden="true"></i> 開始できる時間あり</span>
+					<span><i class="mini-bot chosen" aria-hidden="true"></i> 予約候補あり</span>
+				</div>
+			</section>
+		</div>
 	</main>
 </body>
 </html>
