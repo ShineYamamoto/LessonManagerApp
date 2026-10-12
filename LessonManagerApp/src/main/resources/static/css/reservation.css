@@ -39,7 +39,17 @@
 .booking-app .calendar-table th.sunday { color: #b94d58; }
 .booking-app .calendar-table th.saturday { color: #326bbc; }
 .booking-app .calendar-table td { padding: 0; vertical-align: top; }
-
+.booking-app .calendar-day { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; width: 100%; min-height: 79px; padding: 6px 0; border: 1px solid transparent; border-radius: 8px; background: #fff; color: var(--ink); }
+.booking-app .calendar-day:not(:disabled):hover { background: #edf4ff; border-color: #aac4f0; }
+.booking-app .calendar-day .day-number { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; font-size: 17px; font-weight: 600; border-radius: 50%; }
+.booking-app .calendar-day.is-today .day-number { border: 1px solid var(--blue); color: var(--blue-dark); }
+.booking-app .calendar-day .day-status { font-size: 10px; color: #667487; white-space: nowrap; }
+.booking-app .calendar-day.has-openings .day-status { color: #28704e; }
+.booking-app .calendar-day.has-candidates { background: #edf4ff; border-color: #c2d5f6; }
+.booking-app .calendar-day.has-candidates .day-status { color: var(--blue-dark); font-weight: 700; }
+.booking-app .calendar-day:disabled { color: #abb3bf; background: #fafbfc; }
+.booking-app .calendar-day:disabled .day-status { color: #abb3bf; }
+.booking-app .calendar-day.outside { background: transparent; color: #bec5cf; }
 .booking-app .calendar-help { margin-top: 17px; font-size: 12px; color: var(--muted); }
 .booking-app .calendar-legend { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; color: var(--muted); }
 .booking-app .mini-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #378561; }
