@@ -34,7 +34,7 @@ const ReservationRules = (() => {
 	const state = {
 		year: Number(initialToday.slice(0, 4)),
 		month: Number(initialToday.slice(5, 7)) - 1,
-		activDate: null,
+		activeDate: null,
 		candidates: []
 	};
 	const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
@@ -103,8 +103,13 @@ const ReservationRules = (() => {
 	
 	function openDate(date) {
 		if (date < R.todayKey()) return;
-		
+		state.activeDate = date;
+		byId('dialog-title').textContent = dateLabel(date);
+		byId('dialog-status').textContent = '選択日時は予約候補に自動で反映されます。';
 		dialog.showModal();
+		// 時間一覧の前に、日付と説明から読める一へフォーカスする
+		byId('dialog-title').focus();
+		dialog.querySelector('.dialog-body').scrollTop = 0;
 	}
 	
 	/* 表示カレンダーの月を切り替える */
@@ -130,6 +135,10 @@ const ReservationRules = (() => {
 		state.month = Number(today.slice(5, 7)) -1;
 		renderCalendar();
 	})
+	
+	// ダイアログを閉じる
+	byId('close-dialog').addEventListener('click', () => dialog.close());
+	byId('done-dialog').addEventListener('click', () => dialog.close());
 	
 	renderCalendar();
 })();
