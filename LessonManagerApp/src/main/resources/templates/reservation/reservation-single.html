@@ -67,7 +67,21 @@
 					<span><i class="mini-bot chosen" aria-hidden="true"></i> 予約候補あり</span>
 				</div>
 			</section>
+			
+			<aside class="summary-card" aria-labelledby="candidate-heading">
+				<form id="reservation-form" method="post" th:action="@{/reservation/single}">
+					<div class="summary-body">
+						<div class="card-heading"><h2 id="candidate-heading">予約候補</h2></div>
+						<p class="muted">選んだ日時がここに追加されます</p>
+						<div id="empty-candidates" class="empty-state"><span class="empty-calendar" aria-hidden="true">＋</span><p>予約候補はまだありません</p></div>
+						<ol id="candidate-list" class="candidate-list"></ol>
+						<div id="reservation-inputs"></div>
+					</div>
+				</form>
+			</aside>
 		</div>
+		
+		<script th:src="@{/js/reservation.js}" defer></script>
 	</main>
 </body>
 </html>
