@@ -80,6 +80,27 @@
 				</form>
 			</aside>
 		</div>
+		<p id="page-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+		
+		<!-- showModal()で開く。選択は即座に候補へ反映するため「閉じる」は取り消しではない。 -->
+		<dialog id="time-dialog" class="time-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-help">
+			<div class="dialog-header">
+				<div>
+					<p class="eyebrow">開始時刻を選ぶ</p>
+					<h2 id="dialog-title" tabindex="-1"></h2>
+				</div>
+				<button id="close-dialog" class="icon-button" type="button" aria-label="時間選択を閉じる">×</button>
+			</div>
+			<div class="dialog-body">
+				<p id="dialog-help" class="dialog-help">開始時刻を押すと、<strong><span data-duration-label>60</span>分間</strong>が選ばれ、候補に追加されます。</p>
+			</div>
+			
+			<div class="dialog-footer">
+				<div class="day-selection"><span id="day-selection-label">この二の予約候補</span><strong id="day-selection-times">まだ選択していません。</strong></div>
+				<p id="dialog-status" class="dialog-status" role="status" aria-liv="polite" aria-atomic="true"></p>
+				<button id="done-dialog" class="primary-button" type="button">選択を終えてカレンダーに戻る</button>
+			</div>
+		</dialog>
 		
 		<script th:src="@{/js/reservation.js}" defer></script>
 	</main>

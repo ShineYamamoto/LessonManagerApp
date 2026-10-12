@@ -25,7 +25,9 @@ const ReservationRules = (() => {
 	const app = document.getElementById('booking-app');
 	if (!app) return;
 	const R = ReservationRules;
+	const lessonMinutes = Number(app.dataset.lessonMinutes);
 	const byId = id => document.getElementById(id);
+	const dialog = byId('time-dialog');
 	const slotStarts = Array.from({length: (R.CLOSE - R.OPEN) / R.STEP}, (_, i) => R.OPEN + i * R.STEP);
 	
 	const initialToday = R.todayKey();
@@ -99,7 +101,13 @@ const ReservationRules = (() => {
 		byId('calendar-days').replaceChildren(fragment);
 	}
 	
+	function openDate(date) {
+		if (date < R.todayKey()) return;
+		
+		dialog.showModal();
+	}
 	
+	/* 表示カレンダーの月を切り替える */
 	function changeMonth(offset) {
 		const target = new Date(Date.UTC(state.year, state.month + offset, 1));
 		if (R.keyFromDate(target).slice(0, 7) < R.todayKey().slice(0, 7)) return;
@@ -108,6 +116,12 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
+	app.querySelectorAll('[data-duration-label]').forEach(node => { node.textContent = String(lessonMinutes); });
+	/* カレンダーの日付が押されたら予約可能な場合はモーダルを起動させる */
+	byId('calendar-days').addEventListener('click', event => {
+		const button = event.target.closest('button[data-date]'); // dataset.dateがある場合のみ実行
+		if (button && !button.disabled) openDate(button.dataset.date);
+	})
 	byId('previous-month').addEventListener('click', () => changeMonth(-1));
 	byId('next-month').addEventListener('click', () => changeMonth(1));
 	byId('current-month').addEventListener('click', () => {
