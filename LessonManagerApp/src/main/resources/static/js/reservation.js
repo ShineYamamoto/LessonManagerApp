@@ -31,10 +31,13 @@ const ReservationRules = (() => {
 	const initialToday = R.todayKey();
 	const state = {
 		year: Number(initialToday.slice(0, 4)),
-		month: Number(initialToday.slice(4, 7)) - 1,
+		month: Number(initialToday.slice(5, 7)) - 1,
 		activDate: null,
 		candidates: []
-	}
+	};
+	const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
+		timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
+	});
 	const dateLabel = date => dateFormatter.format(new Date(`${date}T00:00:00Z`));
 	const onDate = date => state.candidates.filter(item => item.date === date);
 	
@@ -81,9 +84,9 @@ const ReservationRules = (() => {
 					button.classList.toggle('has-candidates', count > 0);
 					button.classList.toggle('has-openings', hasOpenings);
 					button.classList.toggle('is-today', key === today);
-					if (key === today) button.setAttributes('aria-current', 'date');
-					button.setAttributes('aria-label', `${dateLabel(key)}, ${status}。時間を選択`);
-					button,setAttribute('aria-label', 'dialog');
+					if (key === today) button.setAttribute('aria-current', 'date');
+					button.setAttribute('aria-label', `${dateLabel(key)}, ${status}。時間を選択`);
+					button.setAttribute('aria-label', 'dialog');
 					button.setAttribute('aria-controls', 'time-dialog');
 					button.append(element('span', 'day-number', String(date.getUTCDate())), element('span', 'day-status', status));
 					cell.append(button);
