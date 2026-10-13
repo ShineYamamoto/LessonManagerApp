@@ -92,8 +92,10 @@
 .booking-app .time-slot:not(:disabled):not(.is-selected):hover { border-color: var(--blue); background: #f0f5ff; }
 .booking-app .time-slot .slot-time { font-size: 13px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .booking-app .time-slot .slot-state { font-size: 10px; color: #557062; }
-.booking-app .time-slot:disabled { border-color: #e0e4ea; background: #e9edf2; color: #727e8d; }
-.booking-app .time-slot:disabled .slot-state { color: #697585; }
+.booking-app .time-slot.is-unavailable { border-color: #e0e4ea; background: #e9edf2; color: #727e8d; }
+.booking-app .time-slot.is-unavailable .slot-state { color: #697585; }
+.booking-app .time-slot:disabled:not(.is-unavailable) { background: #fff; border-color: #bdc9dc; color: var(--ink); opacity: 1; }
+.booking-app .time-slot:disabled:not(.is-unavailable) .slot-state { color: var(--muted); }
 .booking-app .time-slot.is-selected { border-color: var(--blue); background: var(--blue); color: #fff; }
 .booking-app .time-slot.is-selected .slot-state { color: #fff; }
 .booking-app .time-slot.is-selected:hover { background: var(--blue-dark); }
