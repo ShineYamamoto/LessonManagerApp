@@ -54,3 +54,35 @@
 .booking-app .calendar-legend { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; color: var(--muted); }
 .booking-app .mini-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #378561; }
 .booking-app .mini-dot.chosen { background: var(--blue); }
+
+.booking-app .time-dialog { width: min(730px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); margin: auto; padding: 0; color: var(--ink); border: 0; border-radius: 14px; background: #fff; box-shadow: 0 24px 80px #14233d40; overflow: hidden; font: inherit; }
+.booking-app .time-dialog[open] { display: flex; flex-direction: column; }
+.booking-app .time-dialog::backdrop { background: rgb(17 31 54 / 48%); }
+.booking-app .dialog-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex: 0 0 auto; padding: 22px 24px 18px; border-bottom: 1px solid var(--line); }
+.booking-app .dialog-header h2 { font-size: 22px; font-weight: 700; }
+.booking-app .dialog-body { padding: 19px 24px 20px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.booking-app .dialog-help { font-size: 13px; }.booking-app .dialog-help strong { color: var(--blue-dark); }
+.booking-app .time-meta { display: flex; justify-content: space-between; gap: 8px; margin: 10px 0 14px; color: var(--muted); font-size: 11px; }
+.booking-app .slot-legend { display: flex; gap: 16px; margin-bottom: 16px; color: var(--muted); font-size: 11px; }
+.booking-app .slot-legend > span { display: flex; align-items: center; gap: 5px; }
+.booking-app .swatch { display: inline-block; width: 13px; height: 13px; border-radius: 3px; border: 1px solid #bac6d6; }
+.booking-app .swatch.available { background: #fff; }.booking-app .swatch.unavailable { background: #e9edf2; }
+.booking-app .swatch.selected { background: var(--blue); border-color: var(--blue); }
+.booking-app .time-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.booking-app .time-slot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 61px; width: 100%; padding: 8px 3px; border: 1px solid #bdc9dc; border-radius: 7px; background: #fff; color: var(--ink); }
+.booking-app .time-slot:not(:disabled):not(.is-selected):hover { border-color: var(--blue); background: #f0f5ff; }
+.booking-app .time-slot .slot-time { font-size: 13px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.booking-app .time-slot .slot-state { font-size: 10px; color: #557062; }
+.booking-app .time-slot:disabled { border-color: #e0e4ea; background: #e9edf2; color: #727e8d; }
+.booking-app .time-slot:disabled .slot-state { color: #697585; }
+.booking-app .time-slot.is-selected { border-color: var(--blue); background: var(--blue); color: #fff; }
+.booking-app .time-slot.is-selected .slot-state { color: #fff; }
+.booking-app .time-slot.is-selected:hover { background: var(--blue-dark); }
+.booking-app .slot-explanation { margin-top: 15px; color: var(--muted); font-size: 11px; line-height: 1.85; }
+.booking-app .unavailable-note { padding: 10px; margin-bottom: 12px; background: #f4f6f9; color: #59687c; font-size: 12px; border-radius: 6px; }
+.booking-app .dialog-footer { flex: 0 0 auto; padding: 16px 24px 22px; border-top: 1px solid var(--line); background: #f7f9fc; }
+.booking-app .day-selection > span { display: block; color: var(--muted); font-size: 11px; }
+.booking-app .day-selection strong { display: block; margin-top: 3px; max-height: 70px; overflow-y: auto; font-size: 17px; font-weight: 600; color: var(--blue-dark); }
+.booking-app .dialog-status { margin-top: 6px; min-height: 20px; color: var(--muted); font-size: 11px; }
+.booking-app .dialog-footer .primary-button { margin-top: 11px; }
+

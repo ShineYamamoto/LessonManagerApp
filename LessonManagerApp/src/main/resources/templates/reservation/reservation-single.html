@@ -93,6 +93,15 @@
 			</div>
 			<div class="dialog-body">
 				<p id="dialog-help" class="dialog-help">開始時刻を押すと、<strong><span data-duration-label>60</span>分間</strong>が選ばれ、候補に追加されます。</p>
+				<div class="time-meta"><span>09:00-22:00 / 30分刻み</span><span>日本時間</span></div>
+				<div class="slot-legend" aria-label="時間枠の色の意味">
+					<span><i class="swatch available" aria-hidden="true"></i>選択可</span>
+					<span><i class="swatch unavailable" aria-hidden="true"></i>選択不可</span>
+					<span><i class="swatch selected" aria-hidden="true"></i>選択済み</span>
+				</div>
+				<p id="no-start-times" class="unabailable-note" hidden>この日は、新しく選べる開始時刻がありません。</p>
+				<div id="time-slots" class="time-slots" role="group" aria-label="30分ごとの時間枠"></div>
+				<p class="slot-explanatio">白い枠は授業開始まで連続して空いている開始時刻です。<br>青い枠をもう一度押すと、その授業を候補から外します。</p>
 			</div>
 			
 			<div class="dialog-footer">

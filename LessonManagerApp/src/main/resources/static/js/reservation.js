@@ -3,7 +3,11 @@ const ReservationRules = (() => {
 	const STEP = 30;
 	const OPEN = 9 * 60;
 	const CLOSE = 22 * 60;
-	
+
+	function timeText(minutes) {
+		return String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0');
+	}
+		
 	function todayKey(now = Date.now()) {
 		const parts = new Intl.DateTimeFormat('en-CA', {
 			timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'
@@ -16,7 +20,12 @@ const ReservationRules = (() => {
 		return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 	}
 	
-	return Object.freeze({todayKey, keyFromDate});
+	// nullなら開始可能。開始の1枠だけでなく、終了まで全区間を検証する。	   
+	function startReason({date, start, duration, openings, booked, candidates = [], now = Date.now()}) {
+		
+	}
+	
+	return Object.freeze({STEP, OPEN, CLOSE, timeText, todayKey, keyFromDate, startReason});
 })();
 
 /* 画面のイベント処理 */
@@ -30,6 +39,29 @@ const ReservationRules = (() => {
 	const dialog = byId('time-dialog');
 	const slotStarts = Array.from({length: (R.CLOSE - R.OPEN) / R.STEP}, (_, i) => R.OPEN + i * R.STEP);
 	
+	// 仮の管理者設定。分で記述。9*60=09:00, 13*60+30=13:30。
+	// 日曜休み、水曜午後は14時から、土曜日は18時まで、その他は22時まで。
+	const SAMPLE_SCHEDULE = {
+		0: [],
+		1: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
+		2: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
+		3: [[9 * 60, 12 * 60], [14 * 60, 20 * 60]],
+		4: [[10 * 60, 12 * 60], [13 * 60, 22 * 60]],
+		5: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
+		6: [[9 * 60, 12 * 60], [13 * 60, 18 * 60]]
+	}
+	// 日付固有の受付時間も設定できる。例： {'2026-11-03': []} は受付不可。]
+	const DATE_OVERRIDES = {};
+	
+	function dailyData(date) {
+		const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
+		return {
+			openings: DATE_OVERRIDES[date] ?? SAMPLE_SCHEDULE[weekday],
+			// 他の予約だ既に入っている仮データ。候補日とは別に判定する。
+			booked: weekday === 0 ? [] : [[10 * 60, 10 * 60 + 30], [15 * 60, 16 * 60]]
+		}
+	}
+
 	const initialToday = R.todayKey();
 	const state = {
 		year: Number(initialToday.slice(0, 4)),
@@ -41,6 +73,7 @@ const ReservationRules = (() => {
 		timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
 	});
 	const dateLabel = date => dateFormatter.format(new Date(`${date}T00:00:00Z`));
+	const rangeLabel = item => `${R.timeText(item.start)}-${R.timeText(item.end)}`;
 	const onDate = date => state.candidates.filter(item => item.date === date);
 	
 	function reasonAt(date, start, candidates = state.candidates) {
@@ -101,11 +134,44 @@ const ReservationRules = (() => {
 		byId('calendar-days').replaceChildren(fragment);
 	}
 	
+	function renderSlots() {
+		if (!state.activeDate) return;
+		const chosen = onDate(state.activeDate);
+		const fragment = document.createDocumentFragment();
+		let possibleStarts = 0;
+		for (const start of slotStarts) {
+			const existing = chosen.find(item => item.start <= start && start < item.end);
+			const reason = existing ? null : reasonAt(state.activeDate, start);
+			const button = element('button', 'time-solt');
+			button.type = 'button';
+			button.dataset.start = String(start);
+			button.disabled = !existing && reason !== null;
+			button.classList.toggle('is-selected', Boolean(existing));
+			button.setAttribute('aria-pressed', String(Boolean(existing)));
+			button.append(element('span', 'slot-time', `${R.timeText(start)}-${R.timeText(start+R.STEP)}`));
+			button.append(element('span', 'slot-state', existing ? '✓ 選択済み' : reason || '選択可'));
+			const label = existing
+				? `${rangeLabel(existing)}の授業予約を選択済み。この授業を取り消す`
+				: reason
+					? `${R.timeText(start)}開始は選択不可。${reason}`
+					: `${R.timeText(start)}開始、${R.timeText(start + lessonMinutes)}終了の授業を候補に追加`;
+			button.setAttribute('aria-label', label);
+			button.title = label;
+			fragment.append(button);
+			if (!existing && reason ===null) possibleStarts++;
+		}
+		byId('time-slots').replaceChildren(fragment);
+		byId('no-start-times').hidden = possibleStarts !== 0;
+		byId('day-selection-label').textContent = `この日の予約候補：${chosen.length}件`;
+		byId('day-selection-times').textContent = chosen.length ? chosen.map(rangeLabel).join(' / ') : 'まだ選択していません';
+	}
+	
 	function openDate(date) {
 		if (date < R.todayKey()) return;
 		state.activeDate = date;
 		byId('dialog-title').textContent = dateLabel(date);
 		byId('dialog-status').textContent = '選択日時は予約候補に自動で反映されます。';
+		renderSlots();
 		dialog.showModal();
 		// 時間一覧の前に、日付と説明から読める一へフォーカスする
 		byId('dialog-title').focus();
