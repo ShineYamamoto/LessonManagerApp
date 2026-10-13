@@ -71,7 +71,7 @@
 			<aside class="summary-card" aria-labelledby="candidate-heading">
 				<form id="reservation-form" method="post" th:action="@{/reservation/single}">
 					<div class="summary-body">
-						<div class="card-heading"><h2 id="candidate-heading">予約候補</h2></div>
+						<div class="card-heading"><h2 id="candidate-heading">予約候補</h2><span class="countbadge"><span id="candidate-count">0</span>件</span></div>
 						<p class="muted">選んだ日時がここに追加されます</p>
 						<div id="empty-candidates" class="empty-state"><span class="empty-calendar" aria-hidden="true">＋</span><p>予約候補はまだありません</p></div>
 						<ol id="candidate-list" class="candidate-list"></ol>
