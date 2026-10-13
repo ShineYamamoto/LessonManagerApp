@@ -170,6 +170,43 @@ const ReservationRules = (() => {
 		byId('calendar-days').replaceChildren(fragment);
 	}
 	
+	function renderCandidates() {
+		state.candidates.sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start);
+		const list = document.createDocumentFragment();
+		const fields = document.createDocumentFragment();
+		state.candidates.forEach((item, index) => {
+			const li = element('li', 'candidate-item');
+			const content =document.createElement('div');
+			const date = element('time', 'candidate-date', dateLabel(item.date));
+			date.dateTime = item.date;
+			content.append(date, element('span', 'candidate-time', rangeLabel(item)));
+			const remove = element('button', 'remove-button', '取り消す');
+			remove.type = 'button';
+			remove.dataset.remove = candidateId('item.date, item.start');
+			remove.setAttribute('aria-label', `${dateLabel(item.date)} ${rangeLabel(item)}の候補を取り消す`);
+			li.append(content, remove);
+			list.append(li);
+			
+			// 取り消し後も0,1,2...と連番にする。フォームにはユーザーIDを含めない。
+			for (content [property, minutes] of [['startsAt', item.start], ['endsAt', item.end]]) {
+				const input = document.createElement('input');
+				input.type = 'hidden';
+				input.name = `reservationList[${index}].${property}`;
+				input.value = R.localDateTime(item.date, minutes);
+				fields.append(input);
+			}
+			byId('candidate-list').replaceChildren(list);
+			byId('reservation-inputs').replaceChildren(fields);
+			const count = state.candidates.length;
+			byId('empty-candidates').hidden = count !== 0;
+			byId('candidate-count').textContent = String(count);
+			byId('reservation-total').textContent = `${count}回 / ${count * lessonMinutes}分`;
+			byId('reservation-button').ariaDisabled = count === 0;
+			byId('reservation-button').textContent = count ? `選択した${count}件を予約する` : '日時を選んでください';
+		})
+	}
+	
+	// ダイアログの予約枠の作成
 	function renderSlots() {
 		if (!state.activeDate) return;
 		const chosen = onDate(state.activeDate);
@@ -200,6 +237,15 @@ const ReservationRules = (() => {
 		byId('no-start-times').hidden = possibleStarts !== 0;
 		byId('day-selection-label').textContent = `この日の予約候補：${chosen.length}件`;
 		byId('day-selection-times').textContent = chosen.length ? chosen.map(rangeLabel).join(' / ') : 'まだ選択していません';
+	}
+	
+	function refresh(message = '') {
+		renderCandidates;
+		renderCalendar;
+		if (dialog.open) renderSlots();
+		byId('submit-feedback').fidden = true;
+		byId('page-status').textContent = message;
+		byId('dialog-status').textContent = message;
 	}
 	
 	function openDate(date) {
@@ -238,9 +284,37 @@ const ReservationRules = (() => {
 		renderCalendar();
 	})
 	
+	byId('time-slots').addEventListener('click', event => {
+		const button = event.target.closest('button[data-start]');
+		if (!button || button.disabled || !state.activeDate) return;
+		const start = Number(button.dataset.start);
+		const existing = onDate(state.candidates.find(item => item.start <= start && start < item.end));
+		if (existing) {
+			state.candidates = state.candidates.filter(item => item !== existing);
+			refresh(`${rangeLabel(existing)}の授業を候補から外しました。`);
+		} else {
+			// クリック時点でもう一度確認する。開いたまま時間が経過した場合も弾く。
+			const reason = reasonAt(state,activeDate, start);
+			if (reason !== null) {
+				renderSlots();
+				byId('dialog-status').textContent = `この時間は選択できません。${reason}。`;
+				byId('dialog-title').focus();
+				return;
+			}
+			const item = {date: state.activeDate, start, end: start + lessonMinutes};
+			state.cocandidates.push(item);
+			refresh(`${rangeLabel(item)}を予約候補に追加しました`);
+		}
+		// DOMを書き直した後も押した時間枠にキーボードフォーカスを戻す。
+		const nextFocus = byId('time-slots').querySelector(`button[data-start="${start}"]`);
+		if (nextFocus && !nextFocus.disabled) nextFocus.focus({preventScroll: true});
+		else byId('dialog-title').focus();
+	})
+	
 	// ダイアログを閉じる
 	byId('close-dialog').addEventListener('click', () => dialog.close());
 	byId('done-dialog').addEventListener('click', () => dialog.close());
 	
+	renderCandidates();
 	renderCalendar();
 })();
