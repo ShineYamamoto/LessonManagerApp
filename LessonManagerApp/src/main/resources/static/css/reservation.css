@@ -55,6 +55,10 @@
 .booking-app .mini-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #378561; }
 .booking-app .mini-dot.chosen { background: var(--blue); }
 
+.booking-app .primary-button { width: 100%; min-height: 48px; padding: 12px; border: 0; border-radius: 8px; background: var(--blue); color: #fff; font-size: 14px; font-weight: 600; }
+.booking-app .primary-button:not(:disabled):hover { background: var(--blue-dark); }
+.booking-app .primary-button:disabled { background: #dfe5ee; color: #627188; }
+
 .booking-app .time-dialog { width: min(730px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); margin: auto; padding: 0; color: var(--ink); border: 0; border-radius: 14px; background: #fff; box-shadow: 0 24px 80px #14233d40; overflow: hidden; font: inherit; }
 .booking-app .time-dialog[open] { display: flex; flex-direction: column; }
 .booking-app .time-dialog::backdrop { background: rgb(17 31 54 / 48%); }

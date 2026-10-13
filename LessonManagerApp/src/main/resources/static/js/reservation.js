@@ -7,6 +7,27 @@ const ReservationRules = (() => {
 	function timeText(minutes) {
 		return String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0');
 	}
+	
+	function isValidDuration(minutes) {
+		return Number.isInteger(minutes) && minutes > 0 && minutes % STEP === 0 && minutes <= CLOSE - OPEN;
+	}
+	
+	// 半区間 [開始, 終了]で判定する。13～14時と14～15時は重複しない
+	function overlaps(startA, endA, startB, endB) {
+		return startA < endB && startB < endA;
+	}
+	
+	// 管理者が隣り合う受付枠を別々に持っていても、連続していれば1区画として扱う。
+	function mergeRanges(ranges) {
+		const sorted = ranges.map(range => [...range]).sort((a, b) => a[0] - b[0]);
+		const merged = [];
+		for (const [start, end] of sorted) {
+			const last = merged[merged.length - 1];
+			if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+			else merged.push([start, end]);
+		}
+		return merged;
+	}
 		
 	function todayKey(now = Date.now()) {
 		const parts = new Intl.DateTimeFormat('en-CA', {
@@ -20,9 +41,24 @@ const ReservationRules = (() => {
 		return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 	}
 	
+	function localDateTime(date, minutes) {
+		return `${date}T${timeText(minutes)}:00`;
+	}
+	
 	// nullなら開始可能。開始の1枠だけでなく、終了まで全区間を検証する。	   
 	function startReason({date, start, duration, openings, booked, candidates = [], now = Date.now()}) {
-		
+		const end = start + duration;
+		if (!isValidDuration(duration)) return '授業時間エラー';
+		if (start % STEP !== 0 || start < OPEN || end > CLOSE) return '授業時刻超過';
+		if (Date.parse(localDateTime(date, start) + '+09:00') <= now) return '受付終了';
+		const windows = mergeRanges(openings);
+		const covers = (from, to) => windows.some(([a, b]) => a <= from && to <= b);
+		if (!covers(start, start + STEP)) return '受付時間外';
+		if (!covers(start, end)) return '連続枠なし';
+		if (booked.some(([a, b]) => overlaps(start, start + STEP, a, b))) return '予約済み';
+		if (booked.some(([a, b]) => overlaps(start, end, a, b))) return '予約と重複';
+		if (candidates.some(item => item.date === date && overlaps(start, end, item.start, item.end))) return '候補と重複';
+		return null;
 	}
 	
 	return Object.freeze({STEP, OPEN, CLOSE, timeText, todayKey, keyFromDate, startReason});
@@ -142,7 +178,7 @@ const ReservationRules = (() => {
 		for (const start of slotStarts) {
 			const existing = chosen.find(item => item.start <= start && start < item.end);
 			const reason = existing ? null : reasonAt(state.activeDate, start);
-			const button = element('button', 'time-solt');
+			const button = element('button', 'time-slot');
 			button.type = 'button';
 			button.dataset.start = String(start);
 			button.disabled = !existing && reason !== null;
