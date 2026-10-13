@@ -160,7 +160,7 @@ const ReservationRules = (() => {
 					button.classList.toggle('is-today', key === today);
 					if (key === today) button.setAttribute('aria-current', 'date');
 					button.setAttribute('aria-label', `${dateLabel(key)}, ${status}。時間を選択`);
-					button.setAttribute('aria-label', 'dialog');
+					button.setAttribute('aria-haspopup', 'dialog');
 					button.setAttribute('aria-controls', 'time-dialog');
 					button.append(element('span', 'day-number', String(date.getUTCDate())), element('span', 'day-status', status));
 					cell.append(button);
@@ -185,7 +185,7 @@ const ReservationRules = (() => {
 			content.append(date, element('span', 'candidate-time', rangeLabel(item)));
 			const remove = element('button', 'remove-button', '取り消す');
 			remove.type = 'button';
-			remove.dataset.remove = candidateId('item.date, item.start');
+			remove.dataset.remove = candidateId(item.date, item.start);
 			remove.setAttribute('aria-label', `${dateLabel(item.date)} ${rangeLabel(item)}の候補を取り消す`);
 			li.append(content, remove);
 			list.append(li);
@@ -198,15 +198,15 @@ const ReservationRules = (() => {
 				input.value = R.localDateTime(item.date, minutes);
 				fields.append(input);
 			}
-			byId('candidate-list').replaceChildren(list);
-			byId('reservation-inputs').replaceChildren(fields);
-			const count = state.candidates.length;
-			byId('empty-candidates').hidden = count !== 0;
-			byId('candidate-count').textContent = String(count);
-			byId('reservation-total').textContent = `${count}回 / ${count * lessonMinutes}分`;
-			byId('reserve-button').disabled = count === 0;
-			byId('reserve-button').textContent = count ? `選択した${count}件を予約する` : '日時を選んでください';
-		})
+		});
+		byId('candidate-list').replaceChildren(list);
+		byId('reservation-inputs').replaceChildren(fields);
+		const count = state.candidates.length;
+		byId('empty-candidates').hidden = count !== 0;
+		byId('candidate-count').textContent = String(count);
+		byId('reservation-total').textContent = `${count}回 / ${count * lessonMinutes}分`;
+		byId('reserve-button').disabled = count === 0;
+		byId('reserve-button').textContent = count ? `選択した${count}件を予約する` : '日時を選んでください';
 	}
 	
 	// ダイアログの予約枠の作成
@@ -246,7 +246,7 @@ const ReservationRules = (() => {
 		renderCandidates();
 		renderCalendar();
 		if (dialog.open) renderSlots();
-		byId('submit-feedback').fidden = true;
+		byId('submit-feedback').hidden = true;
 		byId('page-status').textContent = message;
 		byId('dialog-status').textContent = message;
 	}
@@ -360,7 +360,7 @@ const ReservationRules = (() => {
 		if (event.shiftKey && (document.activeElement === first || document.activeElement === byId('dialog-title'))) {
 			event.preventDefault();
 			last.focus();
-		} else if (!event,shiftKey && document.activeElement === last) {
+		} else if (!event.shiftKey && document.activeElement === last) {
 			event.preventDefault();
 			first.focus();
 		}
