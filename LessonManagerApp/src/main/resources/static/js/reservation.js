@@ -232,9 +232,9 @@ const ReservationRules = (() => {
 			button.disabled = !existing && reason !== null;
 			// グレー表示は、この30分枠自体が利用できない場合だけ
 			button.classList.toggle('is-unavailable', !existing && slotReason !== null);
+			button.classList.toggle('is-selected', Boolean(existing));
 			button.setAttribute('aria-pressed', String(Boolean(existing)));
 			button.append(element('span', 'slot-time', `${R.timeText(start)}-${R.timeText(start+R.STEP)}`));
-			//button.append(element('span', 'slot-state', existing ? '✓ 選択済み' : reason || '選択可'));
 			const statusText = existing ? '✓ 選択済み' : slotReason !== null ? slotReason: reason !== null ? '空き・開始不可' : '開始可';
 			button.append(element('span', 'slot-state', statusText));
 			const label = existing
