@@ -172,6 +172,7 @@ const ReservationRules = (() => {
 		byId('calendar-days').replaceChildren(fragment);
 	}
 	
+	// 予約を一覧にまとめる
 	function renderCandidates() {
 		state.candidates.sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start);
 		const list = document.createDocumentFragment();
