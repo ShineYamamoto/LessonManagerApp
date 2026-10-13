@@ -271,6 +271,18 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
+	// サンプルは必ず送信を止める。
+	form.addEventListener('submit', event => {
+		event.preventDefault();
+		if (state.candidates.length === 0) return;
+		const invalid = state.candidates.find(item => reasonAt(item.date, item.start, state.candidates.filter(other => other !== item)) !== null);
+		const feedback = byId('submit-feedback');
+		feedback.textContent = invalid
+			? '開始時刻を過ぎた候補などが含まれています。日時を確認し選びなおしてください。'
+			: `サンプルのため送信していません。選択中の${state.candidates.length}件をまとめて予約する操作を確認しました。`;
+		feedback.hidden = false;
+	})
+	
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {
 		const error = byId('configuration-error');
 		error.textContent = !R.isValidDuration(lessonMinutes)
@@ -322,6 +334,17 @@ const ReservationRules = (() => {
 		else byId('dialog-title').focus();
 	})
 	
+	byId('candidate-list').addEventListener('click', event => {
+		const button = event.target.closest('button[data-remove]');
+		if (!button) return;
+		const index = state.candidates.findIndex(item => candidateId(item.date, item.start) === button.dataset.remove);
+		if (index < 0) return;
+		const [removed] = state.candidates.splice(index, 1);
+		refresh(`${dateLabel(removed.date)} ${rangeLabel(removed)}の候補を取り消しました。`);
+		const remaining = byId('candidate-list').querySelectorAll('button[data-remove]');
+		const nextFocus = remaining[Math.min(index, remaining.length - 1)] || byId('calendar-days').querySelector('button:not(:disabled)');
+		nextFocus?.focus({preventScroll: true});
+	})
 	
 	// ダイアログを閉じる
 	byId('close-dialog').addEventListener('click', () => dialog.close());

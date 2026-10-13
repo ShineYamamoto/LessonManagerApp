@@ -54,11 +54,28 @@
 .booking-app .calendar-legend { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 12px; font-size: 11px; color: var(--muted); }
 .booking-app .mini-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #378561; }
 .booking-app .mini-dot.chosen { background: var(--blue); }
-
+.booking-app .mini-dot.chosen { background: var(--blue); }
+.booking-app .summary-body { padding: 24px; }
+.booking-app .count-badge { padding: 3px 9px; border-radius: 5px; background: #edf4ff; color: var(--blue-dark); font-size: 12px; font-weight: 700; }
+.booking-app .muted { color: var(--muted); font-size: 12px; }
+.booking-app .empty-state { padding: 34px 8px; text-align: center; color: var(--muted); }
+.booking-app .empty-calendar { display: flex; width: 44px; height: 44px; align-items: center; justify-content: center; margin: 0 auto 15px; color: #7591bc; border: 1px dashed #b7c6da; border-radius: 10px; font-size: 26px; }
+.booking-app .empty-state p { font-size: 13px; }.booking-app .empty-state small { font-size: 11px; }
+.booking-app .candidate-list { list-style: none; margin: 18px 0 0; padding: 0; }
+.booking-app .candidate-item { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 0; border-top: 1px solid var(--line); }
+.booking-app .candidate-date { display: block; font-size: 12px; color: var(--muted); }
+.booking-app .candidate-time { display: block; font-size: 21px; line-height: 1.5; font-weight: 600; font-variant-numeric: tabular-nums; }
+.booking-app .remove-button { flex-shrink: 0; min-height: 44px; border: 0; padding: 6px 0 6px 6px; background: transparent; color: #536a8a; text-decoration: underline; text-underline-offset: 3px; font-size: 11px; }
+.booking-app .summary-footer { padding: 21px 24px 24px; border-top: 1px solid var(--line); background: #f7f9fc; }
+.booking-app .total-line { display: flex; justify-content: space-between; gap: 8px; align-items: center; margin-bottom: 16px; font-size: 12px; }
+.booking-app .total-line strong { font-size: 18px; }
 .booking-app .primary-button { width: 100%; min-height: 48px; padding: 12px; border: 0; border-radius: 8px; background: var(--blue); color: #fff; font-size: 14px; font-weight: 600; }
 .booking-app .primary-button:not(:disabled):hover { background: var(--blue-dark); }
 .booking-app .primary-button:disabled { background: #dfe5ee; color: #627188; }
-
+.booking-app .small-note { margin-top: 12px; font-size: 11px; color: var(--muted); }
+.booking-app .feedback { padding: 11px; margin-top: 12px; background: #e9f1ff; color: #164898; border-radius: 6px; font-size: 12px; }
+.booking-app .error-box { padding: 14px; margin-bottom: 16px; border: 1px solid #ddadb4; background: #fff3f5; color: #972534; }
+.booking-app .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .booking-app .time-dialog { width: min(730px, calc(100vw - 32px)); max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); margin: auto; padding: 0; color: var(--ink); border: 0; border-radius: 14px; background: #fff; box-shadow: 0 24px 80px #14233d40; overflow: hidden; font: inherit; }
 .booking-app .time-dialog[open] { display: flex; flex-direction: column; }
 .booking-app .time-dialog::backdrop { background: rgb(17 31 54 / 48%); }
@@ -89,4 +106,36 @@
 .booking-app .day-selection strong { display: block; margin-top: 3px; max-height: 70px; overflow-y: auto; font-size: 17px; font-weight: 600; color: var(--blue-dark); }
 .booking-app .dialog-status { margin-top: 6px; min-height: 20px; color: var(--muted); font-size: 11px; }
 .booking-app .dialog-footer .primary-button { margin-top: 11px; }
-
+@media (max-width: 950px) {
+    .booking-app .booking-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+    .booking-app { padding: 20px 12px 32px; }
+    .booking-app .page-heading { display: block; }
+    .booking-app .profile-chip { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; padding: 10px 12px; }
+    .booking-app .profile-chip strong { font-size: 20px; }
+    .booking-app .mode-nav { gap: 16px; font-size: 12px; }
+    .booking-app .calendar-card { padding: 20px 10px; }
+    .booking-app .calendar-card .card-heading, .booking-app .month-toolbar { padding: 0 4px; }
+    .booking-app .month-toolbar h3 { font-size: 21px; }
+    .booking-app .calendar-table { border-spacing: 2px; }
+    .booking-app .calendar-day { min-height: 67px; gap: 3px; }
+    .booking-app .calendar-day .day-number { font-size: 15px; min-width: 25px; height: 25px; }
+    .booking-app .calendar-day .day-status { font-size: 9px; }
+    .booking-app .calendar-help, .booking-app .calendar-legend { padding: 0 4px; }
+    .booking-app .summary-body, .booking-app .summary-footer { padding: 20px; }
+    .booking-app .time-dialog { width: calc(100vw - 16px); max-height: calc(100vh - 16px); max-height: calc(100dvh - 16px); border-radius: 10px; }
+    .booking-app .dialog-header { padding: 17px 16px 14px; }
+    .booking-app .dialog-header h2 { font-size: 19px; }
+    .booking-app .dialog-body { padding: 16px; }
+    .booking-app .time-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .booking-app .time-slot { min-height: 60px; }
+    .booking-app .dialog-footer { padding: 13px 16px 16px; }
+    .booking-app .day-selection strong { font-size: 15px; max-height: 49px; }
+}
+@media (max-width: 420px) {
+    .booking-app .month-toolbar h3 { font-size: 18px; }
+    .booking-app .month-controls { gap: 3px; }
+    .booking-app .month-controls .icon-button { width: 32px; height: 36px; }
+    .booking-app .month-controls .text-button { min-height: 36px; padding: 6px; white-space: nowrap; }
+}
