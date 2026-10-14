@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationMapper">
+
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation" id="reservationMap">
+		<id column="reservation_id" property="reservationId" />
+		<result column="user_id" property="userId" />
+		<result column="starts_at" property="startsAt" />
+		<result column="ends_at" property="endsAt" />
+		<result column="status" property="status" />
+		<result column="created_at" property="createdAt" />
+		<result column="updated_at" property="updatedAt" />
+	</resultMap>
+
+	<select id="findConfirmedOverlapping" resultMap="reservationMap">
+		SELECT
+			reservation_id
+		  , user_id
+		  , starts_at
+		  , ends_at
+		  , status
+		  , created_at
+		  . updated_at
+		 FROM reservations
+		 WHERE status = 'CONFIRMED'
+		   AND starts_at &lt; #{to}
+		   AND ends_at &gt; #{from}
+		 ORDER BY starts_at, reservation_id
+	</select>
+</mapper>

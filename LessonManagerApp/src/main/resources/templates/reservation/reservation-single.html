@@ -8,7 +8,7 @@
 </head>
 <body>
 	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
-	<main id="booking-app" class="booking-app" layout:fragment="content" data-lesson-minutes="60" aria-labelledby="page-title">
+	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}" aria-labelledby="page-title">
 		<header class="page-heading">
 			<div>
 				<p class="eyebrow">授業予約 / 1回ずつ予約</p>

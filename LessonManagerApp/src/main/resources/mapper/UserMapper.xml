@@ -182,4 +182,10 @@
 		WHERE
 			user_id = #{userId}
 	</delete>
+	
+	<select id="findLessonMinutesByUserId" resultType="java.lang.Integer">
+		SELECT lesson_minutes
+		FROM users
+		WHERE user_id = #{userId}
+	</select>
 </mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--  Mapperとxmlのマッピング -->
+<mapper namespace="com.ShineYamamoto.LessonManagerApp.reservation.repository.LessonOpeningMapper">
+
+	<resultMap type="com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening" id="openingMap">
+		<id column="opening_id" property="openingId" />
+		<result column="starts_at" property="startsAt" />
+		<result column="ends_at" property="endsAt" />
+	</resultMap>
+	
+	<select id="findOverlapping" resultMap="openingMap">
+		SELECT
+			opening_id
+		  , starts_at
+		  , ends_at
+		FROM lesson_openings
+		WHERE starts_at &lt; #{to}
+		  AND ends_at &gt; #{from}
+		ORDER BY starts_at, opening_id
+	</select>
+</mapper>

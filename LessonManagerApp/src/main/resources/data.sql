@@ -58,3 +58,12 @@ INSERT INTO reservations (
 FROM users
 WHERE e164_phone_number = '+8613800000000'
 ;
+
+/* 受付可能時間の確認用データ */
+INSERT INTO lesson_openings (
+	starts_at
+  , ends_at
+) VALUES
+	('2026-11-10 09:00:00', '2026-11-10 14:00:00')
+  , ('2026-11-11 11:00:00', '2026-11-11 20:00:00')
+;

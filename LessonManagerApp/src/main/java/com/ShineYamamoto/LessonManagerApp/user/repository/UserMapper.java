@@ -36,4 +36,8 @@ public interface UserMapper {
 	
 	/** ユーザー削除（1件） */
 	public int deleteById(Long userId);
+	
+	/** ユーザーの授業時間を取得する */
+	Integer findLessonMinutesByUserId(
+			@Param("userId") Long userId);
 }

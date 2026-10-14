@@ -5,24 +5,37 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationItemForm;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class ReservationController {
+	
+	private final ReservationDataService reservationDataService;
 	
 	/** ホーム画面を表示 */
 	@GetMapping("/reservation/single")
-	public String getReservation() {
+	public String getReservation(
+			@AuthenticationPrincipal LoginUser loginUser,
+			Model model) {
 
+		int lessonMinutes = reservationDataService.getLessonMinutes(loginUser.getUserId());
+		
+		model.addAttribute("lessonMinutes", lessonMinutes);
+		
 		return "reservation/reservation-single";
 	}
 	
