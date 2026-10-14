@@ -282,18 +282,6 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
-	// サンプルは必ず送信を止める。
-	/*
-	form.addEventListener('submit', event => {
-		event.preventDefault();
-		if (state.candidates.length === 0) return;
-		const invalid = state.candidates.find(item => reasonAt(item.date, item.start, state.candidates.filter(other => other !== item)) !== null);
-		const feedback = byId('submit-feedback');
-		feedback.textContent = invalid
-			? '開始時刻を過ぎた候補などが含まれています。日時を確認し選びなおしてください。'
-			: `サンプルのため送信していません。選択中の${state.candidates.length}件をまとめて予約する操作を確認しました。`;
-		feedback.hidden = false;
-	})*/
 	// 入力に問題があれば送信を止める
 	form.addEventListener('submit', event => {
 		const feedback = byId('submit-feedback');
