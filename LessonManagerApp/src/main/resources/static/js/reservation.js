@@ -191,13 +191,12 @@ const ReservationRules = (() => {
 			list.append(li);
 			
 			// 取り消し後も0,1,2...と連番にする。フォームにはユーザーIDを含めない。
-			for (const [property, minutes] of [['startsAt', item.start], ['endsAt', item.end]]) {
-				const input = document.createElement('input');
-				input.type = 'hidden';
-				input.name = `reservationList[${index}].${property}`;
-				input.value = R.localDateTime(item.date, minutes);
-				fields.append(input);
-			}
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = `reservationList[${index}].startsAt`;
+			input.value = R.localDateTime(item.date, item.start);
+			fields.append(input);
+
 		});
 		byId('candidate-list').replaceChildren(list);
 		byId('reservation-inputs').replaceChildren(fields);
@@ -284,6 +283,7 @@ const ReservationRules = (() => {
 	}
 	
 	// サンプルは必ず送信を止める。
+	/*
 	form.addEventListener('submit', event => {
 		event.preventDefault();
 		if (state.candidates.length === 0) return;
@@ -293,7 +293,42 @@ const ReservationRules = (() => {
 			? '開始時刻を過ぎた候補などが含まれています。日時を確認し選びなおしてください。'
 			: `サンプルのため送信していません。選択中の${state.candidates.length}件をまとめて予約する操作を確認しました。`;
 		feedback.hidden = false;
-	})
+	})*/
+	// サーバーへ送信。（入力に問題があれば送信を止める）
+	form.addEventListener('submit', event => {
+		const feedback = byId('submit-feedback');
+		feedback.hidden = true;
+		
+		if (state.candidates.length === 0) {
+			event.preventDefault();
+			
+			feedback.textContent = '予約希望日時を１件以上選択してください。';
+			feedback.hidden = false;
+			return;
+		}
+		
+		const invalid = state.candidates.find(item => 
+			reasonAt(
+				item.date,
+				item.start,
+				state.candidates.filter(other => other !== null)
+			) !== null
+		);
+		
+		if (invalid) {
+			event.preventDefault();
+			console.log(state.candidates);
+			console.log(invalid);
+			feedback.textContent = 
+				'開始時刻を過ぎた候補などが含まれています。'
+				+ '日時を確認し選びなおしてください。';
+			feedback.hidden = false;
+			return;
+		}
+		
+		// 問題がなければpreventDefault()を呼ばない
+		// ブラウザがformのactionへ通常のPOST送信を行う
+	});
 	
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {
 		const error = byId('configuration-error');
