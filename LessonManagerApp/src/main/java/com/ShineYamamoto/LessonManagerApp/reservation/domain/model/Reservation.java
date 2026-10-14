@@ -15,6 +15,8 @@ public class Reservation {
 	
 	private LocalDateTime endsAt;
 	
+	private ReservationStatus status;
+	
 	private LocalDateTime createdAt;
 	
 	private LocalDateTime updatedAt;

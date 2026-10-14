@@ -35,22 +35,26 @@ INSERT INTO reservations (
 	user_id
   , starts_at
   , ends_at
+  , status
 ) SELECT
 	user_id
   , '2026-10-01 10:00:00'
   , '2026-10-01 11:00:00'
+  , 'CONFIRMED'
 FROM users
-WHERE e164_phone_number = '+817000000000'
+WHERE e164_phone_number = '+8613800000000'
 ;
 
 INSERT INTO reservations (
 	user_id
   , starts_at
   , ends_at
+  , status
 ) SELECT
 	user_id
   , '2026-10-08 10:00:00'
   , '2026-10-08 11:00:00'
+  , 'CANCELLED'
 FROM users
-WHERE e164_phone_number = '+817000000000'
+WHERE e164_phone_number = '+8613800000000'
 ;

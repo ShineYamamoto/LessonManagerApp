@@ -32,6 +32,7 @@
 		<result column="user_id" property="userId" />
 		<result column="starts_at" property="startsAt" />
 		<result column="ends_at" property="endsAt" />
+		<result column="status" property="status" />
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
 	</resultMap>
@@ -129,6 +130,7 @@
 		  , reservations.user_id AS r_user_id
 		  , reservations.starts_at AS r_starts_at
 		  , reservations.ends_at AS r_ends_at
+		  , reservations.status As r_status
 		  , reservations.created_at AS r_created_at
 		  , reservations.updated_at AS r_updated_at
 		FROM

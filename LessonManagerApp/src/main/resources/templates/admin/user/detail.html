@@ -62,7 +62,8 @@
 						<tr>
 							<th>予約ID</th>
 							<th>開始時間</th>
-							<th>終了日時</th>
+							<th>終了時間</th>
+							<th>予約状態</th>
 						</tr>
 					</thead>
 					
@@ -77,6 +78,8 @@
 							<td th:text="${#temporals.format(
 								reservation.endsAt, 'yyyy/MM/dd HH:mm')}">
 							</td>
+							
+							<td th:text="${reservation.status}"></td>
 						</tr>
 					</tbody>
 				</table>
