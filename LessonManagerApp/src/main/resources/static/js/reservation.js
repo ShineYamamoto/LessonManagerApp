@@ -294,7 +294,7 @@ const ReservationRules = (() => {
 			: `サンプルのため送信していません。選択中の${state.candidates.length}件をまとめて予約する操作を確認しました。`;
 		feedback.hidden = false;
 	})*/
-	// サーバーへ送信。（入力に問題があれば送信を止める）
+	// 入力に問題があれば送信を止める
 	form.addEventListener('submit', event => {
 		const feedback = byId('submit-feedback');
 		feedback.hidden = true;
@@ -311,10 +311,9 @@ const ReservationRules = (() => {
 			reasonAt(
 				item.date,
 				item.start,
-				state.candidates.filter(other => other !== null)
+				state.candidates.filter(other => other !== item)
 			) !== null
 		);
-		
 		if (invalid) {
 			event.preventDefault();
 			console.log(state.candidates);
