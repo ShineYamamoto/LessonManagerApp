@@ -11,6 +11,8 @@
 		<result column="status" property="status" />
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
+		<result column="created_by" property="createdBy" />
+		<result column="updated_by" property="updatedBy" />
 	</resultMap>
 
 	<select id="findConfirmedOverlapping" resultMap="reservationMap">
@@ -22,10 +24,35 @@
 		  , status
 		  , created_at
 		  , updated_at
+		  , created_by
+		  , updated_by
 		 FROM reservations
 		 WHERE status = 'CONFIRMED'
 		   AND starts_at &lt; #{to}
 		   AND ends_at &gt; #{from}
 		 ORDER BY starts_at, reservation_id
 	</select>
+	
+	<insert id="insertOne"
+			useGeneratedKeys="true"
+			keyProperty="reservationId"
+			keyColumn="reservation_id">
+			
+		INSERT INTO reservations (
+			user_id
+		  , starts_at
+		  , ends_at
+		  , status
+		  , created_by
+		  , updated_by
+		)
+		VALUES (
+			#{userId}
+		  , #{startsAt}
+		  , #{endsAt}
+		  , #{status}
+		  , #{createdBy}
+		  , #{updatedBy}
+		)
+	</insert>
 </mapper>

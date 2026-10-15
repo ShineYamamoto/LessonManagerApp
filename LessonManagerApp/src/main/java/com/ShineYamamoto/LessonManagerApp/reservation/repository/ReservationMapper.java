@@ -15,4 +15,7 @@ public interface ReservationMapper {
 	List<Reservation> findConfirmedOverlapping(
 			@Param("from") LocalDateTime from,
 			@Param("to") LocalDateTime to);
+	
+	/** 予約を1件登録する */
+	int insertOne(Reservation reservation);
 }

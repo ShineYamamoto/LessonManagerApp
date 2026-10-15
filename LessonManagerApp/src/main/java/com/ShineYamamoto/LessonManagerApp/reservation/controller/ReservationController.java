@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
-import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationCheckService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationItemForm;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
@@ -32,7 +32,7 @@ public class ReservationController {
 	
 	private final ReservationDataService reservationDataService;
 	
-	private final ReservationCheckService reservationCheckService;
+	private final ReservationService reservationService;
 	
 	/** ホーム画面を表示 */
 	@GetMapping("/reservation/single")
@@ -72,23 +72,22 @@ public class ReservationController {
 		// フォーム内の各予約候補から「開始日時」だけを取り出し、開始日時のリストを作る
 		List<LocalDateTime> requestedStarts = 
 				form.getReservationList().stream()
-						.map(ReservationItemForm::getStartsAt) // 並べ替え
+						.map(ReservationItemForm::getStartsAt) // 開始日時を取り出す
 						.toList();
 		
 		try {
 			
-			List<ReservationSlot> checkedSlots = reservationCheckService.check(userId, requestedStarts);
+			List<ReservationSlot> reservedSlots = reservationService.reserve(userId, requestedStarts);
 			
 			StringBuilder message = new StringBuilder();
 			
-			message.append("予約希望日時を受信しました。\n");
-			message.append("※DB二は保存していません。\n\n");
+			message.append("予約を登録しました。\n");
 			
-			message.append("チェック件数: ")
-				   .append(checkedSlots.size())
+			message.append("登録件数: ")
+				   .append(reservedSlots.size())
 				   .append("件\n");
 			
-			for (ReservationSlot slot : checkedSlots) {
+			for (ReservationSlot slot : reservedSlots) {
 				message.append("日時（日本時間）: ")
 					   .append(slot.getStartsAt())
 					   .append(" ～ ")
