@@ -21,7 +21,7 @@
 		  , ends_at
 		  , status
 		  , created_at
-		  . updated_at
+		  , updated_at
 		 FROM reservations
 		 WHERE status = 'CONFIRMED'
 		   AND starts_at &lt; #{to}

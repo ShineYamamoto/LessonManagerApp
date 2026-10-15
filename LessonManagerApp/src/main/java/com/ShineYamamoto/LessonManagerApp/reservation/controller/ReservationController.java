@@ -1,5 +1,8 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.controller;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -12,6 +15,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationCheckService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationItemForm;
@@ -25,6 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class ReservationController {
 	
 	private final ReservationDataService reservationDataService;
+	
+	private final ReservationCheckService reservationCheckService;
 	
 	/** ホーム画面を表示 */
 	@GetMapping("/reservation/single")
@@ -60,24 +68,41 @@ public class ReservationController {
 		// ユーザーIDをログイン情報から取得する
 		Long userId = loginUser.getUserId();
 		
-		// 受信確認用の表示内容を作成
-		StringBuilder message = new StringBuilder();
-		message.append("予約希望日時を受信しました。\n");
-		message.append("※DB二は保存していません。\n\n");
-		message.append("ログインユーザーID: ")
-			   .append(userId)
-			   .append("\n");
+		// Serviceには画面専用Formではなく、必要な開始日時を渡す
+		// フォーム内の各予約候補から「開始日時」だけを取り出し、開始日時のリストを作る
+		List<LocalDateTime> requestedStarts = 
+				form.getReservationList().stream()
+						.map(ReservationItemForm::getStartsAt) // 並べ替え
+						.toList();
 		
-		message.append("受信件数: ")
-			   .append(form.getReservationList().size())
-			   .append("件\n");
-		
-		for (ReservationItemForm item : form.getReservationList()) {
-			message.append("開始日時（日本時間）: ")
-				   .append(item.getStartsAt())
-				   .append("\n");
+		try {
+			
+			List<ReservationSlot> checkedSlots = reservationCheckService.check(userId, requestedStarts);
+			
+			StringBuilder message = new StringBuilder();
+			
+			message.append("予約希望日時を受信しました。\n");
+			message.append("※DB二は保存していません。\n\n");
+			
+			message.append("チェック件数: ")
+				   .append(checkedSlots.size())
+				   .append("件\n");
+			
+			for (ReservationSlot slot : checkedSlots) {
+				message.append("日時（日本時間）: ")
+					   .append(slot.getStartsAt())
+					   .append(" ～ ")
+					   .append(slot.getEndsAt())
+					   .append("\n");
+			}
+			
+			return ResponseEntity.ok(message.toString());
+			
+		} catch (ReservationCheckException e) {
+			
+			return ResponseEntity.badRequest().body(
+					"予約出来ませんでした。\n" + e.getMessage());
+			
 		}
-		
-		return ResponseEntity.ok(message.toString());
 	}
 }
