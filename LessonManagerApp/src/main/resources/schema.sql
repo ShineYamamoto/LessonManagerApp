@@ -35,13 +35,25 @@ CREATE TABLE IF NOT EXISTS reservations (
   , status VARCHAR(20) NOT NULL DEFAULT 'CONFIRMED'
   , created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
   , updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  , created_by BIGINT
+  , uodated_by BIGINT
   
-  , CONSTRAINT fk_reservation_user
+  , CONSTRAINT fk_reservations_user
   		FOREIGN KEY (user_id)
   		REFERENCES users(user_id)
   
   , CONSTRAINT chk_reservations_time
   		CHECK (ends_at > starts_at)
+  		
+  , CONSTRAINT fk_reservations_created_by
+  		FOREIGN KEY (created_by)
+  		REFERENCES users(user_id)
+  		ON DELETE SET NULL
+  		
+  , CONSTRAINT fk_reservations_updated_by
+  		FOREIGN KEY (updated_by)
+  		REFERENCES users(user_id)
+  		ON DELETE SET NULL
 );
 
 /* 予約可能時間 */
