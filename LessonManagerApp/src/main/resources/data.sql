@@ -67,3 +67,7 @@ INSERT INTO lesson_openings (
 	('2026-11-10 09:00:00', '2026-11-10 14:00:00')
   , ('2026-11-11 11:00:00', '2026-11-11 20:00:00')
 ;
+
+/* 予約ロック用の初期データ */
+INSERT INTO reservation_lock (lock_id)
+VALUES (1)

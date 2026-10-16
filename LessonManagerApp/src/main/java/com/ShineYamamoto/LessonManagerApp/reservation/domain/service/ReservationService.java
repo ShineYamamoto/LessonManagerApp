@@ -4,11 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationStatus;
+import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationLockMapper;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -21,15 +23,25 @@ public class ReservationService {
 	
 	private final ReservationMapper reservationMapper;
 	
+	private final ReservationLockMapper reservationLockMapper;
+	
 	/**
 	 * ログインユーザー本人の予約を登録する
 	 * 全件成功した場合のみ登録を確定する
+	 * 排他制御により同時予約を防ぐ
 	 */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public List<ReservationSlot> reserve(
 			Long userId,
 			List<LocalDateTime> requestedStarts) {
 		
+		// 予約処理用のDBロックを取得する
+		Integer lockId = reservationLockMapper.lock();
+		
+		if (lockId == null) {
+			throw new IllegalStateException(
+					"予約ロック用のデータが存在しません。");
+		}
 		
 		// 全件をチェックし、開始・終了日時を確定する
 		List<ReservationSlot> checkedSlots = reservationCheckService.check(userId, requestedStarts);
@@ -54,6 +66,8 @@ public class ReservationService {
 			}
 		}
 		
+		// このメソッドが正常終了した後にコミットされる
+		// コミット時にDBロックが解放される
 		return checkedSlots;
 	}
 }
