@@ -66,7 +66,7 @@ public class ReservationConcurrencyTest {
 		ExecutorService executor = Executors.newFixedThreadPool(2);
 		
 		CountDownLatch ready = new CountDownLatch(2);
-		CountDownLatch startSignal = new CountDownLatch(2);
+		CountDownLatch startSignal = new CountDownLatch(1);
 		
 		try {
 			Callable<Boolean> taskA = createTask(userA, startsAt, ready, startSignal);
