@@ -67,9 +67,9 @@ CREATE TABLE IF NOT EXISTS lesson_openings (
   
   , CONSTRAINT chk_lesson_openings_time
   		CHECK (ends_at > starts_at)
-)
+);
 
 /* 予約登録時の排他制御用 */
 CREATE TABLE IF NOT EXISTS reservation_lock (
 	lock_id INT PRIMARY KEY
-):
+);
