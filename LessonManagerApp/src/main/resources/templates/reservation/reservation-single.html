@@ -31,6 +31,9 @@
 		
 		<!-- JSが「授業時間の設定が不正」「ブラウザがモーダル機能に未対応」と判定したとき、メッセージを入れて表示する -->
 		<p id="configuration-error" class="error-box" role="alert" hidden></p>
+		
+		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
+		
 		<!-- ブラウザでJavaScriptが無効な場合に、案内文を表示 -->
 		<noscript><p class="error-box">このサンプルを操作するには、JavaScriptを有効にしてください。</p></noscript>
 		

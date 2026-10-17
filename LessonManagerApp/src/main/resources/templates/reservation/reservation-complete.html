@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<meta charset="UTF-8">
+<title>予約完了</title>
+</head>
+<body>
+	<main layout:fragment="content">
+		
+		<h1>予約が完了しました</h1>
+		
+		<p>
+			<span th:text="${#lists.size(reservedSlots)}">0</span>
+			件の予約を登録しました。
+		</p>
+		
+		<ul>
+			<li th:each="slot : ${reservedSlots}">
+				
+				<span th:text="${slot.startsAt}"></span>
+				
+				～
+				
+				<span th:text="${slot.endsAt}"></span>
+			</li>
+		</ul>
+		
+		<p>日時は日本時間です。</p>
+
+		<a th:href="@{/user/reservation/single}">
+			続けて予約する
+		</a>
+		
+		<br>
+
+		<a th:href="@{/home}">
+			ホームへ戻る
+		</a>
+	</main>
+</body>
+</html>
