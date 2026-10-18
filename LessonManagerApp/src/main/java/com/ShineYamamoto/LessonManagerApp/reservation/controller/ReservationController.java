@@ -1,6 +1,7 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.controller;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,9 +99,6 @@ public class ReservationController {
 			// 予約したユーザーも記録する
 			session.setAttribute(COMPLETED_USER_ID_KEY, userId);
 			
-			
-			StringBuilder message = new StringBuilder();
-			
 			return "redirect:/user/reservation/complete";
 			
 		} catch (ReservationCheckException e) {
@@ -141,8 +139,14 @@ public class ReservationController {
 			return "redirect:/user/reservation/single";
 		}
 		
+		// 開始日時の早い順に並べ替え
+		List<ReservationSlot> sortedSlots = slots.stream()
+				.map(ReservationSlot.class::cast)
+				.sorted(Comparator.comparing(ReservationSlot::getStartsAt))
+				.toList();
+		
 		// Thymeleafへ確定済み予約を渡す
-		model.addAttribute("reservedSlots", slots);
+		model.addAttribute("reservedSlots", sortedSlots);
 		
 		return "reservation/reservation-complete";
 	}
