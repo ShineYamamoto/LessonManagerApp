@@ -2,40 +2,95 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>予約完了</title>
+<link rel="stylesheet" th:href="@{/css/reservation-complete.css}">
 </head>
 <body>
-	<main layout:fragment="content">
+	<main class="reservation-complete" layout:fragment="content" aria-labelledby="complete-title">
 		
-		<h1>予約が完了しました</h1>
-		
-		<p>
-			<span th:text="${#lists.size(reservedSlots)}">0</span>
-			件の予約を登録しました。
-		</p>
-		
-		<ul>
-			<li th:each="slot : ${reservedSlots}">
+		<section class="complete-card">
+			
+			<!-- 予約成功メッセージ -->
+			<header class="complete-header">
 				
-				<span th:text="${slot.startsAt}"></span>
+				<div class="complete-check" aria-hidden="true">✓</div>
 				
-				～
+				<p class="complete-eyebrow">授業予約 / 予約完了</p>
 				
-				<span th:text="${slot.endsAt}"></span>
-			</li>
-		</ul>
+				<h1 id="complete-title">予約が完了しました</h1>
+				
+				<p class="complete-message">
+					<strong th:text="${#lists.size(reservedSlots)}">1</strong>
+					件の授業を予約しました。
+				</p>
+				
+			</header>
+			
+			<!-- 確定した予約日時 -->
+			<section class="complete-details" aria-labelledby="reservation-list-heading">
+				
+				<div class="complete-section-heading">
+					
+					<h2 id="reservation-list-heading">今回の予約日時</h2>
+					
+					<span class="complete-timezone">日本時間（UTC＋09:00）</span>
+					
+				</div>
+				
+				<ol class="complete-list">
+					
+					<li class="complete-item" th:each="slot : ${reservedSlots}">
+						
+						<!-- 授業日 -->
+						<div class="complete-date-line">
+							
+							<span class="complete-item-icon" aria-hidden="true">📅</span>
+							
+							<time class="complete-date"
+								th:attr="datetime=${#temporals.format(slot.startsAt, 'yyyy-MM-dd')}"
+								th:text="${#temporals.format(slot.startsAt, 'yyyy年M月d日(E) ')}"></time>
+							
+						</div>
+						
+						<!-- 開始・終了時刻 -->
+						<div class="complete-time-line">
+							
+							<span class="complete-item-icon" aria-hidden="true">🕑</span>
+							
+							<div class="complete-item-range">
+								
+								<time th:attr="datetime=${slot.startsAt}"
+									th:text="${#temporals.format(slot.startsAt, 'HH:mm')}"></time>
+									
+								<span aria-hidden="true">～</span>
+								
+								<time th:attr="datetime=${slot.endsAt}"
+									th:text="${#temporals.format(slot.endsAt, 'HH:mm')}"></time>
+							
+							</div>
+							
+						</div>
+						
+					</li>
+					
+				</ol>
+				
+				<p class="complete-note">表示されている日時はすべて日本時間です。</p>
+				
+			</section>
+			
+			<!-- 予約完了後の画面遷移 -->
+			<nav class="complete-actions" aria-label="予約完了後の操作">
+				
+				<a class="complete-primary-link" th:href="@{/user/reservation/single}">続けて予約する</a>
+				
+				<a class="complete-secondary-link" th:href="@{/home}">ホームへ戻る</a>
+				
+			</nav>
+			
+		</section>
 		
-		<p>日時は日本時間です。</p>
-
-		<a th:href="@{/user/reservation/single}">
-			続けて予約する
-		</a>
-		
-		<br>
-
-		<a th:href="@{/home}">
-			ホームへ戻る
-		</a>
 	</main>
 </body>
 </html>
