@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationProblem;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
@@ -34,7 +35,10 @@ public class ReservationCheckService {
 	
 	/**
 	 * 予約希望を検証する。
-	 * 全件問題なければ、サーバーで終了日時を計算した時間帯を返す。
+	 * 
+	 * 問題のある候補をすべて収集する
+	 * 1件でも問題があればエラーを投げる
+	 * 全件問題なければ予約枠の一覧を返す
 	 */
 	public List<ReservationSlot> check(
 			Long userId,
@@ -45,56 +49,23 @@ public class ReservationCheckService {
 					"予約希望日時を1件以上選択してください。");
 		}
 		
-		// 授業時間はブラウザの値ではなくDBから取得する
+		// 授業時間はDBから取得する
 		int lessonMinutes = reservationDataService.getLessonMinutes(userId);
 		
-		// 正の30分単位であることは既存DataServiceで検証済み
+		// 正の30分単位であることはDataServiceで検証済み
 		if (lessonMinutes > CLOSE_MINUTES - OPEN_MINUTES) {
 			throw new IllegalStateException(
 					"授業時間が予約可能な時間帯の長さを超えています。");
 		}
 		
-		// 個のリクエストでは同じ現在日時を使って判定する。
+		// このリクエストでは同じ現在日時を使って判定する。
 		LocalDateTime now = LocalDateTime.now(BOOKING_ZONE);
 		
-		List<ReservationSlot> slots = new ArrayList<>();
+		// 条件を満たす予約候補
+		List<ReservationSlot> validSlots = new ArrayList<>();
 		
-		// まず入力日時と、今回送信された候補同士をチェックする
-		for (LocalDateTime startsAt : requestedStarts) {
-			
-			checkStart(startsAt, now);
-			
-			// 開始時間を分に変換
-			int startMinutes = startsAt.getHour() * 60 + startsAt.getMinute();
-			
-			if (startMinutes < OPEN_MINUTES || startMinutes + lessonMinutes > CLOSE_MINUTES) {
-				
-				throw new ReservationCheckException(
-						startsAt
-						+ ": 授業全体が" + OPEN_MINUTES / 60 + ":00=" + CLOSE_MINUTES / 60 + ":00に収まるように選択してください");
-			}
-			
-			LocalDateTime endsAt = startsAt.plusMinutes(lessonMinutes);
-			
-			// slotsに登録された他の登録候補との重複チェック
-			// 一週目はslotsは空なので実行されない。上のネストのfor文の2週目から実行される
-			// slotsへ値を入れるのはこのfor文が終わった後。
-			for (ReservationSlot previous : slots) {
-				
-				if (overlaps(
-						startsAt,
-						endsAt,
-						previous.getStartsAt(),
-						previous.getEndsAt())) {
-					
-					throw new ReservationCheckException(
-							startsAt
-							+ ": 今回選択したほかの候補日と授業時間が重複しています。");
-				}
-			}
-			
-			slots.add(new ReservationSlot(startsAt, endsAt));
-		}
+		// 条件を満たさない予約候補
+		List<ReservationProblem> problems = new ArrayList<>();
 		
 		// 同じ日のデータを、個のリクエスト内で何度も取得しないためのMap
 		
@@ -103,73 +74,137 @@ public class ReservationCheckService {
 		// 既存予約のMap
 		Map<LocalDate, List<Reservation>> reservationsByDate = new HashMap<>();
 		
-		// DBの受付可能時間・既存予約と照合する
-		for (ReservationSlot slot: slots) {
+		// 開始日時の早い順にチェックする
+		List<LocalDateTime> sortedStarts = requestedStarts.stream()
+					.sorted(Comparator.nullsFirst(
+						Comparator.naturalOrder()))
+					.toList();
+		
+		// まず入力日時と、今回送信された候補同士をチェックする
+		for (LocalDateTime startsAt : sortedStarts) {
 			
-			LocalDate date = slot.getStartsAt().toLocalDate();
+			// 開始日自体のチェック
+			String startError = checkStartReason(startsAt, now, lessonMinutes);
 			
-			// openingsに対応するキー（date）がなければgetOpeningを実行しMapに保存する
-			List<LessonOpening> openings =
-					openingsByDate.computeIfAbsent(
-							date,
-							reservationDataService::getOpening);
+			if (startError != null) {
+				
+				problems.add(
+						new ReservationProblem(startsAt, startError));
+				
+				continue;
+			}
 			
-			// 受付可能時間内に収まる予約かチェック
+			LocalDateTime endsAt = startsAt.plusMinutes(lessonMinutes);
+			
+			ReservationSlot slot = new ReservationSlot(startsAt, endsAt);
+			
+			LocalDate date = startsAt.toLocalDate();
+			
+			// 受付可能時間の取得
+			// openingsByDateに対応するキー（date）がなければgetOpeningを実行しMapに保存する
+			List<LessonOpening> openings = openingsByDate.computeIfAbsent(date, reservationDataService::getOpening);
+			
+			// 授業時間に収まっていない
 			if (!isCoveredByOpenings(slot, openings)) {
 				
-				throw new ReservationCheckException(
-						slot.getStartsAt()
-						+ ": 受付可能時間ではない時間帯が含まれています。");
+				problems.add(new ReservationProblem(
+						startsAt,
+						"は受付可能時間外です。"
+						+ "別の時間を選択してください。"));
 			}
 			
-			// confirmedReservationsに対応するキー（date）がなければgetOpeningを実行しMapに保存する
-			List<Reservation> confirmedReservations =
-					reservationsByDate.computeIfAbsent(
-							date,
-							reservationDataService::getConfirmedReservation);
+			// 既存の確定予約を取得する
+			// reservationsByDateに対応するキー（date）がなければgetOpeningを実行しMapに保存する
+			List<Reservation> confirmedReservations = reservationsByDate.computeIfAbsent(date, reservationDataService::getConfirmedReservation);
 			
-			// 他の予約と重複していないかチェック
-			for (Reservation reservation : confirmedReservations) {
-				if (overlaps(
-						slot.getStartsAt(),
-						slot.getEndsAt(),
-						reservation.getStartsAt(),
-						reservation.getEndsAt())) {
-					
-					throw new ReservationCheckException(
-							slot.getStartsAt()
-							+ ": 指定した時間にはすでに別の予約が入っています。");
-				}
+			// 既存予約と重複するか
+			boolean alreadyBooked = confirmedReservations.stream()
+					.anyMatch(reservation ->
+							overlaps(
+									startsAt,
+									endsAt,
+									reservation.getStartsAt(),
+									reservation.getEndsAt()
+							)
+					);
+			
+			if (alreadyBooked) {
+				
+				problems.add(new ReservationProblem(
+						startsAt,
+						"の時間は利用できなくなりました。"
+						+ "別の時間を選択してください。"));
+				
+				continue;
 			}
+			
+			
+			// 今回slotsに登録された他の登録候補との重複チェック
+			// 一週目はslotsは空なので実行されない。上のネストのfor文の2週目から実行される
+			// slotsへ値を入れるのはこのfor文が終わった後。
+			boolean overlapsCandidate = validSlots.stream()
+					.anyMatch(previous ->
+							overlaps(
+									startsAt,
+									endsAt,
+									previous.getStartsAt(),
+									previous.getEndsAt()
+							)
+					);
+			
+			if (overlapsCandidate) {
+				
+				problems.add(new ReservationProblem(
+						startsAt,
+						"は今回選択したほかの候補と重複しています。"
+						+ "別の時間を選択してください。"));
+				
+				continue;
+			}
+			
+			// すべての条件を満たした候補だけを追加する
+			validSlots.add(slot);
 		}
 		
-		return List.copyOf(slots);
+		// 1件でも問題があれば登録処理へ進まない
+		if (!problems.isEmpty()) {
+			
+			throw new ReservationCheckException(problems);
+		}
+		
+		// 全件問題がなかった場合のみ返す
+		return List.copyOf(validSlots);
 	}
 	
 	/** 開始日時そのものを検証する */
-	private void checkStart(
+	private String checkStartReason(
 			LocalDateTime startsAt,
-			LocalDateTime now) {
+			LocalDateTime now,
+			int lessonMinutes) {
 		
 		if (startsAt == null) {
-			throw new ReservationCheckException(
-					"開始日時が入力されていません。");
+			return "開始日時が入力されていません。";
 		}
 		
 		if (startsAt.getMinute() % STEP_MINUTES != 0
 				|| startsAt.getSecond() != 0
 				|| startsAt.getNano() != 0) {
 			
-			throw new ReservationCheckException(
-					startsAt
-					+ ": 開始時刻は30分刻みで選択してください。");
+			return "は30分刻みで選択してください。";
 		}
 		
 		if (!startsAt.isAfter(now)) {
-			throw new ReservationCheckException(
-					startsAt
-					+ ": 予約期限を過ぎた日時は予約できません。");
+			return "は予約期限を過ぎています。日時の日時を選択してください";
 		}
+		
+		int startMinutes = startsAt.getHour() * 60 + startsAt.getMinute();
+		
+		if (startMinutes < OPEN_MINUTES || startMinutes + lessonMinutes > CLOSE_MINUTES) {
+			return "授業全体が" + OPEN_MINUTES / 60 + ":00～" + CLOSE_MINUTES / 60 + ":00に収まりません。"
+					+ "別の時間を選択してください。";
+		}
+		
+		return null;
 	}
 	
 	/** 2つの時間帯が重なるかを判定する */

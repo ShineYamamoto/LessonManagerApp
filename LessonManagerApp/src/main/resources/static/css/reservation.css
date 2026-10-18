@@ -106,6 +106,7 @@
 .booking-app .day-selection strong { display: block; margin-top: 3px; max-height: 70px; overflow-y: auto; font-size: 17px; font-weight: 600; color: var(--blue-dark); }
 .booking-app .dialog-status { margin-top: 6px; min-height: 20px; color: var(--muted); font-size: 11px; }
 .booking-app .dialog-footer .primary-button { margin-top: 11px; }
+.booking-app .error-box { white-space: pre-line; }
 @media (max-width: 950px) {
     .booking-app .booking-layout { grid-template-columns: minmax(0, 1fr); }
 }

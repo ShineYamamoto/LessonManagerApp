@@ -1,9 +1,12 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.controller;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -16,8 +19,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationProblem;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
@@ -35,6 +40,8 @@ public class ReservationController {
 	private final ReservationDataService reservationDataService;
 	
 	private final ReservationService reservationService;
+	
+	private static final DateTimeFormatter ERROR_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d HH:mm");
 	
 	// セッションに保存する情報のキー
 	private static final String COMPLETED_SLOTS_KEY = "reservation.completedSlots";
@@ -60,7 +67,7 @@ public class ReservationController {
 			BindingResult bindingResult,
 			@AuthenticationPrincipal LoginUser loginUser,
 			HttpSession session,
-			Model model) {
+			RedirectAttributes redirectAttributes) {
 		
 		// ユーザーIDをログイン情報から取得する
 		Long userId = loginUser.getUserId();
@@ -69,24 +76,18 @@ public class ReservationController {
 		session.removeAttribute(COMPLETED_SLOTS_KEY);
 		session.removeAttribute(COMPLETED_USER_ID_KEY);
 		
+		// フォームから変換できた日時を取り出す
+		List<LocalDateTime> requestedStarts = extractStarts(form);
+		
 		// バリデーションエラーチェック
 		if (bindingResult.hasErrors()) {
-			return showReservationError(
-					userId,
-					"予約希望日時を受信できませんでした。"
-					+ "1件以上選択し、日時の形式を確認してください。",
-					model
-			);
+			
+			return redirectReservationError(
+					"予約日時の形式を確認してください。",
+					requestedStarts,
+					redirectAttributes);
 		}
-		
-		
 
-		// Serviceには画面専用Formではなく、必要な開始日時を渡す
-		// フォーム内の各予約候補から「開始日時」だけを取り出し、開始日時のリストを作る
-		List<LocalDateTime> requestedStarts = 
-				form.getReservationList().stream()
-						.map(ReservationItemForm::getStartsAt) // 開始日時を取り出す
-						.toList();
 		
 		try {
 			
@@ -103,12 +104,46 @@ public class ReservationController {
 			
 		} catch (ReservationCheckException e) {
 			
-			// 失敗時の候補復元は後で実装する
-			return showReservationError(
-					userId,
-					"予約できませんでした。"
-					+ e.getMessage(),
-					model);
+			// 予約条件に問題があった日時を取得
+			Set<LocalDateTime> failedStarts = e.getProblems().stream()
+					.map(ReservationProblem::startsAt)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+			
+			// 問題のない候補だけを残す
+			List<LocalDateTime> remainingStarts = requestedStarts.stream()
+					.filter(start ->
+							!failedStarts.contains(start))
+					.toList();
+			
+			// エラーメッセージを生成
+			String errorMessage;
+			
+			if (e.getProblems().isEmpty()) {
+				
+				errorMessage = e.getMessage();
+				
+			} else {
+				
+				errorMessage = e.getProblems().stream()
+						.map(problem -> {
+							
+							String dateText = 
+									problem.startsAt() == null
+									? ""
+									: problem.startsAt().format(ERROR_DATE_FORMAT);
+							
+							return dateText + problem.message();
+						})
+						.distinct()
+						.collect(Collectors.joining("\n"));
+			}
+			
+			// 残りの候補を保持して予約画面へ戻る
+			return redirectReservationError(
+					errorMessage,
+					remainingStarts,
+					redirectAttributes);
 	
 		}
 	}
@@ -151,19 +186,45 @@ public class ReservationController {
 		return "reservation/reservation-complete";
 	}
 	
-	/** 
-	 * 予約エラー時に元の画面を再現する 
+	/** フォームから正常に変換できた開始日時を取り出す */
+	private List<LocalDateTime> extractStarts(
+			ReservationForm form) {
+		
+		if (form.getReservationList() == null) {
+			return List.of();
+		}
+		
+		return form.getReservationList().stream()
+				.filter(Objects::nonNull)
+				.map(ReservationItemForm::getStartsAt)
+				.filter(Objects::nonNull)
+				.toList();
+	}
+	
+	/**
+	 * エラー内容と残りの候補を保存して予約画面へ戻る
 	 */
-	private String showReservationError(
-			Long userId,
+	private String redirectReservationError(
 			String message,
-			Model model) {
+			List<LocalDateTime> remainingStarts,
+			RedirectAttributes redirectAttributes) {
 		
-		int lessonMinutes = reservationDataService.getLessonMinutes(userId);
+		// JavaScriptへ渡すために日時を文字列化する
+		String restoredStarts = remainingStarts.stream()
+				.distinct()
+				.map(DateTimeFormatter.ISO_LOCAL_DATE_TIME::format)
+				.collect(Collectors.joining(","));
 		
-		model.addAttribute("lessonMinutes", lessonMinutes);
-		model.addAttribute("reservationError", message);
+		// エラーメッセージ
+		redirectAttributes.addFlashAttribute(
+				"reservationError",
+				message);
 		
-		return "reservation/reservation-single";
+		// 復元する予約候補
+		redirectAttributes.addFlashAttribute(
+				"restoredStarts",
+				restoredStarts);
+		
+		return "redirect:/user/reservation/single";
 	}
 }

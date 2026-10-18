@@ -172,6 +172,86 @@ const ReservationRules = (() => {
 		byId('calendar-days').replaceChildren(fragment);
 	}
 	
+	// 予約失敗後、サーバから返された候補を復元する
+	function restoreCandidates() {
+		
+		const restoredInput = byId('restored-starts');
+		
+		if (!restoredInput || !restoredInput.value) {
+			return;
+		}
+		
+		// カンマ区切りの日時をリストにする
+		const restoredStarts = restoredInput.value.split(',');
+		
+		// 同じ日時を重複して復元しないためのSet
+		const restoredIds = new Set();
+		
+		for (const value of restoredStarts) {
+			
+			const match = value.trim().match(
+				/^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/
+			);
+			
+			// 日時形式が不正な場合は無視する
+			if (!match) continue;
+			
+			const date = match[1]
+			const hour = Number(match[2]);
+			const minute = Number(match[3]);
+			const second = Number(match[4] ?? '0');
+			
+			// 時刻を分へ変換
+			const start = hour * 60 + minute;
+			const end = start + lessonMinutes;
+			
+			// 画面の基本的な時間条件をチェック
+			if (second != 0
+					|| start % R.STEP !== 0
+					|| start < R.OPEN
+					|| end > R.CLOSE) {
+				
+				continue;
+			}
+			
+			// 日本時間で開始時刻が過去なら復元しない
+			const startsAtMillis = Date.parse(
+				`${date}T${R.timeText(start)}:00+09:00`
+			);
+			
+			if (!Number.isFinite(startsAtMillis)
+				|| startsAtMillis <= Date.now()) {
+					continue;
+			}
+			
+			const id = candidateId(date, start);
+			
+			if (restoredIds.has(id)) {
+				continue;
+			}
+			
+			restoredIds.add(id);
+			
+			// 既存の候補と同じ形式で保存
+			state.candidates.push({
+				date: date,
+				start: start,
+				end: end
+			});
+		}
+		
+		// 復元候補の最初の日付が属する月を表示する
+		if (state.candidates.length > 0) {
+			
+			const firstDate = state.candidates
+					.map(item => item.date)
+					.sort()[0];
+					
+			state.year = Number(firstDate.slice(0, 4));
+			state.month = Number(firstDate.slice(5, 5)) - 1;
+		}
+	}
+	
 	// 予約を一覧にまとめる
 	function renderCandidates() {
 		state.candidates.sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start);
@@ -410,6 +490,10 @@ const ReservationRules = (() => {
 		if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
 	})
 	
+	// サーバーから渡された候補を復元
+	restoreCandidates();
+	
+	// 復元後の状態で画面を描画
 	renderCandidates();
 	renderCalendar();
 })();
