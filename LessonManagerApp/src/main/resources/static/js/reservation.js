@@ -248,7 +248,7 @@ const ReservationRules = (() => {
 					.sort()[0];
 					
 			state.year = Number(firstDate.slice(0, 4));
-			state.month = Number(firstDate.slice(5, 5)) - 1;
+			state.month = Number(firstDate.slice(5, 7)) - 1;
 		}
 	}
 	

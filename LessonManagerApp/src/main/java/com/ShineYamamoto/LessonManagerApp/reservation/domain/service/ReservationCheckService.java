@@ -111,6 +111,8 @@ public class ReservationCheckService {
 						startsAt,
 						"は受付可能時間外です。"
 						+ "別の時間を選択してください。"));
+				
+				continue;
 			}
 			
 			// 既存の確定予約を取得する

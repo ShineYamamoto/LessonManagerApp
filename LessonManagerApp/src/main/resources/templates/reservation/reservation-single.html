@@ -34,7 +34,7 @@
 		
 		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
 		<!-- サーバから返された予約候補をJSへ渡す -->
-		<p type="hidden" id="restored-starts" th:value="${restoreStarts}"></p>
+		<input type="hidden" id="restored-starts" th:value="${restoredStarts}"></input>
 		
 		<!-- ブラウザでJavaScriptが無効な場合に、案内文を表示 -->
 		<noscript><p class="error-box">このサンプルを操作するには、JavaScriptを有効にしてください。</p></noscript>
