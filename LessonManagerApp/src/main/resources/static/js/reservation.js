@@ -518,7 +518,7 @@ const ReservationRules = (() => {
 	})
 	
 	byId('candidate-list').addEventListener('click', event => {
-		if (setSubmitting) return;
+		if (isSubmitting) return;
 		const button = event.target.closest('button[data-remove]');
 		if (!button) return;
 		const index = state.candidates.findIndex(item => candidateId(item.date, item.start) === button.dataset.remove);
