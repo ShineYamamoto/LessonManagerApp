@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>予約完了</title>
+<title th:text="#{reservation.complete.pageTitle}">予約完了</title>
 <link rel="stylesheet" th:href="@{/css/reservation-complete.css}">
 </head>
 <body>
@@ -16,12 +16,11 @@
 				
 				<div class="complete-check" aria-hidden="true">✓</div>
 				
-				<p class="complete-eyebrow">授業予約 / 予約完了</p>
+				<p class="complete-eyebrow" th:text="#{reservation.complete.breadcrumb}">授業予約 / 予約完了</p>
 				
-				<h1 id="complete-title">予約が完了しました</h1>
+				<h1 id="complete-title" th:text="#{reservation.complete.title}">予約が完了しました</h1>
 				
-				<p class="complete-message">
-					<strong th:text="${#lists.size(reservedSlots)}">1</strong>
+				<p class="complete-message" th:text="#{reservation.complete.count(${#lists.size(reservedSlots)})}">
 					件の授業を予約しました。
 				</p>
 				
@@ -32,9 +31,9 @@
 				
 				<div class="complete-section-heading">
 					
-					<h2 id="reservation-list-heading">今回の予約日時</h2>
+					<h2 id="reservation-list-heading" th:text="#{reservation.complete.listTitle}">今回の予約日時</h2>
 					
-					<span class="complete-timezone">日本時間（UTC＋09:00）</span>
+					<span class="complete-timezone" th:text="#{reservation.complete.timezone}">日本時間（UTC＋09:00）</span>
 					
 				</div>
 				
@@ -76,16 +75,16 @@
 					
 				</ol>
 				
-				<p class="complete-note">表示されている日時はすべて日本時間です。</p>
+				<p class="complete-note" th:text="#{reservation.complete.timezoneNote}">表示されている日時はすべて日本時間です。</p>
 				
 			</section>
 			
 			<!-- 予約完了後の画面遷移 -->
 			<nav class="complete-actions" aria-label="予約完了後の操作">
 				
-				<a class="complete-primary-link" th:href="@{/user/reservation/single}">続けて予約する</a>
+				<a class="complete-primary-link" th:href="@{/user/reservation/single}" th:text="#{reservation.complete.continue}">続けて予約する</a>
 				
-				<a class="complete-secondary-link" th:href="@{/home}">ホームへ戻る</a>
+				<a class="complete-secondary-link" th:href="@{/home}" th:text="#{reservation.complete.home}">ホームへ戻る</a>
 				
 			</nav>
 			
