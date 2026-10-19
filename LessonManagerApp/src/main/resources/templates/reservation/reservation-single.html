@@ -8,12 +8,28 @@
 </head>
 <body>
 	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
-	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}" aria-labelledby="page-title">
+	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}, date-locale=${#locale.toLanguageTag()}" aria-labelledby="page-title">
+		
+		<!-- JavaScriptへ邦訳済みメッセージを渡す -->
+		<div id="reservation-messages" hidden
+			th:attr="
+				data-button-empty=#{reservation.js.button.empty},
+			    data-button-count=#{reservation.js.button.count},
+			    data-button-submitting=#{reservation.js.button.submitting},
+			    data-feedback-submitting=#{reservation.js.feedback.submitting},
+			    data-feedback-invalid=#{reservation.js.feedback.invalid},
+			    data-feedback-empty=#{reservation.error.empty},
+			    data-config-duration=#{reservation.js.config.duration},
+			    data-config-browser=#{reservation.js.config.browser},
+			    data-summary-total=#{reservation.js.summary.total},
+			    data-button-remove=#{reservation.js.button.remove}">
+		</div>
+		
 		<header class="page-heading">
 			<div>
-				<p class="eyebrow">授業予約 / 1回ずつ予約</p>
-				<h1 id="page-title">授業を予約する</h1>
-				<p class="lead-text">カレンダーから日付を選び、開いている時間を選択してください。</p>
+				<p class="eyebrow" th:text="#{reservation.single.breadcrumb}">授業予約 / 1回ずつ選択</p>
+				<h1 id="page-title" th:text="#{reservation.single.title}">授業を予約する</h1>
+				<p class="lead-text" th:text="#{reservation.single.description}">カレンダーから日付を選び、開いている時間を選択してください。</p>
 			</div>
 			<div class="profile-chip">
 				<span>あなたの授業時間</span>
@@ -42,7 +58,7 @@
 		<div class="booking-layout">
 			<section class="calendar-card" aria-labelledby="calendar-heading">
 				<div class="card-heading">
-					<h2 id="calendar-heading">日付を選ぶ</h2>
+					<h2 id="calendar-heading" th:text="#{reservation.single.calenderTitle}">日付を選ぶ</h2>
 					<span class="step-label">STEP 01</span>
 				</div>
 				<div class="month-toolbar">
@@ -76,7 +92,7 @@
 			<aside class="summary-card" aria-labelledby="candidate-heading">
 				<form id="reservation-form" method="post" th:action="@{/user/reservation/single}">
 					<div class="summary-body">
-						<div class="card-heading"><h2 id="candidate-heading">予約候補</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
+						<div class="card-heading"><h2 id="candidate-heading" th:text="#{reservation.single.candidatesTitle}">予約候補</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
 						<p class="muted">選んだ日時がここに追加されます</p>
 						<div id="empty-candidates" class="empty-state"><span class="empty-calendar" aria-hidden="true">＋</span><p>予約候補はまだありません</p></div>
 						<ol id="candidate-list" class="candidate-list"></ol>
