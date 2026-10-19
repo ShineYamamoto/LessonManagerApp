@@ -72,6 +72,17 @@ const ReservationRules = (() => {
 	const R = ReservationRules;
 	const lessonMinutes = Number(app.dataset.lessonMinutes);
 	const byId = id => document.getElementById(id);
+	// ThymeleafがHTMLに設定したメッセージを取得
+	const messages = byId('reservation-messages').dataset;
+	// {0},{1}などの部分へ値を埋め込む
+	function formatMessage(template, ...args) {
+		
+		return template.replace(
+			/\{(\d+)\}/g,
+			(matched, index) =>
+				args[Number(index)] ?? matched
+		);
+	}
 	const dialog = byId('time-dialog');
 	const form = byId('reservation-form');
 	const slotStarts = Array.from({length: (R.CLOSE - R.OPEN) / R.STEP}, (_, i) => R.OPEN + i * R.STEP);
@@ -90,6 +101,7 @@ const ReservationRules = (() => {
 	// 日付固有の受付時間も設定できる。例： {'2026-11-03': []} は受付不可。]
 	const DATE_OVERRIDES = {};
 	
+	
 	function dailyData(date) {
 		const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
 		return {
@@ -107,9 +119,17 @@ const ReservationRules = (() => {
 		candidates: []
 	};
 	let isSubmitting = false; // 予約送信中かどうかを管理する
-	const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
-		timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
-	});
+	const displayLocale = app.dataset.locale || 'ja-JP';
+	const dateFormatter = new Intl.DateTimeFormat(
+		displayLocale, 
+		{
+			timeZone: 'UTC',
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric',
+			weekday: 'short'
+		}
+	);
 	const dateLabel = date => dateFormatter.format(new Date(`${date}T00:00:00Z`));
 	const rangeLabel = item => `${R.timeText(item.start)}-${R.timeText(item.end)}`;
 	const onDate = date => state.candidates.filter(item => item.date === date);
@@ -271,15 +291,15 @@ const ReservationRules = (() => {
 		
 		if (isSubmitting) {
 			
-			button.textContent = '予約しています...';
+			button.textContent = messages.buttonSubmitting;
 			
 		} else if (count > 0) {
 			
-			button.textContent = `選択した${count}件を予約する`;
+			button.textContent = formatMessage(messages.buttonCount, count);
 			
 		} else {
 			
-			button.textContent = '日時を選択してください';
+			button.textContent = messages.buttonEmpty;
 			
 		}
 		
@@ -296,7 +316,7 @@ const ReservationRules = (() => {
 		
 		if (isSubmitting) {
 			
-			feedback.textContent = '予約処理中です。重複して送信する必要はありません。';
+			feedback.textContent = messages.frrdbackSubmitting;
 			feedback.dataset.status = 'submitting';
 			feedback.hidden = false;
 			
@@ -323,7 +343,7 @@ const ReservationRules = (() => {
 			const date = element('time', 'candidate-date', dateLabel(item.date));
 			date.dateTime = item.date;
 			content.append(date, element('span', 'candidate-time', rangeLabel(item)));
-			const remove = element('button', 'remove-button', '取り消す');
+			const remove = element('button', 'remove-button', messages.buttonRemove);
 			remove.type = 'button';
 			remove.dataset.remove = candidateId(item.date, item.start);
 			remove.setAttribute('aria-label', `${dateLabel(item.date)} ${rangeLabel(item)}の候補を取り消す`);
@@ -343,7 +363,7 @@ const ReservationRules = (() => {
 		const count = state.candidates.length;
 		byId('empty-candidates').hidden = count !== 0;
 		byId('candidate-count').textContent = String(count);
-		byId('reservation-total').textContent = `${count}回 / ${count * lessonMinutes}分`;
+		byId('reservation-total').textContent = formatMessage(messages.summaryTotal, count, count * lessonMinutes);
 		updateSubmitButton();
 	}
 	
@@ -438,7 +458,7 @@ const ReservationRules = (() => {
 		if (state.candidates.length === 0) {
 			event.preventDefault();
 			
-			feedback.textContent = '予約希望日時を１件以上選択してください。';
+			feedback.textContent = messages.feedbackEmpty;
 			feedback.hidden = false;
 			return;
 		}
@@ -454,9 +474,7 @@ const ReservationRules = (() => {
 		// 予約候補に問題があれば送信しない
 		if (invalid) {
 			event.preventDefault();
-			feedback.textContent = 
-				'開始時刻を過ぎた候補などが含まれています。'
-				+ '日時を確認し選びなおしてください。';
+			feedback.textContent = messages.feedbackInvalid;
 			feedback.hidden = false;
 			return;
 		}
@@ -470,8 +488,8 @@ const ReservationRules = (() => {
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {
 		const error = byId('configuration-error');
 		error.textContent = !R.isValidDuration(lessonMinutes)
-			? '授業時間は30分単位の整数で、選択可能な時間内の長さを設定してください。'
-			: 'この画面を利用するには、dialogに対応する新しいブラウザが必要です。';
+			? messages.configDuration
+			: messages.configBrowser;
 			error.hidden = false;
 			return;
 	}
