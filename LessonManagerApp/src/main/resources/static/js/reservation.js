@@ -106,6 +106,7 @@ const ReservationRules = (() => {
 		activeDate: null,
 		candidates: []
 	};
+	let isSubmitting = false; // 予約送信中かどうかを管理する
 	const dateFormatter = new Intl.DateTimeFormat('ja-JP', {
 		timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric', weekday: 'short'
 	});
@@ -171,6 +172,13 @@ const ReservationRules = (() => {
 		}
 		byId('calendar-days').replaceChildren(fragment);
 	}
+	
+	// ブラウザの履歴から戻った場合などに送信状態を解除する
+	window.addEventListener('pageshow', () => {
+		setSubmitting(false);
+		// ボタンとhidden入力を現在の候補から再構築する
+		renderCandidates();
+	})
 	
 	// 予約失敗後、サーバから返された候補を復元する
 	function restoreCandidates() {
@@ -252,6 +260,58 @@ const ReservationRules = (() => {
 		}
 	}
 	
+	// 予約ボタンの有効・無効と表示を更新する
+	function updateSubmitButton() {
+		
+		const button = byId('reserve-button');
+		const count = state.candidates.length;
+		
+		// 送信中、または候補が0件なら操作不可
+		button.disabled = isSubmitting || count === 0;
+		
+		if (isSubmitting) {
+			
+			button.textContent = '予約しています...';
+			
+		} else if (count > 0) {
+			
+			button.textContent = `選択した${count}件を予約する`;
+			
+		} else {
+			
+			button.textContent = '日時を選択してください';
+			
+		}
+		
+		// CSSで送信中の見た目を変更するためのクラス
+		button.classList.toggle('is-submitting', isSubmitting);
+	}
+	
+	// 予約送信中の状態を変更する
+	function setSubmitting(submitting) {
+		
+		isSubmitting = submitting;
+		
+		const feedback = byId('submit-feedback');
+		
+		if (isSubmitting) {
+			
+			feedback.textContent = '予約処理中です。重複して送信する必要はありません。';
+			feedback.dataset.status = 'submitting';
+			feedback.hidden = false;
+			
+		} else if (feedback.dataset.status === 'submitting') {
+			
+			// 送信中メッセージだけを削除する
+			feedback.textContent = '';
+			feedback.hidden = true;
+			
+			delete feedback.dataset.status;
+		}
+		
+		updateSubmitButton();
+	}
+	
 	// 予約を一覧にまとめる
 	function renderCandidates() {
 		state.candidates.sort((a, b) => a.date.localeCompare(b.date) || a.start - b.start);
@@ -284,8 +344,7 @@ const ReservationRules = (() => {
 		byId('empty-candidates').hidden = count !== 0;
 		byId('candidate-count').textContent = String(count);
 		byId('reservation-total').textContent = `${count}回 / ${count * lessonMinutes}分`;
-		byId('reserve-button').disabled = count === 0;
-		byId('reserve-button').textContent = count ? `選択した${count}件を予約する` : '日時を選んでください';
+		updateSubmitButton();
 	}
 	
 	// ダイアログの予約枠の作成
@@ -362,10 +421,18 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
-	// 入力に問題があれば送信を止める
+	// 予約フォームの送信処理
 	form.addEventListener('submit', event => {
+		
+		// 既に送信中なら再送信を防ぐ
+		if (isSubmitting) {
+			event.preventDefault();
+			return;
+		}
+		
 		const feedback = byId('submit-feedback');
 		feedback.hidden = true;
+		feedback.textContent = '';
 		
 		if (state.candidates.length === 0) {
 			event.preventDefault();
@@ -375,6 +442,7 @@ const ReservationRules = (() => {
 			return;
 		}
 		
+		// 既存の予約日時チェック
 		const invalid = state.candidates.find(item => 
 			reasonAt(
 				item.date,
@@ -382,10 +450,9 @@ const ReservationRules = (() => {
 				state.candidates.filter(other => other !== item)
 			) !== null
 		);
+		// 予約候補に問題があれば送信しない
 		if (invalid) {
 			event.preventDefault();
-			console.log(state.candidates);
-			console.log(invalid);
 			feedback.textContent = 
 				'開始時刻を過ぎた候補などが含まれています。'
 				+ '日時を確認し選びなおしてください。';
@@ -393,8 +460,10 @@ const ReservationRules = (() => {
 			return;
 		}
 		
-		// 問題がなければpreventDefault()を呼ばない
-		// ブラウザがformのactionへ通常のPOST送信を行う
+		// 入力に問題がなければ送信中に切り替える
+		setSubmitting(true);
+		
+		//  preventDefault()を呼ばず通常のPOSTを行う
 	});
 	
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {
@@ -449,6 +518,7 @@ const ReservationRules = (() => {
 	})
 	
 	byId('candidate-list').addEventListener('click', event => {
+		if (setSubmitting) return;
 		const button = event.target.closest('button[data-remove]');
 		if (!button) return;
 		const index = state.candidates.findIndex(item => candidateId(item.date, item.start) === button.dataset.remove);

@@ -107,6 +107,26 @@
 .booking-app .dialog-status { margin-top: 6px; min-height: 20px; color: var(--muted); font-size: 11px; }
 .booking-app .dialog-footer .primary-button { margin-top: 11px; }
 .booking-app .error-box { white-space: pre-line; }
+/* 予約送信中のボタン */
+.booking-app .primary-button.is-submitting { display: inline-flex; align-items: center; justify-content: center; gap: 10px; cursor: progress; }
+/* disabledでも送信中は青色を維持 */
+.booking-app .primary-button.is-submitting:disabled { background: #185bd0; color: #ffffff; opacity: 0.85; }
+/* 回転するスピナー */
+.booking-app .primary-button.is-submitting::before { content: ""; display: inline-block; width: 16px; height: 16px; flex-shrink: 0; border: 2px solid rgba(255, 255, 255, 0.4); border-top-color: #ffffff; border-radius: 50%; animation: reservation-spinner 0.8s linear infinite; }
+/* 回転アニメーション */
+@keyframes reservation-spinner {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 動きを抑える設定を使用している場合 */
+@media (prefers-reduced-motion: reduce) {
+
+    .booking-app .primary-button.is-submitting::before {
+        animation: none;
+    }
+}
 @media (max-width: 950px) {
     .booking-app .booking-layout { grid-template-columns: minmax(0, 1fr); }
 }
