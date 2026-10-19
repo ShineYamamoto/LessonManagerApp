@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
+import org.springframework.context.MessageSource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,6 +43,8 @@ public class ReservationController {
 	
 	private final ReservationService reservationService;
 	
+	private final MessageSource messageSource;
+	
 	private static final DateTimeFormatter ERROR_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d HH:mm");
 	
 	// セッションに保存する情報のキー
@@ -67,7 +71,8 @@ public class ReservationController {
 			BindingResult bindingResult,
 			@AuthenticationPrincipal LoginUser loginUser,
 			HttpSession session,
-			RedirectAttributes redirectAttributes) {
+			RedirectAttributes redirectAttributes,
+			Locale locale) {
 		
 		// ユーザーIDをログイン情報から取得する
 		Long userId = loginUser.getUserId();
@@ -82,8 +87,13 @@ public class ReservationController {
 		// バリデーションエラーチェック
 		if (bindingResult.hasErrors()) {
 			
+			String message = messageSource.getMessage(
+					"reservation.error.formInvalid",
+					null,
+					locale);
+			
 			return redirectReservationError(
-					"予約日時の形式を確認してください。",
+					message,
 					requestedStarts,
 					redirectAttributes);
 		}
@@ -121,22 +131,31 @@ public class ReservationController {
 			
 			if (e.getProblems().isEmpty()) {
 				
-				errorMessage = e.getMessage();
+				errorMessage = messageSource.getMessage(
+						e.getMessageKey(),
+						null,
+						locale);
 				
 			} else {
 				
 				errorMessage = e.getProblems().stream()
 						.map(problem -> {
 							
-							String dateText = 
-									problem.startsAt() == null
-									? ""
-									: problem.startsAt().format(ERROR_DATE_FORMAT);
+							LocalDateTime startsAt = problem.startsAt();
 							
-							return dateText + problem.message();
+							String dateText = 
+									startsAt == null
+									? ""
+									: startsAt.format(ERROR_DATE_FORMAT);
+							
+							return messageSource.getMessage(
+									problem.messageKey(),
+									new Object[] {dateText},
+									locale);
 						})
 						.distinct()
 						.collect(Collectors.joining("\n"));
+	
 			}
 			
 			// 残りの候補を保持して予約画面へ戻る

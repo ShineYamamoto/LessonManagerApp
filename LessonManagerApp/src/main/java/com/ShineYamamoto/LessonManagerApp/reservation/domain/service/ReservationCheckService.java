@@ -46,7 +46,7 @@ public class ReservationCheckService {
 		
 		if (requestedStarts == null || requestedStarts.isEmpty()) {
 			throw new ReservationCheckException(
-					"予約希望日時を1件以上選択してください。");
+					"reservation.error.empty");
 		}
 		
 		// 授業時間はDBから取得する
@@ -109,8 +109,7 @@ public class ReservationCheckService {
 				
 				problems.add(new ReservationProblem(
 						startsAt,
-						"は受付可能時間外です。"
-						+ "別の時間を選択してください。"));
+						"reservation.error.outsideOpening"));
 				
 				continue;
 			}
@@ -134,8 +133,7 @@ public class ReservationCheckService {
 				
 				problems.add(new ReservationProblem(
 						startsAt,
-						"の時間は利用できなくなりました。"
-						+ "別の時間を選択してください。"));
+						"reservation.error.booked"));
 				
 				continue;
 			}
@@ -158,8 +156,7 @@ public class ReservationCheckService {
 				
 				problems.add(new ReservationProblem(
 						startsAt,
-						"は今回選択したほかの候補と重複しています。"
-						+ "別の時間を選択してください。"));
+						"reservation.error.candidateOverlap"));
 				
 				continue;
 			}
@@ -185,25 +182,24 @@ public class ReservationCheckService {
 			int lessonMinutes) {
 		
 		if (startsAt == null) {
-			return "開始日時が入力されていません。";
+			return "reservation.error.required";
 		}
 		
 		if (startsAt.getMinute() % STEP_MINUTES != 0
 				|| startsAt.getSecond() != 0
 				|| startsAt.getNano() != 0) {
 			
-			return "は30分刻みで選択してください。";
+			return "reservation.error.invalidStep";
 		}
 		
 		if (!startsAt.isAfter(now)) {
-			return "は予約期限を過ぎています。日時の日時を選択してください";
+			return "reservation.error.expired";
 		}
 		
 		int startMinutes = startsAt.getHour() * 60 + startsAt.getMinute();
 		
 		if (startMinutes < OPEN_MINUTES || startMinutes + lessonMinutes > CLOSE_MINUTES) {
-			return "授業全体が" + OPEN_MINUTES / 60 + ":00～" + CLOSE_MINUTES / 60 + ":00に収まりません。"
-					+ "別の時間を選択してください。";
+			return "reservation.error.outsideHours";
 		}
 		
 		return null;

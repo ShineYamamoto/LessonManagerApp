@@ -6,11 +6,15 @@ import java.util.List;
 /** ServiceからControllerへ「予約できなかった理由」を伝える */
 public class ReservationCheckException extends RuntimeException {
 	
+	private final String messageKey;
+	
 	private final List<ReservationProblem> problems;
 	
 	/** 予約日時を特定できないエラー */
-	public ReservationCheckException(String message) {
-		super(message);
+	public ReservationCheckException(String messageKey) {
+		super(messageKey);
+		
+		this.messageKey = messageKey;
 		this.problems = List.of();
 	}
 	
@@ -18,9 +22,14 @@ public class ReservationCheckException extends RuntimeException {
 	public ReservationCheckException(
 			List<ReservationProblem> problems) {
 		
-		super("予約条件を満たさない日時があります。");
+		super("reservation.error.invalidSlots");
 		
+		this.messageKey = "reservation.error.invalidSlots";
 		this.problems = List.copyOf(problems);
+	}
+	
+	public String getMessageKey() {
+		return messageKey;
 	}
 	
 	public List<ReservationProblem> getProblems() {
