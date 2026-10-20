@@ -8,7 +8,7 @@
 </head>
 <body>
 	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
-	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}, date-locale=${#locale.toLanguageTag()}" aria-labelledby="page-title">
+	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}, data-locale=${#locale.toLanguageTag()}" aria-labelledby="page-title">
 		
 		<!-- JavaScriptへ邦訳済みメッセージを渡す -->
 		<div id="reservation-messages" hidden
