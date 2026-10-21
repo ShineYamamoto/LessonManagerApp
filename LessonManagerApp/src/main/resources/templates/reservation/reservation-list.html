@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約確認</title>
+<link rel="stylesheet" th:href="@{/css/reservation.css}">
+<link rel="stylesheet" th:href="@{/css/reservation-management.css}">
+</head>
+<body>
+
+	<main class="booking-app reservation-managemant" layout:fragment="content" aria-labelledby="page-title">
+		
+		<header class="page-heading">
+			<div>
+				<p class="eyebrow">授業予約 / 予約の確認</p>
+				<h1 id="page-title">予約の確認</h1>
+				<p class="lead-text">これからの授業を、日付が近い順に表示しています。</p>
+			</div>
+			
+			<a class="management-link" th:href="@{/user/reservation/single}">新しく予約する</a>
+		</header>
+		
+		<p class="preview-notice">
+			画面確認用のサンプル予約です。
+			実際の予約情報は表示していません。
+		</p>
+		
+		<section class="manaegment-rules" aria-label="変更・キャンセルの条件">
+			<p>
+				日時の変更: 授業開始の
+				<strong th:text="${reservationPolicy.changeDeadlineHours}"></strong>
+				時間前まで
+			</p>
+			
+			<p>
+				キャンセル: 授業開始の
+				<strong th:text="${reservationPolicy.cancelDeadlineHours}"></strong>
+				時間前まで
+			</p>
+		</section>
+		
+		<div class="management-list-heading">
+			<h2>これからの授業</h2>
+			
+			<span>
+				<span th:text="${#lists.size(reservations)}">0</span>件
+				/ 日本時間（UTC+09:00)
+			</span>
+		</div>
+		
+		<div clss="empty-state" th:if="${#lists.isEmpty(reservations)}">
+			<p>現在、予約している授業はありません。</p>
+		</div>
+		
+		<ol class="management-list" th:unless="${#lists.isEmpty(reservations)}">
+			
+			<!-- status は、繰り返しの位置などを取得するための変数 -->
+			<li class="reservation-row"
+				th:each="reservation, status : ${reservations}"
+				th:classappend="${status.first} ? 'is-next' : ''">
+			
+				<div class="reservation-information">
+					
+					<span class="next-lasson-page" th:if="${status.first}">
+						次の授業
+					</span>
+					
+					<time class="management-date"
+							th:attr="datetime=${#temporals.format(reservation.startsAt, 'yyyy-MM-dd')}"
+							th:text="${#temporals.format(reservation.startsAt, 'yyyy年M月d日(E) ')}">
+					</time>
+					
+					<p class="management-time">
+						<span th:text="${#temporals.format(reservation.startsAt, 'HH:mm')}"></span>
+						～
+						<span th:text="${#temporals.format(reservation.endsAt, 'HH:mm')}"></span>
+					</p>
+				</div>
+				
+				<div class="management-action">
+					
+					<a class="management-link"
+						th:if="${reservation.editable}"
+						th:href="@{/user/reservation/{id}/edit(id=${reservation.id})}">
+						日時を変更する
+					</a>
+					
+					<span class="deadline-note" th:unless="${reservation.editable}">
+						日時変更の受付は終了しました
+					</span>
+					
+					<!-- キャンセル処理はベット実装する -->
+					<button type="button" class="management-cancel" disable>
+						予約を取り消す（準備中）
+					</button>
+					
+					<span class="deadline-note" th:unless="${reservation.cancellable}">
+						キャンセルの受付は終了しました
+					</span>
+					
+				</div>
+			</li>
+		</ol>
+		
+		<p class="small-note">
+			最大50件を表示します。過去の授業は今後作成する授業履歴で確認できます。
+		</p>
+		
+	</main>
+</body>
+</html>
