@@ -290,6 +290,18 @@ public class SecurityIntegrationTest {
 			.andExpect(unauthenticated());
 	}
 	
+	@Test
+	void 予約POSTはCSRFトークンがなければ拒否される() throws Exception {
+		
+		mockMvc.perform(
+				post("/user/reservation/single")
+					.with(user(loginUser("ROLE_GENERAL")))
+					.param(
+							"reservationList[0].startsAt",
+							"2030-01-15T10:00:00"))
+				.andExpect(status().isForbidden());
+	}
+	
 	// ---------- テスト準備用の共通処理 ----------
 	
 	private void insertUser(long id, String phone, String name) {
