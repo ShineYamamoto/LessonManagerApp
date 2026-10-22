@@ -13,3 +13,14 @@
 .reservation-management .management-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid var(--blue); border-radius: 8px; background: #fff; color: var(--blue-dark); text-decoration: none; }
 .reservation-management .management-link:hover { background: #e7f0ff; }
 .reservation-management .management-cancel { min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f8; color: #626f81; }
+.reservation-management .deadline-note { font-size: 12px; color: #8a3340; }
+
+/* reservation-edit.html */
+.reservation-management .current-reservation { margin: 20px 0; padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: #f4f7fb; }
+.reservation-management .current-reservation h2 { margin-bottom: 10px; font-size: 16px; }
+.reservation-management .return-link { display: block; margin-top: 14px; text-align: center; }
+
+@media (max-width: 600px) {
+    .reservation-management .reservation-row { flex-direction: column; align-items: stretch; gap: 16px; padding: 18px; }
+    .reservation-management .management-time { font-size: 22px; }
+}

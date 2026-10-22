@@ -3,6 +3,7 @@ package com.ShineYamamoto.LessonManagerApp.reservation.domain.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,5 +60,32 @@ public class ReservationDataService {
 		LocalDateTime to = date.plusDays(1).atStartOfDay();
 		
 		return reservationMapper.findConfirmedOverlapping(from, to);
+	}
+	
+	/** 本人の、これから始まる確定予約一覧を取得する */
+	public List<Reservation> getUpcomingReservations(
+			Long userId,
+			LocalDateTime now,
+			int limit) {
+		
+		return reservationMapper.findUpcomingByUserId(
+				userId,
+				now,
+				limit);
+	}
+	
+	/** 本人の、これから始まる確定予約を1件取得する */
+	public Optional<Reservation> getUpcomingReservation(
+			Long userId,
+			Long reservationId,
+			LocalDateTime now) {
+		
+		Reservation reservation = reservationMapper.findUpcomingByIdAndUserId(
+				reservationId,
+				userId,
+				now);
+		
+		// 見つからなかった場合：空のOptionalを返す
+		return Optional.ofNullable(reservation);
 	}
 }

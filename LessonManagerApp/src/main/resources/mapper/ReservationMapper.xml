@@ -55,4 +55,43 @@
 		  , #{updatedBy}
 		)
 	</insert>
+	
+	<!-- 本人の、これから始まる確定予約を取得 -->
+	<select id="findUpcomingByUserId" resultMap="reservationMap">
+		SELECT
+			reservation_id
+		  , user_id
+		  , starts_at
+		  , ends_at
+		  , status
+		  , created_at
+		  , updated_at
+		  , created_by
+		  , updated_by
+		FROM reservations
+		WHERE user_id = #{userId}
+		  AND status = 'CONFIRMED'
+		  AND starts_at &gt; #{now}
+		ORDER BY starts_at, reservation_id
+		LIMIT #{limit}
+	</select>
+	
+	<!--  予約IDと本人のユーザーIDを使って1件取得 -->
+	<select id="findUpcomingByIdAndUserId" resultMap="reservationMap">
+		SELECT
+			reservation_id
+		  , user_id
+		  , starts_at
+		  , ends_at
+		  , status
+		  , created_at
+		  , updated_at
+		  , created_by
+		  , updated_by
+		 FROM reservations
+		 WHERE reservation_id = #{reservationId}
+		   AND user_id = #{userId}
+		   AND status = 'CONDIRMED'
+		   AND starts_at &gt; #{now}
+	</select>
 </mapper>

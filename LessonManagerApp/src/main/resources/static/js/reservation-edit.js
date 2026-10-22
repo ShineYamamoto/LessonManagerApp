@@ -483,7 +483,7 @@ const ReservationRules = (() => {
 	});
 	
 	// 変更確定ボタンの仮動作
-	byId('reservation-button').addEventListener('click', () => {
+	byId('reserve-button').addEventListener('click', () => {
 		
 		const feedback = byId('submit-feedback');
 		const selected = state.candidates[0];
