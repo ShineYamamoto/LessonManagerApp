@@ -316,7 +316,7 @@ const ReservationRules = (() => {
 		
 		if (isSubmitting) {
 			
-			feedback.textContent = messages.frrdbackSubmitting;
+			feedback.textContent = messages.feedbackSubmitting;
 			feedback.dataset.status = 'submitting';
 			feedback.hidden = false;
 			
