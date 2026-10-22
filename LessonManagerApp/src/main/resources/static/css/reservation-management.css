@@ -1,133 +1,15 @@
 .reservation-management .preview-notice { margin: 20px 0; padding: 12px 16px; border: 1px solid #d7bb74; border-radius: 8px; background: #fff8e7; color: #66501e; }
 .reservation-management .management-rules { margin: 20px 0; padding: 16px 20px; border-radius: 10px; background: #f4f7fb; }
 .reservation-management .management-list-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin: 24px 0 14px; }
-
-
-
-.reservation-management .management-list-heading h2 {
-    font-size: 20px;
-}
-
-.reservation-management .management-list-heading > span {
-    color: var(--muted);
-    font-size: 12px;
-}
-
-.reservation-management .management-list {
-    display: grid;
-    gap: 16px;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-}
-
-.reservation-management .reservation-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-    padding: 22px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #fff;
-}
-
-.reservation-management .reservation-row.is-next {
-    border: 2px solid var(--blue);
-    background: #f0f6ff;
-}
-
-.reservation-management .next-lesson-badge {
-    display: inline-block;
-    margin-bottom: 10px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: var(--blue);
-    color: #fff;
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.reservation-management .management-date {
-    display: block;
-    font-size: 17px;
-    font-weight: 600;
-}
-
-.reservation-management .management-time {
-    margin-top: 4px;
-    font-size: 25px;
-    font-weight: 700;
-}
-
-.reservation-management .management-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-}
-
-.reservation-management .management-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: 10px 16px;
-    border: 1px solid var(--blue);
-    border-radius: 8px;
-    background: #fff;
-    color: var(--blue-dark);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.reservation-management .management-link:hover {
-    background: #e7f0ff;
-}
-
-.reservation-management .management-cancel {
-    min-height: 44px;
-    padding: 10px 16px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #f5f6f8;
-    color: #626f81;
-}
-
-.reservation-management .deadline-note {
-    font-size: 12px;
-    color: #8a3340;
-}
-
-.reservation-management .current-reservation {
-    margin: 20px 0;
-    padding: 20px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: #f4f7fb;
-}
-
-.reservation-management .current-reservation h2 {
-    margin-bottom: 10px;
-    font-size: 16px;
-}
-
-.reservation-management .return-link {
-    display: block;
-    margin-top: 14px;
-    text-align: center;
-}
-
-@media (max-width: 600px) {
-
-    .reservation-management .reservation-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
-        padding: 18px;
-    }
-
-    .reservation-management .management-time {
-        font-size: 22px;
-    }
-}
+.reservation-management .management-list-heading h2 { font-size: 20px; }
+.reservation-management .management-list-heading > span { color: var(--muted); font-size: 12px; }
+.reservation-management .management-list { display: grid; gap: 16px; padding: 0; margin: 0; list-style: none; }
+.reservation-management .reservation-row { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.reservation-management .reservation-row.is-next { border: 2px solid var(--blue); background: #f0f6ff; }
+.reservation-management .next-lesson-badge { display: inline-block; margin-bottom: 10px; padding: 3px 10px; border-radius: 20px; background: var(--blue); color: #fff; font-size: 12px; font-weight: 700; }
+.reservation-management .management-date { display: block; font-size: 17px; font-weight: 600; }
+.reservation-management .management-time { margin-top: 4px; font-size: 25px; font-weight: 700; }
+.reservation-management .management-actions { display: flex; flex-direction: column; align-items: stretch; gap: 10px; }
+.reservation-management .management-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border: 1px solid var(--blue); border-radius: 8px; background: #fff; color: var(--blue-dark); text-decoration: none; }
+.reservation-management .management-link:hover { background: #e7f0ff; }
+.reservation-management .management-cancel { min-height: 44px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f8; color: #626f81; }

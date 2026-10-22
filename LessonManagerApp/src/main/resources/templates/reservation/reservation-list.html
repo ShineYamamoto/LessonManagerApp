@@ -9,7 +9,7 @@
 </head>
 <body>
 
-	<main class="booking-app reservation-managemant" layout:fragment="content" aria-labelledby="page-title">
+	<main class="booking-app reservation-management" layout:fragment="content" aria-labelledby="page-title">
 		
 		<header class="page-heading">
 			<div>
@@ -62,7 +62,7 @@
 			
 				<div class="reservation-information">
 					
-					<span class="next-lasson-page" th:if="${status.first}">
+					<span class="next-lesson-badge" th:if="${status.first}">
 						次の授業
 					</span>
 					
@@ -78,7 +78,7 @@
 					</p>
 				</div>
 				
-				<div class="management-action">
+				<div class="management-actions">
 					
 					<a class="management-link"
 						th:if="${reservation.editable}"
