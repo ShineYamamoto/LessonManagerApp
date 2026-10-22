@@ -73,6 +73,16 @@ const ReservationRules = (() => {
 	if (!app) return;
 	const R = ReservationRules;
 	const lessonMinutes = Number(app.dataset.lessonMinutes);
+	// 元の予約日時は日本時間として解釈する
+	const originalStartMillis = Date.parse(app.dataset.originalStart + '+09:00');
+	const changeDeadlineHours = Number(app.dataset.changeDeadlineHours);
+	const changeLeadHours = Number(app.dataset.changeLeadHours);
+	const HOUR_MILLIS = 60 * 60 * 1000;
+	// 元の予約を今の時点で変更できるか
+	function canChangeOriginal(now = Date.now()) {
+		return originalStartMillis >= now + changeDeadlineHours * HOUR_MILLIS;
+	}
+	
 	const byId = id => document.getElementById(id);
 	// ThymeleafがHTMLに設定したメッセージを取得
 	const messages = byId('reservation-messages').dataset;
@@ -137,8 +147,28 @@ const ReservationRules = (() => {
 	const onDate = date => state.candidates.filter(item => item.date === date);
 	const candidateId = (date, start) => `${date}_${start}`;
 	
-	function reasonAt(date, start, candidates = state.candidates) {
-		return R.startReason({date, start, duration: lessonMinutes, ...dailyData(date), candidates});
+	function reasonAt(date, start, candidates = []) {
+		const now = Date.now();
+		
+		// 変更元の予約が期限内か
+		if (!canChangeOriginal(now)) {
+			return 'この予約の変更期限を過ぎています';
+		}
+		
+		const selectedStartMillis = Date.parse(R.localDateTime(date, start) + '+09:00');
+		
+		// 変更先が現在から24時間以上先か
+		if (selectedStartMillis < now + changeLeadHours * HOUR_MILLIS) {
+			return `現在から${changeLeadHours}時間以上先を選択してください`;
+		}
+		
+		// 元と同じ日時は変更先にしない
+		if (selectedStartMillis === originalStartMillis) {
+			return '現在の予約と同じ日時です';
+		}
+		
+		// 既存の受付時間・重複などの判定
+		return R.startReason({date, start, duration: lessonMinutes, ...dailyData(date), candidates, now});
 	}
 	
 	function element(tag, className, text) {
@@ -287,17 +317,20 @@ const ReservationRules = (() => {
 		
 		const button = byId('reserve-button');
 		const count = state.candidates.length;
+		const editable = canChangeOriginal();
 		
-		// 送信中、または候補が0件なら操作不可
-		button.disabled = isSubmitting || count === 0;
+		// 送信中、または候補が1件でなければ操作不可
+		button.disabled = isSubmitting || count !== 1 || !editable;
 		
-		if (isSubmitting) {
+		if (!editable) {
+			button.textContent = 'この予約の変更期限を過ぎています';
+		} else if (isSubmitting) {
 			
 			button.textContent = messages.buttonSubmitting;
 			
-		} else if (count > 0) {
+		} else if (count === 1) {
 			
-			button.textContent = formatMessage(messages.buttonCount, count);
+			button.textContent = messages.buttonCount;
 			
 		} else {
 			
@@ -318,7 +351,7 @@ const ReservationRules = (() => {
 		
 		if (isSubmitting) {
 			
-			feedback.textContent = messages.frrdbackSubmitting;
+			feedback.textContent = messages.feedbackSubmitting;
 			feedback.dataset.status = 'submitting';
 			feedback.hidden = false;
 			
@@ -355,7 +388,7 @@ const ReservationRules = (() => {
 			// 取り消し後も0,1,2...と連番にする。フォームにはユーザーIDを含めない。
 			const input = document.createElement('input');
 			input.type = 'hidden';
-			input.name = `reservationList[${index}].startsAt`;
+			input.name = 'startsAt';
 			input.value = R.localDateTime(item.date, item.start);
 			fields.append(input);
 
@@ -383,7 +416,7 @@ const ReservationRules = (() => {
 				start,
 				duration: R.STEP,
 				...dailyData(state.activeDate),
-				candidates: state.candidates
+				candidates: []
 			});
 			const button = element('button', 'time-slot');
 			button.type = 'button';
@@ -395,7 +428,7 @@ const ReservationRules = (() => {
 			button.classList.toggle('is-selected', Boolean(existing));
 			button.setAttribute('aria-pressed', String(Boolean(existing)));
 			button.append(element('span', 'slot-time', `${R.timeText(start)}-${R.timeText(start+R.STEP)}`));
-			const statusText = existing ? '✓ 選択済み' : slotReason !== null ? slotReason: reason !== null ? '空き・開始不可' : '開始可';
+			const statusText = existing ? '✓ 選択済み' : slotReason !== null ? slotReason: reason !== null ? reason : '開始可';
 			button.append(element('span', 'slot-state', statusText));
 			const label = existing
 				? `${rangeLabel(existing)}の授業予約を選択済み。この授業を取り消す`
@@ -444,48 +477,39 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
-	// 予約フォームの送信処理
+	// 現在はフォームを送信しない
 	form.addEventListener('submit', event => {
-		
-		// 既に送信中なら再送信を防ぐ
-		if (isSubmitting) {
-			event.preventDefault();
-			return;
-		}
+		event.preventDefault();
+	});
+	
+	// 変更確定ボタンの仮動作
+	byId('reservation-button').addEventListener('click', () => {
 		
 		const feedback = byId('submit-feedback');
-		feedback.hidden = true;
-		feedback.textContent = '';
+		const selected = state.candidates[0];
 		
-		if (state.candidates.length === 0) {
-			event.preventDefault();
-			
+		if (!selected) {
 			feedback.textContent = messages.feedbackEmpty;
 			feedback.hidden = false;
 			return;
 		}
 		
-		// 既存の予約日時チェック
-		const invalid = state.candidates.find(item => 
-			reasonAt(
-				item.date,
-				item.start,
-				state.candidates.filter(other => other !== item)
-			) !== null
-		);
-		// 予約候補に問題があれば送信しない
-		if (invalid) {
-			event.preventDefault();
-			feedback.textContent = messages.feedbackInvalid;
+		// 画面を開いたまま時間が経過しているため再確認
+		const reason = reasonAt(selected.date, selected.start);
+		
+		if (reason !== null) {
+			feedback.textContent = reason;
 			feedback.hidden = false;
+			updateSubmitButton();
 			return;
 		}
 		
-		// 入力に問題がなければ送信中に切り替える
-		setSubmitting(true);
-		
-		//  preventDefault()を呼ばず通常のPOSTを行う
-	});
+		feedback.textContent =
+			`変更先: ${dateLabel(selected.date)} ${rangeLabel(selected)}。`
+			+ '画面確認用のため、予約はまだ変更されていません。';
+			
+		feedback.hidden = false;
+	})
 	
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {
 		const error = byId('configuration-error');
@@ -532,8 +556,8 @@ const ReservationRules = (() => {
 				return;
 			}
 			const item = {date: state.activeDate, start, end: start + lessonMinutes};
-			state.candidates.push(item);
-			refresh(`${rangeLabel(item)}を予約候補に追加しました`);
+			state.candidates = [item];
+			refresh(`${dateLabel(item.date)} ${rangeLabel(item)}を変更先に選択しました。`);
 		}
 		// DOMを書き直した後も押した時間枠にキーボードフォーカスを戻す。
 		const nextFocus = byId('time-slots').querySelector(`button[data-start="${start}"]`);
