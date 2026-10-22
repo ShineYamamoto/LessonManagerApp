@@ -1,5 +1,6 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.controller;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -7,11 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.view.ReservationView;
 
@@ -54,6 +58,34 @@ public class ReservationManagementController {
 		model.addAttribute("reservations", createSampleReservations(now));
 		
 		return "reservation/reservation-list";
+	}
+	
+	/**
+	 * 予約編集画面
+	 */
+	@GetMapping("/{reservationId}/edit")
+	public String getReservationEdit(
+			@PathVariable("reservationId") Long reservationId,
+			Model model) {
+		
+		LocalDateTime now = LocalDateTime.now(JAPAN_ZONE);
+		
+		ReservationView reservation = createSampleReservations(now).stream()
+				.filter(item -> item.getId().equals(reservationId))
+				.findFirst()
+				.orElseThrow(() ->
+						new ResponseStatusException(HttpStatus.NOT_FOUND));
+		
+		model.addAttribute("reservation", reservation);
+		
+		// 編集では、元の予約の授業時間を維持する
+		long lessonMinutes = Duration.between(
+				reservation.getStartsAt(),
+				reservation.getEndsAt()).toMinutes();
+		
+		model.addAttribute("lessonMinutes", lessonMinutes);
+		
+		return "reservation/reservation-edit";
 	}
 	
 	/**

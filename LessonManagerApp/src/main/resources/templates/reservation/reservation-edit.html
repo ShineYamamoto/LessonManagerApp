@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予約日時の変更</title>
+<link rel="stylesheet" th:href="@{/css/reservation.css}">
+<link rel="stylesheet" th:href="@{/css/reservation-management.css}">
+</head>
+<body>
+	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
+	<main id="booking-app"
+		 class="booking-app reservation-management"
+		 layout:fragment="content"
+		 th:attr="
+		 		data-lesson-minutes=${lessonMinutes},
+				data-locale=${#locale.toLanguageTag()},
+				data-original-start=${#temporals.format(reservation.startsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
+				data-change-deadline-hours=${reservationPolicy.changeDeadlineHours},
+				data-change-lead-hours=${reservationPolicy.changeLeadHours}"
+		 aria-labelledby="page-title">
+		
+		<!-- JavaScriptへ邦訳済みメッセージを渡す -->
+		<div id="reservation-messages" hidden
+			data-button-empty="変更後の日時を選択してください"
+			data-button-count="変更を確定する"
+			data-button-submitting="変更しています..."
+			data-feedback-submitting="変更内容を送信しています。"
+			data-feedback-invalid="選択した日時へは変更できません。選びなおしてください。"
+			data-feedback-empty="変更後の日時を選択してください。"
+			data-config-duration="授業時間の設定が正しくありません。"
+			data-config-browser="このブラウザでは時間選択画面を選択できません。"
+			data-summary="{0}回 / {1}分"
+			data-button-remove="選択を解除">
+	</div>
+			
+		<header class="page-heading">
+			<div>
+				<p class="eyebrow">授業予約 / 日時の変更</p>
+				<h1 id="page-title">予約日時を変更する</h1>
+				<p class="lead-text" th:text="#{reservation.single.description}">カレンダーから日付を選び、開いている時間を選択してください。</p>
+			</div>
+			<div class="profile-chip">
+				<span>あなたの授業時間</span>
+				<strong><span data-duration-label>60</span>
+					<small>分 / 回</small>
+				</strong>
+				<span>日本時間（UTC+09:00）</span>
+			</div>
+		</header>
+		
+		<p class="preview-notice">
+			画面確認用です。日時を選択しても実際の予約は変更されません。空き時間もサンプル表示です。
+		</p>
+		
+		<section class="current-reservation" aria-labelledby="current-reservation-heading">
+			
+			<h2 id="current-reservation-heading">現在の予約</h2>
+			
+			<p class="management-date" th:text="${#temporals.format(reservation.startsAt, 'yyyy年M月d日(E) ')}"></p>
+			
+			<p class="management-time">
+				<span th:text="${#temporals.format(reservation.startsAt, 'HH:mm')}"></span>
+				～
+				<span th:text="${#temporals.format(reservation.endsAt, 'HH:mm')}"></span>
+			</p>
+			
+			<p class="small-note">日本時間（UTC+09:00）</p>
+			
+			<p class="small-note">
+				この予約日時変更は、授業開始の
+				<strong th:text="${reservationPolicy.changeDeadlineHours}"></strong>
+				時間前まで可能です。
+				変更先は、現在から
+				<strong th:text="${reservationPolicy.changeLeadHours}"></strong>
+				時間以上先を選択してください。
+			</p>
+			
+		</section>
+		
+		<!-- JSが「授業時間の設定が不正」「ブラウザがモーダル機能に未対応」と判定したとき、メッセージを入れて表示する -->
+		<p id="configuration-error" class="error-box" role="alert" hidden></p>
+		
+		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
+		<!-- サーバから返された予約候補をJSへ渡す -->
+		<input type="hidden" id="restored-starts" th:value="">
+		
+		<!-- ブラウザでJavaScriptが無効な場合に、案内文を表示 -->
+		<noscript><p class="error-box">このサンプルを操作するには、JavaScriptを有効にしてください。</p></noscript>
+		
+		<div class="booking-layout">
+			<section class="calendar-card" aria-labelledby="calendar-heading">
+				<div class="card-heading">
+					<h2 id="calendar-heading" th:text="#{reservation.single.calendarTitle}">日付を選ぶ</h2>
+					<span class="step-label">STEP 01</span>
+				</div>
+				<div class="month-toolbar">
+					<h3 id="month-label" aria-live="polite" aria-atomic="true"></h3>
+					<div class="month-controls">
+						<button id="previous-month" type="button" class="icon-button" aria-label="前の月"><</button>
+						<button id="current-month" type="button" class="text-button">今月</button>
+						<button id="next-month" type="button" class="icon-button" aria-label="次の月">></button>
+					</div>
+				</div>
+				<!-- カレンダー用のtableをJavaScriptで構築する -->
+				<table class="calendar-table" aria-labelledby="month-label" aria-describedby="calendar-help">
+					<thead><tr>
+						<th scope="col" class="sunday">日</th>
+						<th scope="col">月</th>
+						<th scope="col">火</th>
+						<th scope="col">水</th>
+						<th scope="col">木</th>
+						<th scope="col">金</th>
+						<th scope="col" class="saturday">土</th>
+					</tr></thead>
+					<tbody id="calendar-days"></tbody>
+				</table>
+				<p id="calendar-help" class="calendar-help">日付を押すと、時間を選ぶ画面が開きます。</p>
+				<div class="calendar-legend">
+					<span><i class="mini-dot" aria-hidden="true"></i> 開始できる時間あり</span>
+					<span><i class="mini-dot chosen" aria-hidden="true"></i> 予約候補あり</span>
+				</div>
+			</section>
+			
+			<aside class="summary-card" aria-labelledby="candidate-heading">
+				<form id="reservation-form">
+					<div class="summary-body">
+						<div class="card-heading"><h2 id="candidate-heading">変更後の日時</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
+						<p class="muted">別の日時を選ぶと、選択内容が置き換わります。</p>
+						<div id="empty-candidates" class="empty-state"><span class="empty-calendar" aria-hidden="true">＋</span><p>変更後の日時はまだ選択されていません</p></div>
+						<ol id="candidate-list" class="candidate-list"></ol>
+						<div id="reservation-inputs"></div>
+					</div>
+					<div class="summary-footer">
+						<p class="total-line"><span>変更する授業</span><strong id="reservation-total">0回 / 0分</strong></p>
+						<button id="reserve-button" type="button" class="primary-button" disabled>変更後の日時を選択してください。</button>
+						<a class="return-link" th:href="@{/user/reservation/list}">
+							変更せずに戻る
+						</a>
+						<p class="small-note">変更を確定するまでは、元の予約が維持されます。</p>
+						<p id="submit-feedback" class="feedback" role="status" hidden></p>
+					</div>
+				</form>
+			</aside>
+		</div>
+		<p id="page-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+		
+		<!-- showModal()で開く。選択は即座に候補へ反映するため「閉じる」は取り消しではない。 -->
+		<dialog id="time-dialog" class="time-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-help">
+			<div class="dialog-header">
+				<div>
+					<p class="eyebrow">開始時刻を選ぶ</p>
+					<h2 id="dialog-title" tabindex="-1"></h2>
+				</div>
+				<button id="close-dialog" class="icon-button" type="button" aria-label="時間選択を閉じる">×</button>
+			</div>
+			<div class="dialog-body">
+				<p id="dialog-help" class="dialog-help">開始時刻を押すと、<strong><span data-duration-label>60</span>分間</strong>が変更先として選ばれます。別の日時を選ぶと前の選択は置き換わります。</p>
+				<div class="time-meta"><span>09:00-22:00 / 30分刻み</span><span>日本時間</span></div>
+				<div class="slot-legend" aria-label="時間枠の色の意味">
+					<span><i class="swatch available" aria-hidden="true"></i>選択可</span>
+					<span><i class="swatch unavailable" aria-hidden="true"></i>選択不可</span>
+					<span><i class="swatch selected" aria-hidden="true"></i>選択済み</span>
+				</div>
+				<p id="no-start-times" class="unavailable-note" hidden>この日は、新しく選べる開始時刻がありません。</p>
+				<div id="time-slots" class="time-slots" role="group" aria-label="30分ごとの時間枠"></div>
+				<p class="slot-explanation">白い枠は授業終了まで連続して空いている開始時刻です。<br>青い枠をもう一度押すと、その授業を候補から外します。</p>
+			</div>
+			
+			<div class="dialog-footer">
+				<div class="day-selection"><span id="day-selection-label">この日の予約候補</span><strong id="day-selection-times">まだ選択していません。</strong></div>
+				<p id="dialog-status" class="dialog-status" role="status" aria-live="polite" aria-atomic="true"></p>
+				<button id="done-dialog" class="primary-button" type="button">選択を終えてカレンダーに戻る</button>
+			</div>
+		</dialog>
+		
+		<script th:src="@{/js/reservation-edit.js}" defer></script>
+	</main>
+</body>
+</html>ml>
