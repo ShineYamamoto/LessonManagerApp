@@ -91,7 +91,7 @@
 		 FROM reservations
 		 WHERE reservation_id = #{reservationId}
 		   AND user_id = #{userId}
-		   AND status = 'CONDIRMED'
+		   AND status = 'CONFIRMED'
 		   AND starts_at &gt; #{now}
 	</select>
 </mapper>
