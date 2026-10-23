@@ -238,7 +238,7 @@ public class ReservationCheckService {
 		
 		// 変更先が現在から24時間以上か
 		if (requestedStart.isBefore(now.plusHours(CHANGE_LEAD_HOURS))) {
-			throw new ReservationCheckException("reservation.change.error.toosoon");
+			throw new ReservationCheckException("reservation.change.error.tooSoon");
 		}
 		
 		// 元と同じ開始日時への変更は受け付けない
