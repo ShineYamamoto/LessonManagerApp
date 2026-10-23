@@ -23,9 +23,9 @@
 		<!-- JavaScriptへ日本語メッセージを渡す -->
 		<div id="reservation-messages" hidden
 			data-button-empty="変更後の日時を選択してください"
-			data-button-count="変更を確定する"
-			data-button-submitting="変更しています..."
-			data-feedback-submitting="変更内容を送信しています。"
+			data-button-count="変更内容をチェックする"
+			data-button-submitting="チェックしています…"
+			data-feedback-submitting="変更内容を確認しています。"
 			data-feedback-invalid="選択した日時へは変更できません。選びなおしてください。"
 			data-feedback-empty="変更後の日時を選択してください。"
 			data-config-duration="授業時間の設定が正しくありません。"
@@ -84,8 +84,10 @@
 		<p id="configuration-error" class="error-box" role="alert" hidden></p>
 		
 		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
+		
+		<p id="change-check-notice" class="preview-notice" role="status" th:if="${reservationNotice}" th:text="${reservationNotice}"></p>
 		<!-- サーバから返された予約候補をJSへ渡す -->
-		<input type="hidden" id="restored-starts" value="">
+		<input type="hidden" id="restored-starts" th:value="${restoredStarts != null ? restoredStarts : ''}">
 		
 		<!-- ブラウザでJavaScriptが無効な場合に、案内文を表示 -->
 		<noscript><p class="error-box">このサンプルを操作するには、JavaScriptを有効にしてください。</p></noscript>
@@ -125,7 +127,7 @@
 			</section>
 			
 			<aside class="summary-card" aria-labelledby="candidate-heading">
-				<form id="reservation-form">
+				<form id="reservation-form" method="post" th:action="@{/user/reservation/{id}/edit(id=${reservation.id})}">
 					<div class="summary-body">
 						<div class="card-heading"><h2 id="candidate-heading">変更後の日時</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
 						<p class="muted">別の日時を選ぶと、選択内容が置き換わります。</p>
@@ -135,7 +137,7 @@
 					</div>
 					<div class="summary-footer">
 						<p class="total-line"><span>変更する授業</span><strong id="reservation-total">0回 / 0分</strong></p>
-						<button id="reserve-button" type="button" class="primary-button" disabled>変更後の日時を選択してください。</button>
+						<button id="reserve-button" type="submit" class="primary-button" disabled>変更後の日時を選択してください。</button>
 						<a class="return-link" th:href="@{/user/reservation/list}">
 							変更せずに戻る
 						</a>
@@ -179,4 +181,4 @@
 		<script th:src="@{/js/reservation-edit.js}" defer></script>
 	</main>
 </body>
-</html>ml>
+</html>

@@ -1,5 +1,8 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.domain.service;
 
+import static com.ShineYamamoto.LessonManagerApp.reservation.domain.policy.ReservationPolicy.*;
+
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -9,8 +12,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationProblem;
@@ -19,6 +24,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 
 import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
@@ -173,6 +179,109 @@ public class ReservationCheckService {
 		
 		// 全件問題がなかった場合のみ返す
 		return List.copyOf(validSlots);
+	}
+	
+	/**
+	 * 本人の予約の変更内容を検証する
+	 * 問題なければ変更先の開始・終了日時を返す
+	 * このメソッドではDBを更新しない
+	 */
+	public ReservationSlot checkChange(
+			Long userId,
+			Long reservationId,
+			LocalDateTime requestedStart) {
+		
+		// 1回のチェックでは同じ現在日時を使用する
+		LocalDateTime now = LocalDateTime.now(BOOKING_ZONE);
+		
+		// 開始前の確定予約をDBから取得する
+		Reservation original = reservationDataService.getUpcomingReservation(
+				userId,
+				reservationId,
+				now)
+				.orElseThrow(() ->
+						new ResponseStatusException(HttpStatus.NOT_FOUND, "対象の予約が見つかりません。"));
+		
+		// 元の予約の変更期限を確認する
+		if (original.getStartsAt().isBefore(now.plusHours(CHANGE_DEADLINE_HOURS))) {
+			
+			throw new ReservationCheckException(
+					"reservation.change.error.deadline");
+		}
+		
+		// 授業時間は元の予約から計算する
+		Duration duration = Duration.between(
+				original.getStartsAt(),
+				original.getEndsAt());
+		
+		long lessonMinutes = duration.toMinutes();
+		
+		// DBの授業時間が正確な30分単位であることを確認する
+		if (lessonMinutes <= 0
+				|| lessonMinutes % STEP_MINUTES != 0
+				|| lessonMinutes > CLOSE_MINUTES - OPEN_MINUTES
+				|| !duration.equals(Duration.ofMinutes(lessonMinutes))) {
+			
+			throw new IllegalStateException(
+					"元の予約授業が不正です");
+		}
+		
+		// 必須・30分刻み・過去日時・9：00～22：00を確認する
+		String startError = checkStartReason(
+				requestedStart,
+				now,
+				(int) lessonMinutes);
+		
+		if (startError != null) {
+			throw new ReservationCheckException(startError);
+		}
+		
+		// 変更先が現在から24時間以上か
+		if (requestedStart.isBefore(now.plusHours(CHANGE_LEAD_HOURS))) {
+			throw new ReservationCheckException("reservation.change.error.toosoon");
+		}
+		
+		// 元と同じ開始日時への変更は受け付けない
+		if (requestedStart.equals(original.getStartsAt())) {
+			throw new ReservationCheckException("reservation.change.error.unchanged");
+		}
+		
+		// 終了日時はサーバー側で計算する
+		LocalDateTime requestedEnd = requestedStart.plusMinutes(lessonMinutes);
+		
+		ReservationSlot slot = new ReservationSlot(requestedStart, requestedEnd);
+		
+		LocalDate date = requestedStart.toLocalDate();
+		
+		// DBから受付可能時間を取得する
+		List<LessonOpening> openings = reservationDataService.getOpening(date);
+		
+		// 授業全体が受付可能時間に収まっているか
+		if (!isCoveredByOpenings(slot, openings)) {
+			throw new ReservationCheckException("reservation.error.outsideOpening");
+		}
+		
+		// 同じ日の確定予約を全ユーザー分取得する
+		List<Reservation> confirmedReservations = reservationDataService.getConfirmedReservation(date);
+		
+		boolean alreadyBooked = confirmedReservations.stream()
+				
+				// 変更対象の予約1件だけを、重複判定から除外する
+				.filter(reservation ->
+						!reservation.getReservationId().equals(original.getReservationId()))
+				.anyMatch(reservation ->
+						overlaps(
+								requestedStart,
+								requestedEnd,
+								reservation.getStartsAt(),
+								reservation.getEndsAt()));
+		
+		if (alreadyBooked) {
+			throw new ReservationCheckException("reservation.error.booked");
+		}
+		
+		return slot;
+		
 	}
 	
 	/** 開始日時そのものを検証する */

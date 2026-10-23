@@ -453,6 +453,12 @@ const ReservationRules = (() => {
 		byId('submit-feedback').hidden = true;
 		byId('page-status').textContent = message;
 		byId('dialog-status').textContent = message;
+		
+		const notice = byId('change-check-notice');
+		
+		if (notice) {
+			notice.hidden = true;
+		}
 	}
 	
 	function openDate(date) {
@@ -477,38 +483,48 @@ const ReservationRules = (() => {
 		renderCalendar();
 	}
 	
-	// 現在はフォームを送信しない
 	form.addEventListener('submit', event => {
-		event.preventDefault();
-	});
-	
-	// 変更確定ボタンの仮動作
-	byId('reserve-button').addEventListener('click', () => {
+		
+		if (isSubmitting) {
+			event.preventDefault();
+			return;
+		}
 		
 		const feedback = byId('submit-feedback');
-		const selected = state.candidates[0];
 		
-		if (!selected) {
+		if (state.candidates.length !== 1 ) {
+			event.preventDefault();
+			
 			feedback.textContent = messages.feedbackEmpty;
 			feedback.hidden = false;
 			return;
 		}
 		
-		// 画面を開いたまま時間が経過しているため再確認
-		const reason = reasonAt(selected.date, selected.start);
+		const selected = state.candidates[0];
+		
+		// 送信直前に画面側でも再確認する
+		const reason = reasonAt(
+			selected.date,
+			selected.start
+		);
 		
 		if (reason !== null) {
+			event.preventDefault();
+			
 			feedback.textContent = reason;
 			feedback.hidden = false;
 			updateSubmitButton();
 			return;
 		}
 		
-		feedback.textContent =
-			`変更先: ${dateLabel(selected.date)} ${rangeLabel(selected)}。`
-			+ '画面確認用のため、予約はまだ変更されていません。';
-			
-		feedback.hidden = false;
+		// 現在の選択内容からhidden入力を作り直す
+		renderCandidates();
+		
+		// 二重送信を防止し、送信中の表示にする
+		setSubmitting(true);
+		
+		// 正常ならpreventDefault()を呼ばない
+		// ブラウザが通常のフォーム送信を行う
 	})
 	
 	if (!R.isValidDuration(lessonMinutes) || typeof dialog.showModal !== 'function') {

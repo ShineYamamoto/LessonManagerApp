@@ -1,24 +1,37 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.controller;
 
+import static com.ShineYamamoto.LessonManagerApp.reservation.domain.policy.ReservationPolicy.*;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
+import jakarta.validation.Valid;
+
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationCheckService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
+import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationChangeForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.view.ReservationView;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 
@@ -30,15 +43,16 @@ import lombok.RequiredArgsConstructor;
 public class ReservationManagementController {
 	
 	private final ReservationDataService reservationDataService;
+	
+	private final ReservationCheckService reservationCheckService;
+	
+	private final MessageSource messageSource;
+	
+	private static final DateTimeFormatter CHANGE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/M/d HH:mm");
 
 	private static final ZoneId JAPAN_ZONE = ZoneId.of("Asia/Tokyo");
 	
 	private static final int MAX_DISPLAY_COUNT = 50;
-	
-	// 後で管理者設定を取得処理へ置き換える予定
-	private static final int CHANGE_DEADLINE_HOURS = 3;
-	private static final int CHANGE_LEAD_HOURS = 24;
-	private static final int CANCEL_DEADLINE_HOURS = 6;
 	
 	/**
 	 * このControllerの各画面で使う設定を渡す
@@ -117,6 +131,74 @@ public class ReservationManagementController {
 		model.addAttribute("lessonMinutes", lessonMinutes);
 		
 		return "reservation/reservation-edit";
+	}
+	
+	/**
+	 * 変更内容を受信してチェックする
+	 */
+	@PostMapping("/{reservationId}/edit")
+	public String postReservationEdit(
+			@PathVariable("reservationId") Long reservationId,
+			@Valid @ModelAttribute("changeForm") ReservationChangeForm form,
+			BindingResult bindingResult,
+			@AuthenticationPrincipal LoginUser loginUser,
+			RedirectAttributes redirectAttributes,
+			Locale locale) {
+		
+		String redirectUrl = "redirect:/user/reservation/" + reservationId + "/edit";
+		
+		// 未入力や日時形式の不正
+		if (bindingResult.hasErrors()) {
+			
+			redirectAttributes.addFlashAttribute(
+					"reservationError",
+					messageSource.getMessage(
+							"reservation.error.formInvalid",
+							null,
+							locale));
+			
+			return redirectUrl;
+		}
+		
+		LocalDateTime requestedStart = form.getStartsAt();
+		
+		try {
+			
+			ReservationSlot checkedSlot = reservationCheckService.checkChange(
+					loginUser.getUserId(),
+					reservationId,
+					requestedStart);
+			
+			// 今回はDB更新せず、チェック結果を表示する
+			String notice = messageSource.getMessage(
+					"reservation.change.checked",
+					new Object[] {
+							checkedSlot.getStartsAt().format(CHANGE_DATE_FORMAT),
+							checkedSlot.getEndsAt().format(CHANGE_DATE_FORMAT)
+					},
+					locale);
+			
+			redirectAttributes.addFlashAttribute("reservationNotice", notice);
+			
+		} catch (ReservationCheckException e) {
+			
+			String errorMessage = messageSource.getMessage(
+					e.getMessageKey(),
+					new Object[] {
+							requestedStart.format(CHANGE_DATE_FORMAT),
+							CHANGE_LEAD_HOURS
+					},
+					locale);
+			
+			redirectAttributes.addFlashAttribute("reservationError", errorMessage);
+		}
+		
+		// 選択した変更先を、戻った画面で復元する
+		redirectAttributes.addFlashAttribute(
+				"restoredStarts",
+				requestedStart.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+		
+		return redirectUrl;
 	}
 	
 	/**
