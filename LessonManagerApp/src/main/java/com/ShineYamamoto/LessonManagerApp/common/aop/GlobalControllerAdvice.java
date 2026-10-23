@@ -1,10 +1,13 @@
 package com.ShineYamamoto.LessonManagerApp.common.aop;
 
+import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -22,6 +25,25 @@ public class GlobalControllerAdvice {
 		model.addAttribute("message", "DataAccessExceptionが発生しました");
 		// Httpのエラーコード(500)をModelに登録
 		model.addAttribute("status", HttpStatus.INTERNAL_SERVER_ERROR);
+		
+		return "error";
+	}
+	
+	/** 指定されたHTTPステータスでエラー画面を表示する。 */
+	@ExceptionHandler(ResponseStatusException.class)
+	public String responseStatusExceptionHandler(
+			ResponseStatusException e,
+			Model model,
+			HttpServletResponse response) {
+		
+		int status = e.getStatusCode().value();
+		
+		// 実際のHTTPレスポンスにもステータスを設定する
+		response.setStatus(status);
+		
+		model.addAttribute("status", status);
+		model.addAttribute("error", "");
+		model.addAttribute("message", e.getReason() != null ? e.getReason() : "リクエストを処理できません。");
 		
 		return "error";
 	}
