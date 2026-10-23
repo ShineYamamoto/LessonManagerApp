@@ -21,10 +21,7 @@
 			<a class="management-link" th:href="@{/user/reservation/single}">新しく予約する</a>
 		</header>
 		
-		<p class="preview-notice">
-			画面確認用のサンプル予約です。
-			実際の予約情報は表示していません。
-		</p>
+		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
 		
 		<section class="management-rules" aria-label="変更・キャンセルの条件">
 			<p>
@@ -49,7 +46,7 @@
 			</span>
 		</div>
 		
-		<div clss="empty-state" th:if="${#lists.isEmpty(reservations)}">
+		<div class="empty-state" th:if="${#lists.isEmpty(reservations)}">
 			<p>現在、予約している授業はありません。</p>
 		</div>
 		
@@ -91,7 +88,7 @@
 					</span>
 					
 					<!-- キャンセル処理はベット実装する -->
-					<button type="button" class="management-cancel" disable>
+					<button type="button" class="management-cancel" disabled>
 						予約を取り消す（準備中）
 					</button>
 					
