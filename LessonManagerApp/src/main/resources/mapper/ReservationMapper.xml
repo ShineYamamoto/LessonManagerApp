@@ -107,7 +107,8 @@
 		  , updated_at = CURRENT_TIMESTAMP
 		  , version = version + 1
 		WHERE reservation_id = #{reservationId}
-		  AND status = 'CONDIRMED'
+		  AND user_id = #{userId}
+		  AND status = 'CONFIRMED'
 		  AND version = #{expectedVersion}
 	</update>
 </mapper>
