@@ -1,0 +1,24 @@
+.reservation-change-complete .change-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.reservation-change-complete .change-side { padding: 20px; border: 1px solid var(--line); border-radius: 10px; }
+.reservation-change-complete .change-side h2 { margin-bottom: 12px; font-size: 15px; }
+.reservation-change-complete .change-before { background: #f5f7fa; color: #526174; }
+.reservation-change-complete .change-after { border: 2px solid var(--blue); background: #edf4ff; color: var(--blue-dark); }
+.reservation-change-complete .change-date { display: block; font-size: 15px; font-weight: 600; }
+.reservation-change-complete .change-time { margin-top: 8px; font-size: 24px; font-weight: 700; }
+.reservation-change-complete .complete-primary-link { background: var(--blue); color: #fff; }
+.reservation-change-complete .complete-primary-link:hover { background: var(--blue-dark); }
+.reservation-change-complete .complete-secondary-link { border: 1px solid var(--line); background: #fff; color: var(--ink); }
+.reservation-change-complete .complete-secondary-link:hover { background: #f5f7fa; }
+@media (max-width: 600px) {
+    .reservation-change-complete .change-comparison {
+        grid-template-columns: 1fr;
+    }
+
+    .reservation-change-complete .complete-details {
+        padding: 24px 18px;
+    }
+
+    .reservation-change-complete .complete-actions {
+        padding: 20px 18px 24px;
+    }
+}

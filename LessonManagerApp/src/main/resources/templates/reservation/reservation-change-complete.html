@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title th:text="#{reservation.change.complete.title}">予約変更完了</title>
+<link rel="stylesheet" th:href="@{/css/reservation-complete.css}">
+<link rel="stylesheet" th:href="@{/css/reservation-change-complete.css}">
+</head>
+<body>
+	<main class="reservation-complete reservation-change-complete" layout:fragment="content" aria-labelledby="complete-title">
+		
+		<section class="complete-card">
+			
+			<header class="complete-header">
+				<div class="complete-check" aria-hidden="true">✓</div>
+				
+				<p class="complete-eyebrow" th:text="#{reservation.change.complete.breadcrumb}">授業予約 / 日時変更完了</p>
+				
+				<h1 id="complete-title" th:text="#{reservation.change.complete.title}">予約日時を変更しました</h1>
+				
+				<p class="complete-message" th:text="#{reservation.change.complete.message}">以下の内容で変更が確定しました。</p>
+			</header>
+			
+			<section class="complete-details" aria-labelledby="change-details-heading">
+				
+				<div class="complete-section-heading">
+					<h2 id="change-details-heading" th:text="#{reservation.change.complete.details}">変更内容</h2>
+					
+					<span class="complete-timezone" th:text="#{reservation.complete.timezone}">日本時間（UTC+09:00）</span>
+				</div>
+				
+				<div class="change-comparison">
+					
+					<section class="change-side change-before" aria-labelledby="before-heading">
+						
+						<h2 id="before-heading" th:text="#{reservation.change.before}">変更前</h2>
+						
+						<time class="change-date"
+							th:attr="datetime=${changeResult.beforeStartsAt}"
+							th:text="${#temporals.format(changeResult.beforeStartsAt, 'yyyy/MM/dd (E)')}">
+						</time>
+						
+						<p class="change-time">
+							<span th:text="${#temporals.format(changeResult.beforeEndsAt, 'HH:mm')}"></span>
+							～
+							<span th:text="${#temporals.format(changeResult.beforeEndsAt, 'HH:mm')}"></span>
+						</p>
+					</section>
+					
+					<section class="change-side change-after" aria-labelledby="after-heading">
+						
+						<h2 id="after-heading" th:text="#{reservation.change.after}">変更後</h2>
+						
+						<time class="change-date"
+							th:attr="datetime=${changeResult.afterStartsAt}"
+							th:text="${#temporals.format(changeResult.afterStartsAt, 'yyyy/MM/dd (E)')}">
+						</time>
+						
+						<p class="change-time">
+							<span th:text="${#temporals.format(changeResult.afterStartsAt, 'HH:mm')}"></span>
+							～
+							<span th:text="${#temporals.format(changeResult.afterEndsAt, 'HH:mm')}"></span>
+						</p>
+					</section>
+				</div>
+				
+				<p class="complete-note" th:text="#{reservation.complete.timezoneNote}">表示されている日時はすべて日本時間です。</p>
+				
+				<p class="complete-note" th:text="#{reservation.change.complete.snapshot}">この画面は今回の変更結果です。最新の予約内容は予約一覧で確認できます。</p>
+			</section>
+			
+			<nav class="complete-actions" th:attr="aria-label=#{reservation.change.complete.actions}">
+				
+				<a class="complete-primary-link" th:href="@{/user/reservation/list}" th:text="#{reservation.change.complete.list}">予約一覧を見る</a>
+				
+				<a class="complete-secondary-link" th:href="@{/home}" th:text="#{reservation.complete.home}">ホームへ戻る</a>
+			</nav>
+		</section>
+	</main>
+</body>
+</html>

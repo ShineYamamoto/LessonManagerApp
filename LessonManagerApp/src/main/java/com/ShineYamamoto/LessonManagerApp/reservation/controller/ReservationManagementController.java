@@ -9,7 +9,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 import org.springframework.context.MessageSource;
@@ -29,7 +31,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
-import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationChangeForm;
@@ -54,6 +56,8 @@ public class ReservationManagementController {
 	private static final ZoneId JAPAN_ZONE = ZoneId.of("Asia/Tokyo");
 	
 	private static final int MAX_DISPLAY_COUNT = 50;
+	
+	private static final String CHANGE_RESULT_KEY = "reservation.change.result";
 	
 	/**
 	 * このControllerの各画面で使う設定を渡す
@@ -144,6 +148,7 @@ public class ReservationManagementController {
 			@Valid @ModelAttribute("changeForm") ReservationChangeForm form,
 			BindingResult bindingResult,
 			@AuthenticationPrincipal LoginUser loginUser,
+			HttpSession session,
 			RedirectAttributes redirectAttributes,
 			Locale locale) {
 		
@@ -152,43 +157,52 @@ public class ReservationManagementController {
 		// 未入力や日時形式の不正
 		if (bindingResult.hasErrors()) {
 			
+			// 更新番号が不正（型・バリデーションエラー）なら編集画面を開きなおしてもらう
+			// DBのversionと比較した結果ではない
+			boolean versionError = bindingResult.hasFieldErrors("exceptedVersion");
+			
+			String messageKey = versionError
+					? "reservation.change.error.conflict"
+					: "reservation.error.formInvalid";
+			
 			redirectAttributes.addFlashAttribute(
 					"reservationError",
 					messageSource.getMessage(
-							"reservation.error.formInvalid",
+							messageKey,
 							null,
 							locale));
 			
-			return editRedirect;
+			return versionError
+					? "redirect:/user/reservation/list"
+					: editRedirect;
 		}
 		
 		LocalDateTime requestedStart = form.getStartsAt();
 		
 		try {
 			
-			ReservationSlot changedSlot = reservationService.change(
+			ReservationChangeResult result = reservationService.change(
 					loginUser.getUserId(),
 					reservationId,
 					requestedStart,
 					form.getExpectedVersion());
 			
-			// Serviceのトランザクションがコミットされた後に到達する
-			String notice = messageSource.getMessage(
-					"reservation.change.completed",
-					new Object[] {
-							changedSlot.getStartsAt().format(CHANGE_DATE_FORMAT),
-							changedSlot.getEndsAt().format(CHANGE_DATE_FORMAT)
-					},
-					locale);
+			// コミット成功後の結果だけを保持する
+			session.setAttribute(CHANGE_RESULT_KEY, result);
 			
-			redirectAttributes.addFlashAttribute("reservationNotice", notice);
 			
-			return "redirect:/user/reservation/list";
+			
+			return "redirect:/user/reservation/"
+					+ result.getReservationId()
+					+ "/change-complete/"
+					+ result.getVersion();
 			
 		} catch (ReservationCheckException e) {
 			
+			String messageKey = e.getMessageKey();
+			
 			String errorMessage = messageSource.getMessage(
-					e.getMessageKey(),
+					messageKey,
 					new Object[] {
 							requestedStart.format(CHANGE_DATE_FORMAT),
 							CHANGE_LEAD_HOURS
@@ -197,8 +211,10 @@ public class ReservationManagementController {
 			
 			redirectAttributes.addFlashAttribute("reservationError", errorMessage);
 			
-			// 古い画面の場合は一覧から最新の予約を確認してもらう
-			if ("reservation.change.error.conflict".equals(e.getMessageKey())) {
+			// 古い画面の場合は一覧から最新の予約情報を確認してもらう
+			if ("reservation.change.error.conflict".equals(messageKey)
+					|| "reservation.change.error.deadline".equals(messageKey)) {
+				
 				return "redirect:/user/reservation/list";
 			}
 			
@@ -221,6 +237,42 @@ public class ReservationManagementController {
 			
 			return "redirect:/user/reservation/list";
 		}
+	}
+	
+	/**
+	 * 変更完了画面を表示する
+	 */
+	@GetMapping("/{reservationId}/change-complete/{version}")
+	public String getReservationChangeComplete(
+			@PathVariable("reservationId") Long reservationId,
+			@PathVariable("version") Long version,
+			@AuthenticationPrincipal LoginUser loginUser,
+			HttpSession session,
+			Model model) {
+		
+		Object stored = session.getAttribute(CHANGE_RESULT_KEY);
+		
+		// storedがReservationChangeResult型ならresultという変数で扱えるようにする
+		if (!(stored instanceof ReservationChangeResult result)) {
+			return "redirect:/user/reservation/list";
+		}
+		
+		// ログイン本人の結果であることを確認
+		if (!Objects.equals(result.getUserId(), loginUser.getUserId())) {
+			return "redirect:/user/reservation/list";
+		}
+		
+		// URLが指す変更結果と、保存されている結果が一致するか
+		if (!Objects.equals(result.getReservationId(), reservationId)
+				|| !Objects.equals(result.getVersion(), version)) {
+			
+			return "redirect:/user/reservation/list";
+		}
+		
+		model.addAttribute("changeResult", result);
+		
+		return "reservation/reservation-change-complete";
+		
 	}
 	
 	/**

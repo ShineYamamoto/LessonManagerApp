@@ -21,10 +21,10 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.Reservati
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationProblem;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
@@ -186,7 +186,7 @@ public class ReservationCheckService {
 	 * 問題なければ変更先の開始・終了日時を返す
 	 * このメソッドではDBを更新しない
 	 */
-	public ReservationSlot checkChange(
+	public ReservationChangeResult checkChange(
 			Long userId,
 			Long reservationId,
 			LocalDateTime requestedStart,
@@ -290,7 +290,14 @@ public class ReservationCheckService {
 			throw new ReservationCheckException("reservation.error.booked");
 		}
 		
-		return slot;
+		return new ReservationChangeResult(
+				original.getReservationId(),
+				original.getUserId(),
+				original.getVersion() + 1,
+				original.getStartsAt(),
+				original.getEndsAt(),
+				slot.getStartsAt(),
+				slot.getEndsAt());
 		
 	}
 	

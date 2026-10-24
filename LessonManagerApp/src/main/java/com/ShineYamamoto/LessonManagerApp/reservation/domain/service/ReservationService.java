@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationStatus;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationLockMapper;
@@ -73,11 +74,11 @@ public class ReservationService {
 	}
 	
 	/**
-	 * 本人の予約日時を更新する
+	 * 本人の予約日時を更新し、変更前後の情報を返す
 	 * 新規予約と同じDBロックで、チェックと更新を保護する
 	 */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
-	public ReservationSlot change(
+	public ReservationChangeResult change(
 			Long userId,
 			Long reservationId,
 			LocalDateTime requestedStart,
@@ -92,7 +93,7 @@ public class ReservationService {
 		}
 		
 		// ロック取得後に最新情報でチェックする
-		ReservationSlot checkedSlot = reservationCheckService.checkChange(
+		ReservationChangeResult result = reservationCheckService.checkChange(
 				userId,
 				reservationId,
 				requestedStart,
@@ -102,8 +103,8 @@ public class ReservationService {
 		int updatedCount = reservationMapper.updateSchedule(
 				reservationId,
 				userId,
-				checkedSlot.getStartsAt(),
-				checkedSlot.getEndsAt(),
+				result.getAfterStartsAt(),
+				result.getAfterEndsAt(),
 				expectedVersion);
 		
 		if (updatedCount != 1) {
@@ -112,6 +113,6 @@ public class ReservationService {
 		}
 		
 		// Springがこのメソッドの正常終了後にコミットする
-		return checkedSlot;
+		return result;
 	}
 }
