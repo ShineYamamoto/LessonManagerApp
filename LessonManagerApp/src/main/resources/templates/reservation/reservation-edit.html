@@ -16,6 +16,7 @@
 		 		data-lesson-minutes=${lessonMinutes},
 				data-locale=${#locale.toLanguageTag()},
 				data-original-start=${#temporals.format(reservation.startsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
+				data-original-end=${#temporals.format(reservation.endsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
 				data-change-deadline-hours=${reservationPolicy.changeDeadlineHours},
 				data-change-lead-hours=${reservationPolicy.changeLeadHours}"
 		 aria-labelledby="page-title">
@@ -31,7 +32,8 @@
 			data-config-duration="授業時間の設定が正しくありません。"
 			data-config-browser="このブラウザでは時間選択画面を選択できません。"
 			data-summary-total="{0}回 / {1}分"
-			data-button-remove="選択を解除">
+			data-button-remove="選択を解除"
+			th:attr="data-confirm-change=#{reservation.change.confirm}">
 	</div>
 			
 		<header class="page-heading">
@@ -56,7 +58,7 @@
 		
 		<section class="current-reservation" aria-labelledby="current-reservation-heading">
 			
-			<h2 id="current-reservation-heading">現在の予約</h2>
+			<h2 id="current-reservation-heading">現在の予約内容</h2>
 			
 			<p class="management-date" th:text="${#temporals.format(reservation.startsAt, 'yyyy年M月d日(E) ')}"></p>
 			
@@ -130,7 +132,7 @@
 					<input type="hidden" name="expectedVersion" th:value="${reservationVersion}">
 					
 					<div class="summary-body">
-						<div class="card-heading"><h2 id="candidate-heading">変更後の日時</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
+						<div class="card-heading"><h2 id="candidate-heading" th:text="#{reservation.change.after}">変更後の日時</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
 						<p class="muted">別の日時を選ぶと、選択内容が置き換わります。</p>
 						<div id="empty-candidates" class="empty-state"><span class="empty-calendar" aria-hidden="true">＋</span><p>変更後の日時はまだ選択されていません</p></div>
 						<ol id="candidate-list" class="candidate-list"></ol>

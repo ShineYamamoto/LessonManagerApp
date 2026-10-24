@@ -517,6 +517,27 @@ const ReservationRules = (() => {
 			return;
 		}
 		
+		const originalStart = app.dataset.originalStart;
+		const originalEnd = app.dataset.originalEnd;
+		
+		const beforeText = 
+				`${dateLabel(originalStart.slice(0, 10))} ` +
+				`${originalStart.slice(11, 16)}-${originalEnd.slice(11, 16)}`;
+		const afterText = 
+				`${dateLabel(selected.date)} ${rangeLabel(selected)}`;
+		const confirmed = window.confirm(
+			formatMessage(
+				messages.confirmChange,
+				beforeText,
+				afterText
+			)
+		);
+		
+		if (!confirmed) {
+			event.preventDefault();
+			return;
+		}
+		
 		// 現在の選択内容からhidden入力を作り直す
 		renderCandidates();
 		
