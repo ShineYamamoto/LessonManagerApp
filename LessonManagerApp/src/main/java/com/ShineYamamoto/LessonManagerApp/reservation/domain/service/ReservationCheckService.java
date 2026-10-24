@@ -189,7 +189,8 @@ public class ReservationCheckService {
 	public ReservationSlot checkChange(
 			Long userId,
 			Long reservationId,
-			LocalDateTime requestedStart) {
+			LocalDateTime requestedStart,
+			Long expectedVersion) {
 		
 		// 1回のチェックでは同じ現在日時を使用する
 		LocalDateTime now = LocalDateTime.now(BOOKING_ZONE);
@@ -201,6 +202,15 @@ public class ReservationCheckService {
 				now)
 				.orElseThrow(() ->
 						new ResponseStatusException(HttpStatus.NOT_FOUND, "対象の予約が見つかりません。"));
+		
+		// 編集画面を開いた後、他の操作で更新されていないか
+		if (expectedVersion == null
+				|| expectedVersion < 0
+				|| !expectedVersion.equals(original.getVersion())) {
+			
+			throw new ReservationCheckException(
+					"reservation.change.error.conflict");
+		}
 		
 		// 元の予約の変更期限を確認する
 		if (original.getStartsAt().isBefore(now.plusHours(CHANGE_DEADLINE_HOURS))) {

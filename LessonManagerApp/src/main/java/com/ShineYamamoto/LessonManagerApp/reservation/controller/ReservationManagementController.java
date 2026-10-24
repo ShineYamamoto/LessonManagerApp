@@ -13,6 +13,7 @@ import java.util.Map;
 import jakarta.validation.Valid;
 
 import org.springframework.context.MessageSource;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -29,8 +30,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
-import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationCheckService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationChangeForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.view.ReservationView;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
@@ -44,7 +45,7 @@ public class ReservationManagementController {
 	
 	private final ReservationDataService reservationDataService;
 	
-	private final ReservationCheckService reservationCheckService;
+	private final ReservationService reservationService;
 	
 	private final MessageSource messageSource;
 	
@@ -122,6 +123,7 @@ public class ReservationManagementController {
 		
 		
 		model.addAttribute("reservation", view);
+		model.addAttribute("reservationVersion", reservation.getVersion());
 		
 		// 実際に予約された予約の授業時間を維持する
 		long lessonMinutes = Duration.between(
@@ -134,7 +136,7 @@ public class ReservationManagementController {
 	}
 	
 	/**
-	 * 変更内容を受信してチェックする
+	 * 変更内容を受信してチェック後に予約を更新する
 	 */
 	@PostMapping("/{reservationId}/edit")
 	public String postReservationEdit(
@@ -145,7 +147,7 @@ public class ReservationManagementController {
 			RedirectAttributes redirectAttributes,
 			Locale locale) {
 		
-		String redirectUrl = "redirect:/user/reservation/" + reservationId + "/edit";
+		String editRedirect = "redirect:/user/reservation/" + reservationId + "/edit";
 		
 		// 未入力や日時形式の不正
 		if (bindingResult.hasErrors()) {
@@ -157,28 +159,31 @@ public class ReservationManagementController {
 							null,
 							locale));
 			
-			return redirectUrl;
+			return editRedirect;
 		}
 		
 		LocalDateTime requestedStart = form.getStartsAt();
 		
 		try {
 			
-			ReservationSlot checkedSlot = reservationCheckService.checkChange(
+			ReservationSlot changedSlot = reservationService.change(
 					loginUser.getUserId(),
 					reservationId,
-					requestedStart);
+					requestedStart,
+					form.getExpectedVersion());
 			
-			// 今回はDB更新せず、チェック結果を表示する
+			// Serviceのトランザクションがコミットされた後に到達する
 			String notice = messageSource.getMessage(
-					"reservation.change.checked",
+					"reservation.change.completed",
 					new Object[] {
-							checkedSlot.getStartsAt().format(CHANGE_DATE_FORMAT),
-							checkedSlot.getEndsAt().format(CHANGE_DATE_FORMAT)
+							changedSlot.getStartsAt().format(CHANGE_DATE_FORMAT),
+							changedSlot.getEndsAt().format(CHANGE_DATE_FORMAT)
 					},
 					locale);
 			
 			redirectAttributes.addFlashAttribute("reservationNotice", notice);
+			
+			return "redirect:/user/reservation/list";
 			
 		} catch (ReservationCheckException e) {
 			
@@ -191,14 +196,31 @@ public class ReservationManagementController {
 					locale);
 			
 			redirectAttributes.addFlashAttribute("reservationError", errorMessage);
+			
+			// 古い画面の場合は一覧から最新の予約を確認してもらう
+			if ("reservation.change.error.conflict".equals(e.getMessageKey())) {
+				return "redirect:/user/reservation/list";
+			}
+			
+			// 日時の条件違反なら、選択内容を残して編集画面へ戻す
+			redirectAttributes.addFlashAttribute(
+					"restoredStarts",
+					requestedStart.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			
+			return editRedirect;
+			
+		} catch (PessimisticLockingFailureException e) {
+			
+			// ロック取得失敗などが PessimisticLockingFailureException として通知された場合は、一覧へ戻して再操作を案内する
+			redirectAttributes.addFlashAttribute(
+					"reservationError",
+					messageSource.getMessage(
+							"reservation.change.error.busy",
+							null,
+							locale));
+			
+			return "redirect:/user/reservation/list";
 		}
-		
-		// 選択した変更先を、戻った画面で復元する
-		redirectAttributes.addFlashAttribute(
-				"restoredStarts",
-				requestedStart.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-		
-		return redirectUrl;
 	}
 	
 	/**

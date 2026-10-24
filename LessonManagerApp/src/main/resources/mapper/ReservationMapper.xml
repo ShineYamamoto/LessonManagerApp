@@ -9,6 +9,7 @@
 		<result column="starts_at" property="startsAt" />
 		<result column="ends_at" property="endsAt" />
 		<result column="status" property="status" />
+		<result column="version" property="version" />
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
 		<result column="created_by" property="createdBy" />
@@ -22,6 +23,7 @@
 		  , starts_at
 		  , ends_at
 		  , status
+		  , version
 		  , created_at
 		  , updated_at
 		  , created_by
@@ -64,6 +66,7 @@
 		  , starts_at
 		  , ends_at
 		  , status
+		  , version
 		  , created_at
 		  , updated_at
 		  , created_by
@@ -84,6 +87,7 @@
 		  , starts_at
 		  , ends_at
 		  , status
+		  , version
 		  , created_at
 		  , updated_at
 		  , created_by
@@ -94,4 +98,16 @@
 		   AND status = 'CONFIRMED'
 		   AND starts_at &gt; #{now}
 	</select>
+	
+	<update id="updateSchedule">
+		UPDATE reservations
+		SET starts_at = #{startsAt}
+		  , ends_at = #{endsAt}
+		  , updated_by = #{userId}
+		  , updated_at = CURRENT_TIMESTAMP
+		  , version = version + 1
+		WHERE reservation_id = #{reservationId}
+		  AND status = 'CONDIRMED'
+		  AND version = #{expectedVersion}
+	</update>
 </mapper>

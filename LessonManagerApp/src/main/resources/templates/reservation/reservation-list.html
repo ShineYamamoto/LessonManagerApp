@@ -23,6 +23,8 @@
 		
 		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
 		
+		<p class="preview-notice" role="status" th:if="${reservationNotice}" th:text="${reservationNotice}"></p>
+		
 		<section class="management-rules" aria-label="変更・キャンセルの条件">
 			<p>
 				日時の変更: 授業開始の

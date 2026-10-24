@@ -30,4 +30,12 @@ public interface ReservationMapper {
 			@Param("reservationId") Long reservationId,
 			@Param("userId") Long userId,
 			@Param("now") LocalDateTime now);
+	
+	/** 本人の確定予約の日時を、更新番号が一致する場合だけ更新する */
+	int updateSchedule(
+			@Param("reservationId") Long reservationId,
+			@Param("userId") Long userId,
+			@Param("startsAt") LocalDateTime startsAt,
+			@Param("endsAt") LocalDateTime endsAt,
+			@Param("expectedVersion") Long expectedVersion);
 }

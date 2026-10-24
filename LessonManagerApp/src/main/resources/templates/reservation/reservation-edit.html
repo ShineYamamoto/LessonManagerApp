@@ -23,9 +23,9 @@
 		<!-- JavaScriptへ日本語メッセージを渡す -->
 		<div id="reservation-messages" hidden
 			data-button-empty="変更後の日時を選択してください"
-			data-button-count="変更内容をチェックする"
-			data-button-submitting="チェックしています…"
-			data-feedback-submitting="変更内容を確認しています。"
+			data-button-count="変更を確定する"
+			data-button-submitting="変更しています..."
+			data-feedback-submitting="日時予約を変更しています。"
 			data-feedback-invalid="選択した日時へは変更できません。選びなおしてください。"
 			data-feedback-empty="変更後の日時を選択してください。"
 			data-config-duration="授業時間の設定が正しくありません。"
@@ -50,9 +50,8 @@
 		</header>
 		
 		<p class="preview-notice">
-			現在の予約には登録済みの予約情報を表示しています。
-			変更先の空き時間はサンプルです。
-			日時を選択しても、実際の予約はまだ変更されません。
+			変更先の空き時間表示はサンプルです。
+			「変更を確定する」を押すと、サーバーで空き状況を確認し、予約日時を変更します。
 		</p>
 		
 		<section class="current-reservation" aria-labelledby="current-reservation-heading">
@@ -85,7 +84,6 @@
 		
 		<p class="error-box" role="alert" th:if="${reservationError}" th:text="${reservationError}"></p>
 		
-		<p id="change-check-notice" class="preview-notice" role="status" th:if="${reservationNotice}" th:text="${reservationNotice}"></p>
 		<!-- サーバから返された予約候補をJSへ渡す -->
 		<input type="hidden" id="restored-starts" th:value="${restoredStarts != null ? restoredStarts : ''}">
 		
@@ -128,6 +126,9 @@
 			
 			<aside class="summary-card" aria-labelledby="candidate-heading">
 				<form id="reservation-form" method="post" th:action="@{/user/reservation/{id}/edit(id=${reservation.id})}">
+					
+					<input type="hidden" name="expectedVersion" th:value="${reservationVersion}">
+					
 					<div class="summary-body">
 						<div class="card-heading"><h2 id="candidate-heading">変更後の日時</h2><span class="count-badge"><span id="candidate-count">0</span>件</span></div>
 						<p class="muted">別の日時を選ぶと、選択内容が置き換わります。</p>

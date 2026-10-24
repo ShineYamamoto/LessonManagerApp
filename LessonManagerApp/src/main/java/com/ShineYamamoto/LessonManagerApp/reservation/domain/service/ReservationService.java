@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationStatus;
@@ -69,5 +70,48 @@ public class ReservationService {
 		// このメソッドが正常終了した後にコミットされる
 		// コミット時にDBロックが解放される
 		return checkedSlots;
+	}
+	
+	/**
+	 * 本人の予約日時を更新する
+	 * 新規予約と同じDBロックで、チェックと更新を保護する
+	 */
+	@Transactional(isolation = Isolation.READ_COMMITTED)
+	public ReservationSlot change(
+			Long userId,
+			Long reservationId,
+			LocalDateTime requestedStart,
+			Long expectedVersion) {
+		
+		// 新規予約と同じロックを取得する
+		Integer lockId = reservationLockMapper.lock();
+		
+		if (lockId == null) {
+			throw new IllegalStateException(
+					"予約ロック用のデータが存在しません。");
+		}
+		
+		// ロック取得後に最新情報でチェックする
+		ReservationSlot checkedSlot = reservationCheckService.checkChange(
+				userId,
+				reservationId,
+				requestedStart,
+				expectedVersion);
+		
+		// チェック済みの開始・終了日時を使って更新する
+		int updatedCount = reservationMapper.updateSchedule(
+				reservationId,
+				userId,
+				checkedSlot.getStartsAt(),
+				checkedSlot.getEndsAt(),
+				expectedVersion);
+		
+		if (updatedCount != 1) {
+			throw new ReservationCheckException(
+					"reservation.change.error.conflict");
+		}
+		
+		// Springがこのメソッドの正常終了後にコミットする
+		return checkedSlot;
 	}
 }

@@ -17,6 +17,8 @@ public class Reservation {
 	
 	private ReservationStatus status;
 	
+	private Long version;
+	
 	private LocalDateTime createdAt;
 	
 	private LocalDateTime updatedAt;
