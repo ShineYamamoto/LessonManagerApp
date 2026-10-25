@@ -28,6 +28,8 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.Reservation
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationMapper;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 
+
+
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:reservation_change_test;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000",
         "spring.datasource.driver-class-name=org.h2.Driver",
@@ -158,6 +160,28 @@ public class ReservationChangeIntegrationTest {
 		
 		assertEquals(after, read(reservationId, userA));
 	}
+	
+	@Test
+	void 他人の予約は編集画面を開けず変更もできない() throws Exception {
+		
+		Reservation before = read(reservationId, userA);
+		
+		mockMvc.perform(get(editUrl())
+						.with(user(loginUser(userB))))
+				.andExpect(status().isNotFound());
+		
+		mockMvc.perform(post(editUrl())
+						.with(user(loginUser(userB)))
+						.with(csrf())
+						.param("startsAt", at(12).toString())
+						.param("expectedVersion", "0"))
+				.andExpect(status().isNotFound());
+	
+		assertEquals(before, read(reservationId, userA));
+		assertEquals(1, countAll());
+	}
+	
+	
 	
 	// ---------- 共通の準備・確認処理 ----------
 	
