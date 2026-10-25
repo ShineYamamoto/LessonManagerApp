@@ -159,7 +159,7 @@ public class ReservationManagementController {
 			
 			// 更新番号が不正（型・バリデーションエラー）なら編集画面を開きなおしてもらう
 			// DBのversionと比較した結果ではない
-			boolean versionError = bindingResult.hasFieldErrors("exceptedVersion");
+			boolean versionError = bindingResult.hasFieldErrors("expectedVersion");
 			
 			String messageKey = versionError
 					? "reservation.change.error.conflict"

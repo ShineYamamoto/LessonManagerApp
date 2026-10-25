@@ -8,7 +8,7 @@ import lombok.Value;
 @Value
 public class ReservationChangeResult implements Serializable {
 
-	private static final long serialVersionID = 1L;
+	private static final long serialVersionUID = 1L;
 	
 	Long reservationId;
 	
