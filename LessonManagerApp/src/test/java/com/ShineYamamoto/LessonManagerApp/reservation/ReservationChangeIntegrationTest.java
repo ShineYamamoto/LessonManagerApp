@@ -16,6 +16,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,6 +25,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
@@ -266,6 +268,31 @@ public class ReservationChangeIntegrationTest {
 				() -> reservationService.change(userA, reservationId, target, 0L));
 		
 		assertEquals("reservation.change.error." + reason, exception.getMessageKey());
+		assertEquals(before, read(reservationId, userA));
+	}
+	
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = {"abc", "-1"})
+	void 不正な更新番号は変更せず一覧へ戻す(String version) throws Exception {
+		
+		Reservation before = read(reservationId, userA);
+		
+		MockHttpServletRequestBuilder request = post(editUrl())
+				.with(user(loginUser(userA)))
+				.with(csrf())
+				.param("startsAt", at(12).toString());
+		
+		// nullの場合は、項目自体を送信しない
+		if (version != null) {
+			request.param("expectedVersion", version);
+		}
+		
+		mockMvc.perform(request)
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/user/reservation/list"))
+				.andExpect(flash().attributeExists("reservationError"));
+		
 		assertEquals(before, read(reservationId, userA));
 	}
 	
