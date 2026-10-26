@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +28,6 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationCh
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationMapper;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
-
 
 
 @SpringBootTest(properties = {
@@ -181,7 +181,34 @@ public class ReservationChangeIntegrationTest {
 		assertEquals(1, countAll());
 	}
 	
-	
+	@Test
+	void 重複する変更は保存せず候補を編集画面へ返す() throws Exception {
+		
+		Long otherId = insertReservation(userB, at(13));
+		
+		Reservation before= read(reservationId, userA);
+		Reservation otherBefore = read(otherId, userB);
+		
+		MockHttpSession session = new MockHttpSession();
+		
+		mockMvc.perform(post(editUrl())
+						.with(user(loginUser(userA)))
+						.with(csrf())
+						.session(session)
+						.param("startsAt", at(13).toString())
+						.param("expectedVersion", "0"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl(editUrl()))
+				.andExpect(flash().attributeExists("reservationError"))
+				.andExpect(flash().attribute("restoredStarts", at(13).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)));
+		
+		assertEquals(before, read(reservationId, userA));
+		assertEquals(otherBefore, read(otherId, userB));
+		assertEquals(2, countAll());
+		
+		// 失敗した操作の完了情報を保存していない
+		assertNull(session.getAttribute(RESULT_KEY));
+	}
 	
 	// ---------- 共通の準備・確認処理 ----------
 	
