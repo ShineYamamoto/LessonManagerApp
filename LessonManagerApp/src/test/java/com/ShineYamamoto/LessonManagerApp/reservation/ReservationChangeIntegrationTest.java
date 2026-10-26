@@ -296,6 +296,35 @@ public class ReservationChangeIntegrationTest {
 		assertEquals(before, read(reservationId, userA));
 	}
 	
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"noResult", "otherUser", "wrongId", "wrongVersion"
+	})
+	void 完了情報が一致しなければ一覧へ戻す(String condition) throws Exception{
+		
+		ReservationChangeResult result = reservationService.change(userA, reservationId, at(12), 0L);
+		
+		MockHttpSession session = new MockHttpSession();
+		
+		if (!"noResult".equals(condition)) {
+			session.setAttribute(RESULT_KEY, result);
+		}
+		
+		Long loginId = "otherUser".equals(condition) ? userB : userA;
+		
+		Long pathId = "wrongId".equals(condition) ? reservationId + 1000 : reservationId;
+		
+		Long pathVersion = "wrongVersion".equals(condition) ? 0L : 1L;
+		
+		mockMvc.perform(get(completeUrl(pathId, pathVersion))
+						.with(user(loginUser(loginId)))
+						.session(session))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/user/reservation/list"));
+		
+		assertEquals(Long.valueOf(1), read(reservationId, userA).getVersion());
+	}
+	
 	// ---------- 共通の準備・確認処理 ----------
 	
 	private Long findUserId(String phone) {
