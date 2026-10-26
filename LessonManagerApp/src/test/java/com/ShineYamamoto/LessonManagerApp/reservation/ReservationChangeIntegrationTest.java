@@ -15,6 +15,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -228,6 +230,45 @@ public class ReservationChangeIntegrationTest {
 		assertEquals(1, countAll());
 	}
 	
+	// @ParameterizedTest は引数を変えて繰り返し実行するテスト
+	@ParameterizedTest
+	@ValueSource(strings = {"deadline", "tooSoon"})
+	void 変更期限に違反したら元の予約を維持する(String reason) {
+		
+		LocalDateTime requestedStart = at(12);
+		
+		if ("deadline".equals(reason)) {
+			
+			// 予約開始まで2時間しかない状態を予約を更新して作り出す
+			LocalDateTime soon = LocalDateTime.now(JAPAN_ZONE).plusHours(2);
+			
+			jdbcTemplate.update(
+					"""
+					UPDATE reservations
+					SET starts_at = ?, ends_at = ?
+					WHERE reservation_id = ?
+					""",
+					timestamp(soon),
+					timestamp(soon.plusHours(1)),
+					reservationId);
+			
+		} else {
+			
+			// 営業時間内・30分刻みだが、24時間未満の変更先にする
+			requestedStart = startWithin24Hours();
+		}
+		
+		Reservation before = read(reservationId, userA);
+		LocalDateTime target = requestedStart;
+		
+		ReservationCheckException exception = assertThrows(
+				ReservationCheckException.class,
+				() -> reservationService.change(userA, reservationId, target, 0L));
+		
+		assertEquals("reservation.change.error." + reason, exception.getMessageKey());
+		assertEquals(before, read(reservationId, userA));
+	}
+	
 	// ---------- 共通の準備・確認処理 ----------
 	
 	private Long findUserId(String phone) {
@@ -313,5 +354,24 @@ public class ReservationChangeIntegrationTest {
 		return jdbcTemplate.queryForObject(
 				"SELECT COUNT(*) FROM reservations",
 				Integer.class);
+	}
+	
+	private LocalDateTime startWithin24Hours() {
+		
+		LocalDateTime target = LocalDateTime.now(JAPAN_ZONE)
+				.plusHours(2)
+				.withMinute(0)
+				.withSecond(0)
+				.withNano(0);
+		
+		if (target.getHour() < 9) {
+			return target.toLocalDate().atTime(9, 0);
+		}
+		
+		if (target.getHour() >= 22 ) {
+			return target.toLocalDate().plusDays(1).atTime(9, 0);
+		}
+		
+		return target;
 	}
 }
