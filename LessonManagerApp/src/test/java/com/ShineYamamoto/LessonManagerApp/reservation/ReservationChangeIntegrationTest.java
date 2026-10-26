@@ -23,12 +23,12 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationMapper;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
-
 
 @SpringBootTest(properties = {
         "spring.datasource.url=jdbc:h2:mem:reservation_change_test;DB_CLOSE_DELAY=-1;LOCK_TIMEOUT=10000",
@@ -208,6 +208,24 @@ public class ReservationChangeIntegrationTest {
 		
 		// 失敗した操作の完了情報を保存していない
 		assertNull(session.getAttribute(RESULT_KEY));
+	}
+	
+	@Test
+	void 古い更新番号では先に成功した変更を上書きできない() {
+		
+		reservationService.change(userA, reservationId, at(12), 0L);
+		
+		Reservation afterFirstChange = read(reservationId, userA);
+		
+		ReservationCheckException exception = assertThrows(
+				ReservationCheckException.class,
+				() -> reservationService.change(userA, reservationId, at(14), 0L));
+		
+		assertEquals("reservation.change.error.conflict", exception.getMessageKey());
+		assertEquals(afterFirstChange, read(reservationId, userA));
+		assertEquals(at(12), afterFirstChange.getStartsAt());
+		assertEquals(Long.valueOf(1), afterFirstChange.getVersion());
+		assertEquals(1, countAll());
 	}
 	
 	// ---------- 共通の準備・確認処理 ----------
