@@ -12,6 +12,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -325,6 +330,83 @@ public class ReservationChangeIntegrationTest {
 		assertEquals(Long.valueOf(1), read(reservationId, userA).getVersion());
 	}
 	
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void 同じ時間への同時操作は一方だけが成功する(boolean newBooking) throws Exception {
+		
+		Long reservationB = insertReservation(userB, at(12));
+		
+		Reservation beforeA = read(reservationId, userA);
+		Reservation beforeB = read(reservationB, userB);
+		
+		LocalDateTime target = at(16);
+		
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		CountDownLatch ready = new CountDownLatch(2);
+		CountDownLatch start = new CountDownLatch(1);
+		
+		try {
+			
+			Future<String> futureA = executor.submit(() -> attempt(
+					() -> reservationService.change(userA, reservationId, target, 0L),
+					ready,
+					start));
+			
+			Future<String> futureB = executor.submit(() -> attempt(
+					() -> {
+						if (newBooking) {
+							reservationService.reserve(userA, List.of(target));
+						} else {
+							reservationService.change(userB, reservationB, target, 0L);
+						}
+					},
+					ready,
+					start));
+			
+			assertTrue(ready.await(10, TimeUnit.SECONDS));
+			start.countDown();
+			
+			String resultA = futureA.get(20, TimeUnit.SECONDS);
+			String resultB = futureB.get(20, TimeUnit.SECONDS);
+			
+			boolean successA = "OK".equals(resultA);
+			boolean successB = "OK".equals(resultB);
+			
+			assertEquals(1, (successA ? 1 : 0) + (successB ? 1 : 0));
+			
+			// 単なるタイムアウトなどを「期待した失敗」にしない
+			assertEquals("reservation.error.booked", successA ? resultB : resultA);
+			
+			assertEquals(1, countOverlapping(target));
+			
+			// 失敗した予約変更は元の予約を維持する
+			if (successA) {
+				assertEquals(target, read(reservationId, userA).getStartsAt());
+				assertEquals(Long.valueOf(1), read(reservationId, userA).getVersion());
+			} else {
+				assertEquals(beforeA, read(reservationId, userA));
+			}
+			
+			if (!newBooking && successB) {
+				assertEquals(target, read(reservationId, userB).getStartsAt());
+				assertEquals(Long.valueOf(1), read(reservationB, userB).getVersion());
+			} else {
+				assertEquals(beforeB, read(reservationB, userB));
+			}
+			
+			int expectedCount = 2 + (newBooking && successB ? 1 : 0);
+			assertEquals(expectedCount, countAll());
+
+		} finally {
+			
+			start.countDown();
+			executor.shutdownNow();
+			
+			// ワーカーが終了してから次のテストへ進む
+			assertTrue(executor.awaitTermination(30, TimeUnit.SECONDS));
+		}
+	}
+	
 	// ---------- 共通の準備・確認処理 ----------
 	
 	private Long findUserId(String phone) {
@@ -412,6 +494,20 @@ public class ReservationChangeIntegrationTest {
 				Integer.class);
 	}
 	
+	private int countOverlapping(LocalDateTime startsAt) {
+		return jdbcTemplate.queryForObject(
+				"""
+				SELECT COUNT(*)
+				FROM reservations
+				WHERE status = 'CONFIRMED'
+				  AND starts_at < ?
+				  AND ends_at > ?
+				""",
+				Integer.class,
+				timestamp(startsAt.plusHours(1)),
+				timestamp(startsAt));
+	}
+	
 	private LocalDateTime startWithin24Hours() {
 		
 		LocalDateTime target = LocalDateTime.now(JAPAN_ZONE)
@@ -429,5 +525,36 @@ public class ReservationChangeIntegrationTest {
 		}
 		
 		return target;
+	}
+	
+	private String attempt(
+			Runnable action,
+			CountDownLatch ready,
+			CountDownLatch start) throws InterruptedException {
+		
+		ready.countDown();
+		
+		if (!start.await(10, TimeUnit.SECONDS)) {
+			throw new IllegalStateException("テストの開始大気がタイムアウトしました。");
+		}
+		
+		try {
+			action.run();
+			return "OK";
+			
+		} catch (ReservationCheckException e) {
+			
+			if (!e.getProblems().isEmpty()) {
+				
+				// このテストでは新規予約の候補は1件だけ
+				assertEquals(1, e.getProblems().size());
+				
+				// 候補が失敗した理由を返す
+				return e.getProblems().get(0).messageKey();
+			}
+			
+			// 予約変更など、理由を直接保持している場合
+			return e.getMessageKey();
+		}
 	}
 }
