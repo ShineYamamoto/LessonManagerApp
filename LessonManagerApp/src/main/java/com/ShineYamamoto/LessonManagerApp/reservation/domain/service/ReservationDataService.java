@@ -88,4 +88,20 @@ public class ReservationDataService {
 		// 見つからなかった場合：空のOptionalを返す
 		return Optional.ofNullable(reservation);
 	}
+	
+	/** 指定期間と重なる受付可能時間を取得する */
+	public List<LessonOpening> getOpeningsBetween(
+			LocalDateTime from,
+			LocalDateTime to) {
+		
+		return lessonOpeningMapper.findOverlapping(from, to);
+	}
+	
+	/** 指定期間と重なる確定予約を取得する */
+	public List<Reservation> getConfirmedReservationsBetween(
+			LocalDateTime from,
+			LocalDateTime to) {
+		
+		return reservationMapper.findConfirmedOverlapping(from, to);
+	}
 }
