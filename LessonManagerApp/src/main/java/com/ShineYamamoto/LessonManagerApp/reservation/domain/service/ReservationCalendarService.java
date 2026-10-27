@@ -55,7 +55,7 @@ public class ReservationCalendarService {
 		Map<String, CalendarDayAvailability> result = new LinkedHashMap<>();
 		
 		// 1件ずつ表示用の情報へ変換
-		for (LocalDate date = firstDay; date.isBefore(endDay); date.plusDays(1)) {
+		for (LocalDate date = firstDay; date.isBefore(endDay); date = date.plusDays(1)) {
 			
 			LocalDateTime dayStart = date.atStartOfDay();
 			LocalDateTime displayStart = date.atTime(OPEN);
