@@ -355,7 +355,7 @@ public class ReservationChangeIntegrationTest {
 			Future<String> futureB = executor.submit(() -> attempt(
 					() -> {
 						if (newBooking) {
-							reservationService.reserve(userA, List.of(target));
+							reservationService.reserve(userB, List.of(target));
 						} else {
 							reservationService.change(userB, reservationB, target, 0L);
 						}
@@ -388,7 +388,7 @@ public class ReservationChangeIntegrationTest {
 			}
 			
 			if (!newBooking && successB) {
-				assertEquals(target, read(reservationId, userB).getStartsAt());
+				assertEquals(target, read(reservationB, userB).getStartsAt());
 				assertEquals(Long.valueOf(1), read(reservationB, userB).getVersion());
 			} else {
 				assertEquals(beforeB, read(reservationB, userB));
