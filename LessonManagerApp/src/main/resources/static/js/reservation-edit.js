@@ -99,12 +99,12 @@ const ReservationRules = (() => {
 	const form = byId('reservation-form');
 	const slotStarts = Array.from({length: (R.CLOSE - R.OPEN) / R.STEP}, (_, i) => R.OPEN + i * R.STEP);
 	
-	const availablity = ReservationCalendarData.create(
+	const availability = ReservationCalendarData.create(
 		app.dataset.calendarUrl
 	);
 	
 	function dailyData(date) {
-		return availablity.dailyData(date);
+		return availability.dailyData(date);
 	}
 
 	const initialToday = R.todayKey();
@@ -134,7 +134,7 @@ const ReservationRules = (() => {
 	function reasonAt(date, start, candidates = []) {
 		const now = Date.now();
 		
-		if (!availablity.isLoaded(date)) {
+		if (!availability.isLoaded(date)) {
 			return '空き状況を取得できません';
 		}
 		
@@ -186,7 +186,7 @@ const ReservationRules = (() => {
 		renderCalendar();
 		
 		try {
-			await availablity.loadMonth(visibleMonth());
+			await availability.loadMonth(visibleMonth());
 			
 		} catch (error) {
 			
@@ -232,7 +232,7 @@ const ReservationRules = (() => {
 					const button = element('button', 'calendar-day');
 					button.type = 'button';
 					button.dataset.date = key;
-					const ready = availablity.isLoaded(key) && !calendarLoading;
+					const ready = availability.isLoaded(key) && !calendarLoading;
 					button.disabled = key < today || !ready;
 					const count = onDate(key).length;
 					const hasOpenings = !button.disabled && slotStarts.some(start => reasonAt(key, start) === null);
@@ -514,12 +514,12 @@ const ReservationRules = (() => {
 	
 	/* 表示カレンダーの月を切り替える */
 	function changeMonth(offset) {
-		if (isSubmitting) return;
+		if (isSubmitting || calendarLoading) return;
 		const target = new Date(Date.UTC(state.year, state.month + offset, 1));
 		if (R.keyFromDate(target).slice(0, 7) < R.todayKey().slice(0, 7)) return;
 		state.year = target.getUTCFullYear();
 		state.month = target.getUTCMonth();
-		renderCalendar();
+		loadVisibleMonth();
 	}
 	
 	form.addEventListener('submit', event => {
@@ -606,11 +606,11 @@ const ReservationRules = (() => {
 	byId('previous-month').addEventListener('click', () => changeMonth(-1));
 	byId('next-month').addEventListener('click', () => changeMonth(1));
 	byId('current-month').addEventListener('click', () => {
-		if (isSubmitting) return;
+		if (isSubmitting || calendarLoading) return;
 		const today = R.todayKey();
 		state.year = Number(today.slice(0, 4));
 		state.month = Number(today.slice(5, 7)) -1;
-		renderCalendar();
+		loadVisibleMonth();
 	})
 	
 	byId('time-slots').addEventListener('click', event => {
