@@ -99,28 +99,12 @@ const ReservationRules = (() => {
 	const form = byId('reservation-form');
 	const slotStarts = Array.from({length: (R.CLOSE - R.OPEN) / R.STEP}, (_, i) => R.OPEN + i * R.STEP);
 	
-	// 仮の管理者設定。分で記述。9*60=09:00, 13*60+30=13:30。
-	// 日曜休み、水曜午後は14時から、土曜日は18時まで、その他は22時まで。
-	const SAMPLE_SCHEDULE = {
-		0: [],
-		1: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
-		2: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
-		3: [[9 * 60, 12 * 60], [14 * 60, 20 * 60]],
-		4: [[10 * 60, 12 * 60], [13 * 60, 22 * 60]],
-		5: [[9 * 60, 12 * 60], [13 * 60, 22 * 60]],
-		6: [[9 * 60, 12 * 60], [13 * 60, 18 * 60]]
-	}
-	// 日付固有の受付時間も設定できる。例： {'2026-11-03': []} は受付不可。]
-	const DATE_OVERRIDES = {};
-	
+	const availablity = ReservationCalendarData.create(
+		app.dataset.calendarUrl
+	);
 	
 	function dailyData(date) {
-		const weekday = new Date(`${date}T00:00:00Z`).getUTCDay();
-		return {
-			openings: DATE_OVERRIDES[date] ?? SAMPLE_SCHEDULE[weekday],
-			// 他の予約だ既に入っている仮データ。候補日とは別に判定する。
-			booked: weekday === 0 ? [] : [[10 * 60, 10 * 60 + 30], [15 * 60, 16 * 60]]
-		}
+		return availablity.dailyData(date);
 	}
 
 	const initialToday = R.todayKey();
@@ -150,6 +134,10 @@ const ReservationRules = (() => {
 	function reasonAt(date, start, candidates = []) {
 		const now = Date.now();
 		
+		if (!availablity.isLoaded(date)) {
+			return '空き状況を取得できません';
+		}
+		
 		// 変更元の予約が期限内か
 		if (!canChangeOriginal(now)) {
 			return 'この予約の変更期限を過ぎています';
@@ -178,6 +166,46 @@ const ReservationRules = (() => {
 		return node;
 	}
 	
+	let calendarLoading = false;
+	let calendarError = false;
+	
+	// 画面に表示している年月
+	function visibleMonth() {
+		
+		return `${state.year}-${String(state.month + 1).padStart(2, '0')}`;
+	}
+	
+	// 表示中の月のDBデータを取得する
+	async function loadVisibleMonth() {
+		
+		if (calendarLoading) return;
+		
+		calendarLoading = true;
+		calendarError = false;
+		
+		renderCalendar();
+		
+		try {
+			await availablity.loadMonth(visibleMonth());
+			
+		} catch (error) {
+			
+			calendarError = true;
+			console.error(error);
+			
+		} finally {
+			
+			calendarLoading = false;
+			
+			renderCalendar();
+			renderCandidates();
+			
+			if (dialog.open) {
+				renderSlots();
+			}
+		}
+	}
+	
 	// カレンダーのベースを作成
 	function renderCalendar() {
 		byId('month-label').textContent = `${state.year}年${state.month + 1}月`;
@@ -204,10 +232,21 @@ const ReservationRules = (() => {
 					const button = element('button', 'calendar-day');
 					button.type = 'button';
 					button.dataset.date = key;
-					button.disabled = key < today;
+					const ready = availablity.isLoaded(key) && !calendarLoading;
+					button.disabled = key < today || !ready;
 					const count = onDate(key).length;
 					const hasOpenings = !button.disabled && slotStarts.some(start => reasonAt(key, start) === null);
-					const status = count ? `${count}件選択` : button.disabled ? '-' : hasOpenings ? '空きあり' : '空きなし';
+					
+					let status;
+					if (key < today) {
+						status = '-';
+					} else if (!ready) {
+						status = calendarError ? '取得失敗' : '読み込み中';
+					} else if (count > 0) {
+						status = `${count}件選択`;
+					} else {
+						status = hasOpenings ? '空きあり' : '空きなし';
+					}
 					button.classList.toggle('has-candidates', count > 0);
 					button.classList.toggle('has-openings', hasOpenings);
 					button.classList.toggle('is-today', key === today);
@@ -645,10 +684,30 @@ const ReservationRules = (() => {
 		if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
 	})
 	
-	// サーバーから渡された候補を復元
-	restoreCandidates();
-	
-	// 復元後の状態で画面を描画
-	renderCandidates();
-	renderCalendar();
+	async function initializeCalendar() {
+		
+		restoreCandidates();
+		renderCandidates();
+		
+		// エラー後に復元された候補が属する月も取得する
+		const candedateMonths = new Set(
+			state.candidates.map(item => item.date.slice(0, 7))
+		);
+		
+		for (const month of candedateMonths) {
+			
+			if (month === visibleMonth()) continue;
+			
+			try {
+				await availability.loadMonth(month);
+			} catch (error) {
+				console.error(error);
+			}
+		}
+		
+		// 初回表示月を取得する
+		await loadVisibleMonth();
+	}
+
+	initializeCalendar();
 })();

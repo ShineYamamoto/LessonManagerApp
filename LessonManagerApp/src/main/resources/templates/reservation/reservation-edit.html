@@ -18,7 +18,8 @@
 				data-original-start=${#temporals.format(reservation.startsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
 				data-original-end=${#temporals.format(reservation.endsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
 				data-change-deadline-hours=${reservationPolicy.changeDeadlineHours},
-				data-change-lead-hours=${reservationPolicy.changeLeadHours}"
+				data-change-lead-hours=${reservationPolicy.changeLeadHours},
+				data-calendar-url=@{/user/reservation/{id}/calendar(id=${{reservation.id}})}"
 		 aria-labelledby="page-title">
 		
 		<!-- JavaScriptへ日本語メッセージを渡す -->
@@ -181,6 +182,7 @@
 			</div>
 		</dialog>
 		
+		<script th:src="@{/js/reservation-calendar-data.js}" defer></script>
 		<script th:src="@{/js/reservation-edit.js}" defer></script>
 	</main>
 </body>
