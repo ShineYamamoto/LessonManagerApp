@@ -8,7 +8,11 @@
 </head>
 <body>
 	<!-- data-lesson-minutes はログインユーザーの授業時間。JSの処理に使う。-->
-	<main id="booking-app" class="booking-app" layout:fragment="content" th:attr="data-lesson-minutes=${lessonMinutes}, data-locale=${#locale.toLanguageTag()}" aria-labelledby="page-title">
+	<main id="booking-app" class="booking-app" layout:fragment="content" aria-labelledby="page-title"
+			th:attr="
+					data-lesson-minutes=${lessonMinutes},
+					data-locale=${#locale.toLanguageTag()},
+					data-calendar-url=@{/user/reservation/calendar}">
 		
 		<!-- JavaScriptへ邦訳済みメッセージを渡す -->
 		<div id="reservation-messages" hidden
@@ -138,6 +142,8 @@
 			</div>
 		</dialog>
 		
+		
+		<script th:src="@{/js/reservation-calendar-data.js}" defer></script>
 		<script th:src="@{/js/reservation.js}" defer></script>
 	</main>
 </body>
