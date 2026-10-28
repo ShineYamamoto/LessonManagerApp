@@ -89,7 +89,7 @@ const ReservationRules = (() => {
 	
 	// 受付可能状況に関するデータを扱う
 	const availability = ReservationCalendarData.create(
-			app.dataset.calenderUrl
+			app.dataset.calendarUrl
 	);
 
 	function dailyData(date) {

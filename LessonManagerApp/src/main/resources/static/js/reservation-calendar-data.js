@@ -37,7 +37,7 @@ const ReservationCalendarData = (() => {
 					// 受付可能時間をまとめる
 					openings: value.openings.map(range => [range.start, range.end]),
 					// 予約済み時間をまとめる
-					booled: value.booked.map(range => [range.start, range.end])
+					booked: value.booked.map(range => [range.start, range.end])
 				});
 			}
 			
