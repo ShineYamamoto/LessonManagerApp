@@ -74,3 +74,16 @@ CREATE TABLE IF NOT EXISTS lesson_openings (
 CREATE TABLE IF NOT EXISTS reservation_lock (
 	lock_id INT PRIMARY KEY
 );
+
+/* 予約の時間帯設定 */
+CREATE TABLE IF NOT EXISTS reservation_settings (
+	settings_id INT PRIMARY KEY
+  , selectable_start_time TIME NOT NULL
+  , selectable_end_time TIME NOT NULL
+  
+  , CONSTRAINT chk_reservation_settings_id
+  		CHECK (settings_id = 1)
+  	
+  , CONSTRAINT chk_reservation_settings_time
+  		CHECK (selectable_start_time < selectable_end_time)
+);

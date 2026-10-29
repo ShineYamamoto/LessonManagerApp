@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd.mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationSettingsMapper">
+	
+	<resultMap id="settingsMap" type="com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSettings">
+		<id column="settings_id" property="settingsId" />
+		<result column="selectable_start_time" property="selectableStartTime" />
+		<result column="selectable_end_time" property="selectableEndTime" />
+	</resultMap>
+	
+	<select id="findSettings" resultMap="settingsMap">
+		SELECT
+			settings_id
+		  , selectable_start_time
+		  , selectable_end_time
+		FROM reservation_settings
+		WHERE settings_id = 1
+	</select>
+ </mapper>

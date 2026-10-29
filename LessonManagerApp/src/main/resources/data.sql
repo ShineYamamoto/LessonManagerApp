@@ -71,3 +71,15 @@ INSERT INTO lesson_openings (
 /* 予約ロック用の初期データ */
 INSERT INTO reservation_lock (lock_id)
 VALUES (1)
+;
+
+/* 予約の時間帯設定 */
+INSERT INTO reservation_settings (
+	settings_id
+  , selectable_start_time
+  , selectable_end_time
+) VALUES (
+	1
+  , '09:00:00'
+  , '22:00:00'
+)
