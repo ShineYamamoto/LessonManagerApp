@@ -119,6 +119,44 @@ public class reservationCheckServiceTest {
 		assertFalse(errors.containsKey(at(11)));
 	}
 	
+	@Test
+	void 受付可能時間の設定を広げると9自前と22時以降も予約できる() {
+		
+		useSettings(LocalTime.of(8, 30), LocalTime.of(23, 0));
+		
+		when(reservationDataService.getLessonMinutes(USER_ID))
+				.thenReturn(60);
+		
+		LessonOpening opening = new LessonOpening();
+		opening.setStartsAt(date.atTime(8, 30));
+		opening.setEndsAt(date.atTime(23, 0));
+		
+		when(reservationDataService.getOpening(date))
+				.thenReturn(List.of(opening));
+		
+		when(reservationDataService.getConfirmedReservation(date))
+				.thenReturn(List.of());
+		
+		List<ReservationSlot> result = reservationCheckService.check(
+				USER_ID,
+				List.of(
+						date.atTime(8, 30),
+						date.atTime(22, 00)));
+		
+		assertEquals(2, result.size());
+		
+		assertEquals(date.atTime(8, 30), result.get(0).getStartsAt());
+		
+		assertEquals(date.atTime(23, 0), result.get(1).getEndsAt());
+		
+		// 22:30開始の60分授業は終了が23：00を超える
+		ReservationCheckException exception = assertThrows(
+				ReservationCheckException.class,
+				() -> reservationCheckService.check(USER_ID, List.of(date.atTime(22, 30))));
+		
+		assertEquals("reservation.error.outsideHours", exception.getProblems().get(0).messageKey());
+	}
+	
 	// ----------- テスト用の共通処理 --------------
 	private LocalDateTime at(int hour) {
 		return date.atTime(hour, 0);
