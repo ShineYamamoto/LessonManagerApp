@@ -5,6 +5,7 @@ import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.Reservati
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.ReservationProblem;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSettings;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +33,9 @@ public class reservationCheckServiceTest {
 	@Mock
 	private ReservationDataService reservationDataService;
 	
+	@Mock
+	private ReservationSettingsService reservationSettingsService;
+	
 	@InjectMocks
 	private ReservationCheckService reservationCheckService;
 	
@@ -40,6 +45,8 @@ public class reservationCheckServiceTest {
 	void setUp() {
 		// 過去日時にならないよう動的に決定
 		date = LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(60);
+		
+		useSettings(LocalTime.of(9, 0), LocalTime.of(22, 0));
 	}
 	
 	@Test
@@ -122,5 +129,16 @@ public class reservationCheckServiceTest {
 		opening.setStartsAt(at(from));
 		opening.setEndsAt(at(to));
 		return opening;
+	}
+	
+	private void useSettings(LocalTime start, LocalTime end) {
+		
+		ReservationSettings settings = new ReservationSettings();
+		settings.setSettingsId(1);
+		settings.setSelectableStartTime(start);
+		settings.setSelectableEndTime(end);
+		
+		when(reservationSettingsService.getSettings())
+				.thenReturn(settings);
 	}
 }
