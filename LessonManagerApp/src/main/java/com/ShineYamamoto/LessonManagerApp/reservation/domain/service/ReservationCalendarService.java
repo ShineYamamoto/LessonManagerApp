@@ -3,7 +3,6 @@ package com.ShineYamamoto.LessonManagerApp.reservation.domain.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSettings;
 import com.ShineYamamoto.LessonManagerApp.reservation.view.CalendarDayAvailability;
 import com.ShineYamamoto.LessonManagerApp.reservation.view.CalendarDayAvailability.MinuteRange;
 
@@ -24,11 +24,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ReservationCalendarService {
-
-	private static final LocalTime OPEN = LocalTime.of(9, 0);
-	private static final LocalTime CLOSE = LocalTime.of(22, 0);
 	
 	private final ReservationDataService reservationDataService;
+	
+	private final ReservationSettingsService reservationSettingsService;
 	
 	/**
 	 * 指定付きのカレンダー表示用データを取得する
@@ -40,6 +39,8 @@ public class ReservationCalendarService {
 	public Map<String, CalendarDayAvailability> getMonth(
 			YearMonth month,
 			Long excludedReservationId) {
+		
+		ReservationSettings settings = reservationSettingsService.getSettings();
 		
 		LocalDate firstDay = month.atDay(1);
 		LocalDate endDay = month.plusMonths(1).atDay(1);
@@ -58,8 +59,8 @@ public class ReservationCalendarService {
 		for (LocalDate date = firstDay; date.isBefore(endDay); date = date.plusDays(1)) {
 			
 			LocalDateTime dayStart = date.atStartOfDay();
-			LocalDateTime displayStart = date.atTime(OPEN);
-			LocalDateTime displayEnd = date.atTime(CLOSE);
+			LocalDateTime displayStart = date.atTime(settings.getSelectableStartTime());
+			LocalDateTime displayEnd = date.atTime(settings.getSelectableEndTime());
 			
 			// 該当日かどうかの判定はtoRangeでおこなう
 			List<MinuteRange> dayOpenings = openings.stream()
