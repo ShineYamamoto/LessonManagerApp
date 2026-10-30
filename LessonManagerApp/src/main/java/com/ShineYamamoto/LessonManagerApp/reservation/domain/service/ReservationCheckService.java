@@ -22,6 +22,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.Reservati
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSettings;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 
 import lombok.RequiredArgsConstructor;
@@ -34,10 +35,10 @@ public class ReservationCheckService {
 	private static final ZoneId BOOKING_ZONE = ZoneId.of("Asia/Tokyo");
 	
 	private static final int STEP_MINUTES = 30;
-	private static final int OPEN_MINUTES = 9 * 60;
-	private static final int CLOSE_MINUTES = 22 * 60;
 	
 	private final ReservationDataService reservationDataService;
+	
+	private final ReservationSettingsService reservationSettingsService;
 	
 	/**
 	 * 予約希望を検証する。
@@ -55,11 +56,16 @@ public class ReservationCheckService {
 					"reservation.error.empty");
 		}
 		
+		ReservationSettings settings = reservationSettingsService.getSettings();
+		
+		int openMinutes = settings.getSelectableStartMinutes();
+		int closeMinutes = settings.getSelectableEndMinutes();
+		
 		// 授業時間はDBから取得する
 		int lessonMinutes = reservationDataService.getLessonMinutes(userId);
 		
 		// 正の30分単位であることはDataServiceで検証済み
-		if (lessonMinutes > CLOSE_MINUTES - OPEN_MINUTES) {
+		if (lessonMinutes > closeMinutes - openMinutes) {
 			throw new IllegalStateException(
 					"授業時間が予約可能な時間帯の長さを超えています。");
 		}
@@ -90,7 +96,7 @@ public class ReservationCheckService {
 		for (LocalDateTime startsAt : sortedStarts) {
 			
 			// 開始日自体のチェック
-			String startError = checkStartReason(startsAt, now, lessonMinutes);
+			String startError = checkStartReason(startsAt, now, lessonMinutes, openMinutes, closeMinutes);
 			
 			if (startError != null) {
 				
@@ -226,10 +232,15 @@ public class ReservationCheckService {
 		
 		long lessonMinutes = duration.toMinutes();
 		
+		ReservationSettings settings = reservationSettingsService.getSettings();
+		
+		int openMinutes = settings.getSelectableStartMinutes();
+		int closeMinutes = settings.getSelectableEndMinutes();
+		
 		// DBの授業時間が正確な30分単位であることを確認する
 		if (lessonMinutes <= 0
 				|| lessonMinutes % STEP_MINUTES != 0
-				|| lessonMinutes > CLOSE_MINUTES - OPEN_MINUTES
+				|| lessonMinutes > closeMinutes - openMinutes
 				|| !duration.equals(Duration.ofMinutes(lessonMinutes))) {
 			
 			throw new IllegalStateException(
@@ -240,7 +251,9 @@ public class ReservationCheckService {
 		String startError = checkStartReason(
 				requestedStart,
 				now,
-				(int) lessonMinutes);
+				(int) lessonMinutes,
+				openMinutes,
+				closeMinutes);
 		
 		if (startError != null) {
 			throw new ReservationCheckException(startError);
@@ -305,7 +318,9 @@ public class ReservationCheckService {
 	private String checkStartReason(
 			LocalDateTime startsAt,
 			LocalDateTime now,
-			int lessonMinutes) {
+			int lessonMinutes,
+			int openMinutes,
+			int closeMinutes) {
 		
 		if (startsAt == null) {
 			return "reservation.error.required";
@@ -324,7 +339,9 @@ public class ReservationCheckService {
 		
 		int startMinutes = startsAt.getHour() * 60 + startsAt.getMinute();
 		
-		if (startMinutes < OPEN_MINUTES || startMinutes + lessonMinutes > CLOSE_MINUTES) {
+		int endMinutes = startMinutes + lessonMinutes;
+		
+		if (startMinutes < openMinutes || endMinutes > closeMinutes) {
 			return "reservation.error.outsideHours";
 		}
 		
