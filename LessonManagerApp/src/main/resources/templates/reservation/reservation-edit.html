@@ -14,12 +14,14 @@
 		 layout:fragment="content"
 		 th:attr="
 		 		data-lesson-minutes=${lessonMinutes},
+				data-open-minutes=${reservationSettings.selectableStartMinutes},
+				data-close-minutes=${reservationSettings.selectableEndMinutes},
 				data-locale=${#locale.toLanguageTag()},
 				data-original-start=${#temporals.format(reservation.startsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
 				data-original-end=${#temporals.format(reservation.endsAt, 'yyyy-MM-dd''T''HH:mm:ss')},
 				data-change-deadline-hours=${reservationPolicy.changeDeadlineHours},
 				data-change-lead-hours=${reservationPolicy.changeLeadHours},
-				data-calendar-url=@{/user/reservation/{id}/calendar(id=${{reservation.id}})}"
+				data-calendar-url=@{/user/reservation/{id}/calendar(id=${{reservation.id}})},"
 		 aria-labelledby="page-title">
 		
 		<!-- JavaScriptへ日本語メッセージを渡す -->
@@ -159,7 +161,10 @@
 			</div>
 			<div class="dialog-body">
 				<p id="dialog-help" class="dialog-help">開始時刻を押すと、<strong><span data-duration-label>60</span>分間</strong>が変更先として選ばれます。別の日時を選ぶと前の選択は置き換わります。</p>
-				<div class="time-meta"><span>09:00-22:00 / 30分刻み</span><span>日本時間</span></div>
+				<div class="time-meta">
+					<span th:text="|${#temporals.format(reservationSettings.selectableStartTime, 'HH:mm')}-${#temporals.format(reservationSettings.selectableEndTime, 'HH:mm')} / 30分刻み|">選択可能時間</span>
+					<span>日本時間</span>
+				</div>
 				<div class="slot-legend" aria-label="時間枠の色の意味">
 					<span><i class="swatch available" aria-hidden="true"></i>選択可</span>
 					<span><i class="swatch unavailable" aria-hidden="true"></i>選択不可</span>

@@ -11,6 +11,8 @@
 	<main id="booking-app" class="booking-app" layout:fragment="content" aria-labelledby="page-title"
 			th:attr="
 					data-lesson-minutes=${lessonMinutes},
+					data-open-minutes=${reservationSettings.selectableStartMinutes},
+					data-close-minutes=${reservationSettings.selectableEndMinutes},
 					data-locale=${#locale.toLanguageTag()},
 					data-calendar-url=@{/user/reservation/calendar}">
 		
@@ -124,7 +126,10 @@
 			</div>
 			<div class="dialog-body">
 				<p id="dialog-help" class="dialog-help">開始時刻を押すと、<strong><span data-duration-label>60</span>分間</strong>が選ばれ、候補に追加されます。</p>
-				<div class="time-meta"><span>09:00-22:00 / 30分刻み</span><span>日本時間</span></div>
+				<div class="time-meta">
+					<span th:text="|${#temporals.format(reservationSettings.selectableStartTime, 'HH:mm')}-${#temporals.format(reservationSettings.selectableEndTime, 'HH:mm')} / 30分刻み|">選択可能時間</span>
+					<span>日本時間</span>
+				</div>
 				<div class="slot-legend" aria-label="時間枠の色の意味">
 					<span><i class="swatch available" aria-hidden="true"></i>選択可</span>
 					<span><i class="swatch unavailable" aria-hidden="true"></i>選択不可</span>

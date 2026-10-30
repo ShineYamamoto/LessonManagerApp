@@ -1,10 +1,20 @@
-/**
- * 
- *//* 予約処理や画面のイベント処理に必要なメソッド等の作成 */
-const ReservationRules = (() => {
+/* 予約処理や画面のイベント処理に必要なメソッド等の作成 */
+function createReservationRules (openMinutes, closeMinutes) {
 	const STEP = 30;
-	const OPEN = 9 * 60;
-	const CLOSE = 22 * 60;
+	const OPEN = openMinutes;
+	const CLOSE = closeMinutes;
+	
+	// HTMLから正しい設定値を受け取れたか確認する
+	if (!Number.isInteger(OPEN)
+			|| !Number.isInteger(CLOSE)
+			|| OPEN < 0
+			|| CLOSE >= 24 * 60
+			|| OPEN >= CLOSE
+			|| OPEN % STEP !== 0
+			|| CLOSE % STEP !== 0) {
+		
+		throw new Error('時間帯の設定を読み込めません。画面を開きなおしてください。');
+	}
 
 	function timeText(minutes) {
 		return String(Math.floor(minutes / 60)).padStart(2, '0') + ':' + String(minutes % 60).padStart(2, '0');
@@ -64,14 +74,30 @@ const ReservationRules = (() => {
 	}
 	
 	return Object.freeze({STEP, OPEN, CLOSE, timeText, isValidDuration, overlaps, mergeRanges, todayKey, keyFromDate, localDateTime, startReason});
-})();
+};
 
 /* 画面のイベント処理 */
 (() => {
 	'use strict';
 	const app = document.getElementById('booking-app');
 	if (!app) return;
-	const R = ReservationRules;
+	
+	let R;
+	try {
+		R = createReservationRules(
+			Number(app.dataset.openMinutes),
+			Number(app.dataset.closeMinutes)
+		);
+	} catch (error) {
+		const errorBox = document.getElementById('configuration-error');
+		
+		errorBox.textContent = error.message;
+		errorBox.hidden = false;
+		
+		document.getElementById('reservation-button').disabled = true;
+		return;
+	}
+	
 	const lessonMinutes = Number(app.dataset.lessonMinutes);
 	// 元の予約日時は日本時間として解釈する
 	const originalStartMillis = Date.parse(app.dataset.originalStart + '+09:00');

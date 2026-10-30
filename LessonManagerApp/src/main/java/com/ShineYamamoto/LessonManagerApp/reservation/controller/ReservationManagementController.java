@@ -34,6 +34,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.Reservation;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationChangeResult;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationChangeForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.view.ReservationView;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
@@ -50,6 +51,8 @@ public class ReservationManagementController {
 	private final ReservationService reservationService;
 	
 	private final MessageSource messageSource;
+	
+	private final ReservationSettingsService reservationSettingsService;
 	
 	private static final DateTimeFormatter CHANGE_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy/M/d HH:mm");
 
@@ -135,6 +138,7 @@ public class ReservationManagementController {
 				reservation.getEndsAt()).toMinutes();
 		
 		model.addAttribute("lessonMinutes", lessonMinutes);
+		model.addAttribute("reservationSettings", reservationSettingsService.getSettings());
 		
 		return "reservation/reservation-edit";
 	}

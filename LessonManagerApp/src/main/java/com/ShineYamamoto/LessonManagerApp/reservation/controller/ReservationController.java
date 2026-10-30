@@ -28,6 +28,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.Reservati
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationItemForm;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
@@ -45,6 +46,8 @@ public class ReservationController {
 	
 	private final MessageSource messageSource;
 	
+	private final ReservationSettingsService reservationSettingsService;
+	
 	private static final DateTimeFormatter ERROR_DATE_FORMAT = DateTimeFormatter.ofPattern("M/d HH:mm");
 	
 	// セッションに保存する情報のキー
@@ -60,6 +63,8 @@ public class ReservationController {
 		int lessonMinutes = reservationDataService.getLessonMinutes(loginUser.getUserId());
 		
 		model.addAttribute("lessonMinutes", lessonMinutes);
+		
+		model.addAttribute("reservationSettings", reservationSettingsService.getSettings());
 		
 		return "reservation/reservation-single";
 	}
