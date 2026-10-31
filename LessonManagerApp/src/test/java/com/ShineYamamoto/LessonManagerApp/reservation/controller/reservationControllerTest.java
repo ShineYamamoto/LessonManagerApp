@@ -26,6 +26,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.Reservati
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.ReservationSlot;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationDataService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.ReservationItemForm;
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
@@ -40,6 +41,9 @@ public class reservationControllerTest {
 	
 	@Mock
 	private ReservationService reservationService;
+	
+	@Mock
+	private ReservationSettingsService reservationSettingsService;
 	
 	private ReservationController reservationController;
 	
@@ -59,7 +63,8 @@ public class reservationControllerTest {
 		reservationController = new ReservationController(
 				reservationDataService,
 				reservationService,
-				messageSource);
+				messageSource,
+				reservationSettingsService);
 		
 		loginUser = mock(LoginUser.class);
 		
