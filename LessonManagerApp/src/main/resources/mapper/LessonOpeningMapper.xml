@@ -10,6 +10,7 @@
 		<result column="ends_at" property="endsAt" />
 	</resultMap>
 	
+	<!-- 指定期間と重なる受付時間を取得 -->
 	<select id="findOverlapping" resultMap="openingMap">
 		SELECT
 			opening_id
@@ -20,4 +21,40 @@
 		  AND ends_at &gt; #{from}
 		ORDER BY starts_at, opening_id
 	</select>
+	
+	<!-- IDを指定して1件取得 -->
+	<select id="findById" resultMap="openingMap">
+		SELECT
+			opening_id
+		  , starts_at
+		  , ends_at
+		FROM lesson_openings
+		WHERE openings_id = #{openingId}
+	</select>
+	
+	<!-- 新規登録 -->
+	<insert id="insertOne" useGeneratedKeys="true" keyProperty="openingId" keyColumn="opening_id">
+		INSERT INTO lesson_openings (
+			starts_at
+		  , ends_at
+		) VALUES (
+			#{startsAt}
+			#{endsAt}
+		)
+	</insert>
+	
+	<!-- 開始・終了日時を更新 -->
+	<update id="updateOne">
+		UPDATE lesson_openings
+		SET
+			starts_at = #{startsAt}
+		  , ends_at = #{endsAt}
+		WHERE opening_id = #{openingId}
+	</update>
+	
+	<!-- 削除 -->
+	<delete id="deleteById">
+		DELETE FROM lesson_openings
+		WHERE openings_id = #{openingId}
+	</delete>
 </mapper>
