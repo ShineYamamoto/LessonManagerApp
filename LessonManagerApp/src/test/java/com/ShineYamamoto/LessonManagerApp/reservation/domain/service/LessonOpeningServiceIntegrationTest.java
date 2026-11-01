@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class LessonOpeningServiceIntegrationTest {
 
 	@Autowired
 	private LessonOpeningService lessonOpeningService;
+	
+	@Autowired ReservationService reservationService;
 	
 	@Autowired
 	private UserMapper userMapper;
@@ -100,5 +103,65 @@ public class LessonOpeningServiceIntegrationTest {
 		assertEquals(
 				"lessonOpening.error.overlap",
 				exception.getMessageKey());
+	}
+	
+	@Test
+	void 受付時間をまたぐ確定予約を受付可能時間の更新と削除から保護できる() {
+		
+		LocalDate date = LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(90);
+		
+		Long firstId = lessonOpeningService.create(
+				date.atTime(10, 0),
+				date.atTime(11, 0));
+		
+		Long secondId = lessonOpeningService.create(
+				date.atTime(11, 0),
+				date.atTime(12, 0));
+		
+		// data.sqlにある60分授業のテスト用ユーザー
+		Long userId = userMapper
+				.findByE164PhoneNumber("+817000000001")
+				.getUserId();
+		
+		// 10:30-11:30の予約。2つの受付枠をまたぐ
+		reservationService.reserve(
+				userId,
+				List.of(date.atTime(10, 30)));
+		
+		// 受付終了を伸ばすだけなら、予約を維持する
+		assertDoesNotThrow(() ->
+				lessonOpeningService.update(
+						secondId,
+						date.atTime(11, 0),
+						date.atTime(13, 0)));
+		
+		// 11:00～11:30に隙間ができる変更は拒否される
+		LessonOpeningCheckException updateError = assertThrows(
+				LessonOpeningCheckException.class,
+				() -> lessonOpeningService.update(
+						secondId,
+						date.atTime(11, 30),
+						date.atTime(13, 0)));
+		
+		assertEquals(
+				"lessonOpening.error.reservationExists",
+				updateError.getMessageKey());
+		
+		// 拒否された変更がDBに反映されていない
+		assertEquals(
+				date.atTime(11, 0),
+				lessonOpeningService.getById(secondId).getStartsAt());
+		
+		// 最初の受付枠を削除すると10:30～11:00が欠ける
+		LessonOpeningCheckException deleteError = assertThrows(
+				LessonOpeningCheckException.class,
+				() -> lessonOpeningService.delete(firstId));
+		
+		assertEquals(
+				"lessonOpening.error.reservationExists",
+				deleteError.getMessageKey());
+		
+		// 削除されずに残っている
+		assertNotNull(lessonOpeningService.getById(firstId));
 	}
 }
