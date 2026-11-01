@@ -8,6 +8,7 @@
 		<id column="opening_id" property="openingId" />
 		<result column="starts_at" property="startsAt" />
 		<result column="ends_at" property="endsAt" />
+		<result column="version" property="version" />
 	</resultMap>
 	
 	<!-- 指定期間と重なる受付時間を取得 -->
@@ -16,6 +17,7 @@
 			opening_id
 		  , starts_at
 		  , ends_at
+		  , version
 		FROM lesson_openings
 		WHERE starts_at &lt; #{to}
 		  AND ends_at &gt; #{from}
@@ -28,6 +30,7 @@
 			opening_id
 		  , starts_at
 		  , ends_at
+		  , version
 		FROM lesson_openings
 		WHERE opening_id = #{openingId}
 	</select>
@@ -49,12 +52,15 @@
 		SET
 			starts_at = #{startsAt}
 		  , ends_at = #{endsAt}
+		  , version = version + 1
 		WHERE opening_id = #{openingId}
+		  AND version = #{expectedVersion}
 	</update>
 	
 	<!-- 削除 -->
 	<delete id="deleteById">
 		DELETE FROM lesson_openings
 		WHERE opening_id = #{openingId}
+		  AND version = #{expectedVersion}
 	</delete>
 </mapper>

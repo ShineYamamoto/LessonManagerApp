@@ -162,7 +162,7 @@ public class LessonOpeningCheckService {
 			coveredUntil = opening.getEndsAt();
 			
 			// 授業終了まで受付時間が連続している
-			if (coveredUntil.isAfter(endsAt)) {
+			if (!coveredUntil.isBefore(endsAt)) {
 				return true;
 			}
 		}

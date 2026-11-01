@@ -1,11 +1,14 @@
 package com.ShineYamamoto.LessonManagerApp.reservation.domain.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningNotFoundException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.LessonOpeningMapper;
@@ -66,13 +69,17 @@ public class LessonOpeningService {
 	public void update(
 			Long openingId,
 			LocalDateTime startsAt,
-			LocalDateTime endsAt) {
+			LocalDateTime endsAt,
+			Long expectedVersion) {
 		
 		checkId(openingId);
 		
 		lock();
 		
 		LessonOpening original = getById(openingId);
+		
+		// 古い画面から送信されたリクエストかチェック
+		checkVersion(original, expectedVersion);
 		
 		lessonOpeningCheckService.checkForSave(startsAt, endsAt, openingId);
 		
@@ -85,6 +92,7 @@ public class LessonOpeningService {
 		updated.setOpeningId(openingId);
 		updated.setStartsAt(startsAt);
 		updated.setEndsAt(endsAt);
+		updated.setVersion(expectedVersion);
 		
 		// 更新しても既存予約を受付時間で覆えるか
 		lessonOpeningCheckService.checkReservationsPreserved(original, updated);
@@ -92,13 +100,15 @@ public class LessonOpeningService {
 		int updatedCount = lessonOpeningMapper.updateOne(updated);
 		
 		if (updatedCount != 1) {
-			throw new IllegalStateException("受付可能時間を更新できませんでした。");
+			throw new IllegalStateException("lessonOpening.error.conflict");
 		}
 	}
 	
 	/** 指定した受付可能時間を削除する */
 	@Transactional(isolation = Isolation.READ_COMMITTED)
-	public void delete(Long openingId) {
+	public void delete(
+			Long openingId,
+			Long expectedVersion) {
 		
 		checkId(openingId);
 		
@@ -106,14 +116,28 @@ public class LessonOpeningService {
 		
 		LessonOpening original = getById(openingId);
 		
+		checkVersion(original, expectedVersion);
+		
 		// 更新しても受付時間を削除できるか
 		lessonOpeningCheckService.checkReservationsPreserved(original, null);
 		
-		int deletedCount = lessonOpeningMapper.deleteById(openingId);
+		int deletedCount = lessonOpeningMapper.deleteById(openingId, expectedVersion);
 		
 		if (deletedCount != 1) {
-			throw new IllegalStateException("受付可能時間を削除できませんでした。");
+			throw new IllegalStateException("lessonOpening.error.conflict");
 		}
+	}
+	
+	/** 指定日の受付時間を開始順で取得する */
+	public List<LessonOpening> getByDate(LocalDate date) {
+		
+		if (date == null) {
+			throw new IllegalArgumentException("日付は必須です。");
+		}
+		
+		return lessonOpeningMapper.findOverlapping(
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay());
 	}
 	
 	/** 予約処理と共通のDBロックを取得する */
@@ -131,6 +155,18 @@ public class LessonOpeningService {
 		
 		if (openingId == null || openingId <= 0) {
 			throw new IllegalArgumentException("受付可能時間のIDが不正です。");
+		}
+	}
+	
+	private void checkVersion(
+			LessonOpening original,
+			Long expectedVersion) {
+		
+		if (expectedVersion == null
+				|| expectedVersion < 0
+				|| !expectedVersion.equals(original.getVersion())) {
+			
+			throw new LessonOpeningCheckException("lessonOpening.error.conflict");
 		}
 	}
 }

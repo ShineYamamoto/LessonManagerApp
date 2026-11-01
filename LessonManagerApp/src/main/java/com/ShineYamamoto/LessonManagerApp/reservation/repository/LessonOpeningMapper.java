@@ -28,6 +28,7 @@ public interface LessonOpeningMapper {
 	
 	/** 指定した受付可能時間を削除する */
 	int deleteById(
-			@Param("openingId") Long openingId);
+			@Param("openingId") Long openingId,
+			@Param("expectedVersion") Long expectedVersion);
 
 }

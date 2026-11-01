@@ -12,4 +12,6 @@ public class LessonOpening {
 	private LocalDateTime startsAt;
 	
 	private LocalDateTime endsAt;
+	
+	private Long version;
 }

@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS lesson_openings (
 	*/
   , starts_at TIMESTAMP NOT NULL
   , ends_at TIMESTAMP NOT NULL
+  , version BIGINT NOT NULL DEFAULT 0
   
   , CONSTRAINT chk_lesson_openings_time
   		CHECK (ends_at > starts_at)
