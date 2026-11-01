@@ -3,7 +3,7 @@
 
 <mapper namespace="com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationLockMapper">
 
-	<select id="lock" resultType="java.lang.Integer">
+	<select id="lock" resultType="java.lang.Integer" flushCache="true" useCache="false">
 		SELECT lock_id
 		FROM reservation_lock
 		WHERE lock_id = 1
