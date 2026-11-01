@@ -3,11 +3,13 @@ package com.ShineYamamoto.LessonManagerApp.reservation.domain.service;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningNotFoundException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.repository.LessonOpeningMapper;
+import com.ShineYamamoto.LessonManagerApp.reservation.repository.ReservationLockMapper;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +19,9 @@ import lombok.RequiredArgsConstructor;
 public class LessonOpeningService {
 
 	private final LessonOpeningMapper lessonOpeningMapper;
+	private final LessonOpeningCheckService lessonOpeningCheckService;
+	private final ReservationLockMapper reservationLockMapper;
+	
 	
 	/** IDを指定して受付時間を取得する */
 	public LessonOpening getById(Long openingId) {
@@ -33,12 +38,14 @@ public class LessonOpeningService {
 	}
 	
 	/** 受付可能時間を登録し、採番されたIDを返す */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public Long create(
 			LocalDateTime startsAt,
 			LocalDateTime endsAt) {
 		
-		checkBasicTime(startsAt, endsAt);
+		lock();
+		
+		lessonOpeningCheckService.checkForSave(startsAt, endsAt, null);
 		
 		LessonOpening opening = new LessonOpening();
 		opening.setStartsAt(startsAt);
@@ -55,15 +62,19 @@ public class LessonOpeningService {
 	}
 	
 	/** 指定した受付可能時間の開始・終了日時を更新する */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void update(
 			Long openingId,
 			LocalDateTime startsAt,
 			LocalDateTime endsAt) {
 		
-		checkBasicTime(startsAt, endsAt);
+		checkId(openingId);
+		
+		lock();
 		
 		LessonOpening original = getById(openingId);
+		
+		lessonOpeningCheckService.checkForSave(startsAt, endsAt, openingId);
 		
 		// 同じ内容なら、更新済みの状態として正常終了する
 		if (original.getStartsAt().equals(startsAt) && original.getEndsAt().equals(endsAt)) {
@@ -75,6 +86,9 @@ public class LessonOpeningService {
 		updated.setStartsAt(startsAt);
 		updated.setEndsAt(endsAt);
 		
+		// 更新しても既存予約を受付時間で覆えるか
+		lessonOpeningCheckService.checkReservationsPreserved(original, updated);
+		
 		int updatedCount = lessonOpeningMapper.updateOne(updated);
 		
 		if (updatedCount != 1) {
@@ -83,19 +97,32 @@ public class LessonOpeningService {
 	}
 	
 	/** 指定した受付可能時間を削除する */
-	@Transactional
+	@Transactional(isolation = Isolation.READ_COMMITTED)
 	public void delete(Long openingId) {
 		
 		checkId(openingId);
 		
+		lock();
+		
+		LessonOpening original = getById(openingId);
+		
+		// 更新しても受付時間を削除できるか
+		lessonOpeningCheckService.checkReservationsPreserved(original, null);
+		
 		int deletedCount = lessonOpeningMapper.deleteById(openingId);
 		
-		if (deletedCount == 0) {
-			throw new LessonOpeningNotFoundException(openingId);
-		}
-		
 		if (deletedCount != 1) {
-			throw new IllegalStateException("受付可能時間の削除件数が想定と異なります。");
+			throw new IllegalStateException("受付可能時間を削除できませんでした。");
+		}
+	}
+	
+	/** 予約処理と共通のDBロックを取得する */
+	private void lock() {
+		
+		Integer lockId = reservationLockMapper.lock();
+		
+		if (lockId == null) {
+			throw new IllegalStateException("予約ロック用のデータが存在しません。");
 		}
 	}
 	
@@ -104,22 +131,6 @@ public class LessonOpeningService {
 		
 		if (openingId == null || openingId <= 0) {
 			throw new IllegalArgumentException("受付可能時間のIDが不正です。");
-		}
-	}
-	
-	/** 保存に必要な最低限の日時チェック */
-	private void checkBasicTime(
-			LocalDateTime startsAt,
-			LocalDateTime endsAt) {
-		
-		if (startsAt == null || endsAt == null) {
-			
-			throw new IllegalArgumentException("開始日時と終了日時は必須です。");
-		}
-		
-		if (!startsAt.isBefore(endsAt)) {
-			
-			throw new IllegalArgumentException("終了日時は開始日時より後にしてください。");
 		}
 	}
 }
