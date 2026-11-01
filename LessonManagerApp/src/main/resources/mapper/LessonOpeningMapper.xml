@@ -29,7 +29,7 @@
 		  , starts_at
 		  , ends_at
 		FROM lesson_openings
-		WHERE openings_id = #{openingId}
+		WHERE opening_id = #{openingId}
 	</select>
 	
 	<!-- 新規登録 -->
@@ -39,7 +39,7 @@
 		  , ends_at
 		) VALUES (
 			#{startsAt}
-			#{endsAt}
+		  , #{endsAt}
 		)
 	</insert>
 	
@@ -55,6 +55,6 @@
 	<!-- 削除 -->
 	<delete id="deleteById">
 		DELETE FROM lesson_openings
-		WHERE openings_id = #{openingId}
+		WHERE opening_id = #{openingId}
 	</delete>
 </mapper>

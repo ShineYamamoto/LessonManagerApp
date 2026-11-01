@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class LessonOpeningsService {
+public class LessonOpeningService {
 
 	private final LessonOpeningMapper lessonOpeningMapper;
 	
