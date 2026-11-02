@@ -60,7 +60,7 @@ public class SecurityConfig {
 				.logoutSuccessUrl("/login?logout")
 			).rememberMe(remember -> remember
 				.rememberMeParameter("remember-me")
-				.tokenValiditySeconds(3600)
+				.tokenValiditySeconds(43200)
 			);
 		
 		// 自作したFilterをSpring Securityの認証処理の流れに組み込む
