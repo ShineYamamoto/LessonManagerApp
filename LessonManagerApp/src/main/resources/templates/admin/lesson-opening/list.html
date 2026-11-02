@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<html>
+<head>
+<meta charset="UTF-8">
+<title>受付可能時間管理</title>
+</head>
+<body>
+	<main layout:fragment="content" class="py-4">
+		
+		<h1 class="h3 mb-3">受付可能時間の管理</h1>
+		
+		<p>
+			選択可能時間:
+			<strong th:text="|${#temporals.format(settings.selectableStartTime, 'HH:mm')}～${#temporals.format(settings.selectableEndTime, 'HH:mm')}|"></strong>
+			/ 30分単位・日本時間
+		</p>
+		
+		<div th:if="${message != null}" class="alert-success" role="status" th:text="${message}"></div>
+		
+		<div th:if="${errorMessage != null}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+		
+		<!-- 日付選択 -->
+		<form method="get" th:action="@{/admin/lesson-openings}" class="d-flex flex-wrap align-items-end gap-2 mb-3">
+			
+			<div>
+				<label for="selected-date" class="form-label">日付</label>
+				<input id="selected-date" type="date" name="date" th:value="${date}" class="form-control" required>
+			</div>
+			
+			<button type="submit" class="btn btn-primary">表示する</button>
+			
+		</form>
+		
+		<div class="d-flex flex-wrap gap-2 mb-2">
+			<a class="btn btn-outline-secondary" th:href="@{/admin/lesson-openings(date=${previousDate})}">前の日</a>
+			
+			<a class="btn btn-outline-secondary" th:href="@{/admin/lesson-openings}">今日</a>
+			
+			<a class="btn btn-outline-secondary" th:href="@{/admin/lesson-openings(date=${nextDate})}">次の日</a>
+			
+			<a class="bnt btn-success" th:href="@{/admin/lesson-openings/new(date=${date})}">この日の受付時間を追加</a>
+		</div>
+		
+		<h2 class="h5" th:text="|${#temporals.format(date, 'yyyy/MM/dd')}の受付時間|"></h2>
+		
+		<p th:if="${#lists.isEmpty(openings)}" class="text-muted">この日の受付時間は登録されていません。</p>
+		
+		<div th:unless="${#lists.isEmpty(openings)}" class="table-responsive">
+			
+			<table class="table align-middle">
+				<thead>
+					<tr>
+						<th scope="col">開始</th>
+						<th scope="col">終了</th>
+						<th scope="col">操作</th>
+					</tr>
+				</thead>
+				
+				<tbody>
+					<tr th:each="opening : ${openings}">
+						<td th:text="${#temporals.format(opening.startsAt, 'HH:mm')}"></td>
+						<td th:text="${#temporals.format(opening.endsAt, 'HH:mm')}"></td>
+						
+						<td>
+							<div class="d-flex gap-2">
+								
+								<a class="btn btn-outline-primary btn-sm" th:href="@{/admin/lesson-openings/{id}/edit(id=${opening.openingId})}">編集</a>
+								
+								<form method="post"
+										th:action="@{/admin/lesson-openings/{id}/delete(id=${opening.openingId})}"
+										onsubmit="return confirm('子の受付時間を削除しますか');">
+									
+									<input type="hidden" name="expectedVersion" th:value="${opening.version}">
+									
+									<input type="hidden" name="date" th:value="${date}">
+									
+									<button type="submit" class="btn btn-outline-danger btn-sm">削除</button>	
+								</form>
+								
+							</div>
+						</td>
+						
+					</tr>
+				</tbody>
+				
+			</table>
+		</div>
+		
+		<p class="text-muted">
+			確定予約が受付時間の外になる変更・削除はできません。
+		</p>
+		
+	</main>
+</body>
+</html>
