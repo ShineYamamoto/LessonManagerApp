@@ -10,17 +10,21 @@ import jakarta.validation.Valid;
 import org.springframework.context.MessageSource;
 import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningCheckException;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.LessonOpeningService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningForm;
@@ -81,6 +85,42 @@ public class AdminLessonOpeningController {
 			Locale locale) {
 		
 		return save(null, form, bindingResult, model, redirectAttributes, locale);
+	}
+	
+	/** 編集画面 */
+	@GetMapping("/{id}/edit")
+	public String editForm(
+			@PathVariable("id") Long id,
+			Model model) {
+		
+		requirePositiveId(id);
+		
+		LessonOpening opening = lessonOpeningService.getById(id);
+		
+		LessonOpeningForm form = new LessonOpeningForm();
+		form.setDate(opening.getStartsAt().toLocalDate());
+		form.setStartTime(opening.getStartsAt().toLocalTime());
+		form.setEndTime(opening.getEndsAt().toLocalTime());
+		form.setExpectedVersion(opening.getVersion());
+		
+		model.addAttribute("openingForm", form);
+		
+		return prepareForm(id, form, model);
+	}
+	
+	/** 更新 */
+	@PostMapping("/{id}/update")
+	public String update(
+			@PathVariable("id") Long id,
+			@Valid @ModelAttribute("openingForm") LessonOpeningForm form,
+			BindingResult bindingResult,
+			Model model,
+			RedirectAttributes redirectAttributes,
+			Locale locale) {
+		
+		requirePositiveId(id);
+		
+		return save(id, form, bindingResult, model, redirectAttributes, locale);
 	}
 	
 	/** 登録・更新の共通処理 */
@@ -194,4 +234,11 @@ public class AdminLessonOpeningController {
 		return date != null ? date : LocalDate.now(JAPAN_ZONE);
 	}
 	
+	private void requirePositiveId(Long id) {
+		if (id == null || id <= 0) {
+			throw new ResponseStatusException(
+					HttpStatus.BAD_REQUEST,
+					"受付時間のIDが不正です。");
+		}
+	}
 }

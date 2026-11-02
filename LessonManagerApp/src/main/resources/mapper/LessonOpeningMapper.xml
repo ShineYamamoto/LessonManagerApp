@@ -54,7 +54,7 @@
 		  , ends_at = #{endsAt}
 		  , version = version + 1
 		WHERE opening_id = #{openingId}
-		  AND version = #{expectedVersion}
+		  AND version = #{version}
 	</update>
 	
 	<!-- 削除 -->
