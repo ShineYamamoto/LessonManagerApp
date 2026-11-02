@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<html>
+<head>
+<meta charset="UTF-8">
+<title>受付時間の登録・編集</title>
+</head>
+<body>
+	<main layout:fragment="content" class="py-4">
+		
+		<h1 class="h3 mb-3" th:text="${editing} ? '受付時間の編集' : '受付時間の登録'"></h1>
+		
+		<p>
+			選択可能時間:
+			<strong th:text="|${#temporals.format(settings.selectableStartTime, 'HH:mm')}～${#temporals.format(settings.selectableEndTime, 'HH:mm')}|">
+				/ 30分単位・日本時間
+			</strong>
+		</p>
+		
+		<form method="post" th:object="${openingForm}" th:action="${editing} ? @{/admin/lesson-openings/{id}/update(id=${openingId})} : @{/admin/lesson-openings/create}">
+			
+			<!-- フィールドエラーとビジネスロジックエラーをまとめて表示 -->
+			<div th:if="${#fields.hasAnyErrors()}" class="alert alert-danger" role="alert">
+				<ul class="mb-0">
+					<li th:each="error : ${#fields.allErrors()}" th:text="${error}"></li>
+				</ul>
+			</div>
+			
+			<input th:if="${editing}" type="hidden" th:field="*{expectedVersion}">
+			
+			<div class="mb-3">
+				<label for="date" class="form-label">日付</label>
+				<input id="date" type="date" th:field="*{date}" class="form-control" th:errorclass="is-invalid" required>
+			</div>
+			
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label for="startTime" class="form-label">開始時刻</label>
+					
+					<input id="startTime" type="time" th:field="*{startTime}" step="1800" class="form-control" th:errorclass="is-invalid"
+							th:min="${#temporals.format(settings.selectableStartTime, 'HH:mm')}"
+							th:max="${#temporals.format(settings.selectableEndTime, 'HH:mm')}"
+							required>
+				</div>
+				
+				<div class="col-md-6 mb-3">
+					<label for="endTime" class="form-label">終了時刻</label>
+					
+					<input id="endTime" type="time" th:field="*{endTime}" step="1800" class="form-control" th:errorclass="is-invalid"
+							th:min="${#temporals.format(settings.selectableStartTime, 'HH:mm')}"
+							th:max="${#temporals.format(settings.selectableEndTime, 'HH:mm')}"
+							required>
+				</div>
+			</div>
+			
+			<p class="text-muted">
+				同じ日の中で、終了時刻が開始時刻より後になるように指定してください。
+			</p>
+			
+			<div class="d-flex gap-2">
+				<button type="submit" class="btn btn-primary" th:text="${editing} ? '変更を保存する' : '登録する'"></button>
+			</div>
+			
+			<a class="btn btn-outline-secondary" th:href="@{/admin/lesson-openings(date=${backDate})}">一覧へ戻る</a>
+		</form>
+	</main>
+</body>
+</html>

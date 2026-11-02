@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.LessonOpeningService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
+import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningForm;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,6 +45,35 @@ public class AdminLessonOpeningController {
 		model.addAttribute("settings", reservationSettingsService.getSettings());
 		
 		return "admin/lesson-opening/list";
+	}
+	
+	/** 新規登録画面 */
+	@GetMapping("/new")
+	public String newForm(
+			@RequestParam(name = "date", required = false)
+			@DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			Model model) {
+		
+		LessonOpeningForm form = new LessonOpeningForm();
+		form.setDate(dateOrToday(date));
+		
+		model.addAttribute("openingForm", form);
+		
+		return prepareForm(null, form, model);
+	}
+	
+	/** フォーム表示に必要な情報を設定する */
+	private String prepareForm(
+			Long id,
+			LessonOpeningForm form,
+			Model model) {
+		
+		model.addAttribute("editing", id != null);
+		model.addAttribute("openingId", id);
+		model.addAttribute("backDate", dateOrToday(form.getDate()));
+		model.addAttribute("settings", reservationSettingsService.getSettings());
+		
+		return "admin/lesson-opening/form";
 	}
 	
 	private LocalDate dateOrToday(LocalDate date) {
