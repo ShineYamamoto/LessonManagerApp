@@ -53,7 +53,7 @@ public class LessonOpeningServiceIntegrationTest {
 		LocalDateTime updatedStart = date.atTime(14, 0);
 		LocalDateTime updatedEnd = date.atTime(18, 0);
 		
-		lessonOpeningService.update(openingId, updatedStart, updatedEnd);
+		lessonOpeningService.update(openingId, updatedStart, updatedEnd, 0L);
 		
 		LessonOpening updated = lessonOpeningService.getById(openingId);
 		
@@ -63,10 +63,10 @@ public class LessonOpeningServiceIntegrationTest {
 		assertEquals(updatedEnd, updated.getEndsAt());
 		
 		// 同じ内容で更新しても正常終了する
-		assertDoesNotThrow(() -> lessonOpeningService.update(openingId, updatedStart, updatedEnd));
+		assertDoesNotThrow(() -> lessonOpeningService.update(openingId, updatedStart, updatedEnd, 1L));
 		
 		// 削除
-		lessonOpeningService.delete(openingId);
+		lessonOpeningService.delete(openingId, 1L);
 		
 		assertThrows(
 				LessonOpeningNotFoundException.class,
@@ -75,7 +75,7 @@ public class LessonOpeningServiceIntegrationTest {
 		// 削除済みのデータを削除すると例外になる
 		assertThrows(
 				LessonOpeningNotFoundException.class,
-				() -> lessonOpeningService.delete(openingId));
+				() -> lessonOpeningService.delete(openingId, 1L));
 	}
 	
 	@Test
@@ -133,7 +133,8 @@ public class LessonOpeningServiceIntegrationTest {
 				lessonOpeningService.update(
 						secondId,
 						date.atTime(11, 0),
-						date.atTime(13, 0)));
+						date.atTime(13, 0),
+						0L));
 		
 		// 11:00～11:30に隙間ができる変更は拒否される
 		LessonOpeningCheckException updateError = assertThrows(
@@ -141,7 +142,8 @@ public class LessonOpeningServiceIntegrationTest {
 				() -> lessonOpeningService.update(
 						secondId,
 						date.atTime(11, 30),
-						date.atTime(13, 0)));
+						date.atTime(13, 0),
+						1L));
 		
 		assertEquals(
 				"lessonOpening.error.reservationExists",
@@ -155,7 +157,7 @@ public class LessonOpeningServiceIntegrationTest {
 		// 最初の受付枠を削除すると10:30～11:00が欠ける
 		LessonOpeningCheckException deleteError = assertThrows(
 				LessonOpeningCheckException.class,
-				() -> lessonOpeningService.delete(firstId));
+				() -> lessonOpeningService.delete(firstId, 0L));
 		
 		assertEquals(
 				"lessonOpening.error.reservationExists",
