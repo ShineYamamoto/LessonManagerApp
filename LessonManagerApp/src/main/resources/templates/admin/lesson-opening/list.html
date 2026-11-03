@@ -69,7 +69,7 @@
 								
 								<form method="post"
 										th:action="@{/admin/lesson-openings/{id}/delete(id=${opening.openingId})}"
-										onsubmit="return confirm('子の受付時間を削除しますか');">
+										onsubmit="return confirm('この受付時間を削除しますか');">
 									
 									<input type="hidden" name="expectedVersion" th:value="${opening.version}">
 									

@@ -27,6 +27,7 @@ import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpe
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.LessonOpeningService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
+import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningDeleteForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningForm;
 
 import lombok.RequiredArgsConstructor;
@@ -121,6 +122,54 @@ public class AdminLessonOpeningController {
 		requirePositiveId(id);
 		
 		return save(id, form, bindingResult, model, redirectAttributes, locale);
+	}
+	
+	/** 削除 */
+	@PostMapping("/{id}/delete")
+	public String delete(
+			@PathVariable("id") Long id,
+			@Valid @ModelAttribute("deleteForm") LessonOpeningDeleteForm form,
+			BindingResult bindingResult,
+			RedirectAttributes redirectAttributes,
+			Locale locale) {
+		
+		requirePositiveId(id);
+		
+		// バインド・バリデーションエラー時はリストへ戻す
+		if (bindingResult.hasErrors()) {
+			return redirectWithError(
+					form.getDate(),
+					"lessonOpening.error.invalidInput",
+					redirectAttributes,
+					locale);
+		}
+		
+		try {
+			lessonOpeningService.delete(id, form.getExpectedVersion());
+		
+		} catch (LessonOpeningCheckException e) {
+			
+			return redirectWithError (
+					form.getDate(),
+					e.getMessageKey(),
+					redirectAttributes,
+					locale);
+			
+		} catch (PessimisticLockingFailureException e) {
+			
+			return redirectWithError(
+					form.getDate(),
+					"lessonOpening.error.busy",
+					redirectAttributes,
+					locale);
+		}
+		
+		redirectAttributes.addFlashAttribute(
+				"message",
+				messageSource.getMessage(
+						"lessonOpening.success.deleted", null, locale));
+		
+		return redirectToList(form.getDate(), redirectAttributes);
 	}
 	
 	/** 登録・更新の共通処理 */
