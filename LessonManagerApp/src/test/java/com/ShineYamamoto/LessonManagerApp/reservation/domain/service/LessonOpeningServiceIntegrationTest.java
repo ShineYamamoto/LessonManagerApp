@@ -166,4 +166,46 @@ public class LessonOpeningServiceIntegrationTest {
 		// 削除されずに残っている
 		assertNotNull(lessonOpeningService.getById(firstId));
 	}
+	
+	@Test
+	void 古い更新番号では変更も削除もできない() {
+		
+		LocalDate date = LocalDate.now(ZoneId.of("Asia/Tokyo")).plusDays(90);
+		
+		long id = lessonOpeningService.create(
+				date.atTime(10, 0),
+				date.atTime(12, 0));
+		
+		// 管理者Aが更新、versionは0から1になる
+		lessonOpeningService.update(
+				id,
+				date.atTime(10, 0),
+				date.atTime(13, 0),
+				0L);
+		
+		assertEquals(
+				Long.valueOf(1),
+				lessonOpeningService.getById(id).getVersion());
+		
+		// 管理者Bの古い画面にはversion=0が残っている
+		LessonOpeningCheckException updateError = assertThrows(
+				LessonOpeningCheckException.class,
+				() -> lessonOpeningService.update(
+						id,
+						date.atTime(14, 0),
+						date.atTime(16, 0),
+						0L));
+		
+		assertEquals(
+				"lessonOpening.error.conflict",
+				updateError.getMessageKey());
+		
+		LessonOpeningCheckException deleteError = assertThrows(
+				LessonOpeningCheckException.class,
+				() -> lessonOpeningService.delete(id, 0L));
+		
+		assertEquals(
+				"lessonOpening.error.conflict",
+				deleteError.getMessageKey());
+	}
 }
