@@ -2,7 +2,9 @@ package com.ShineYamamoto.LessonManagerApp.admin.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 import jakarta.validation.Valid;
@@ -26,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.LessonOpeningService;
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.LessonOpeningTimelineService;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.service.ReservationSettingsService;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningDeleteForm;
 import com.ShineYamamoto.LessonManagerApp.reservation.form.LessonOpeningForm;
@@ -40,6 +43,7 @@ public class AdminLessonOpeningController {
 	private static final ZoneId JAPAN_ZONE = ZoneId.of("Asia/Tokyo");
 	
 	private final LessonOpeningService lessonOpeningService;
+	private final LessonOpeningTimelineService lessonOpeningTimelineService;
 	private final ReservationSettingsService reservationSettingsService;
 	private final MessageSource messageSource;
 	
@@ -170,6 +174,36 @@ public class AdminLessonOpeningController {
 						"lessonOpening.success.deleted", null, locale));
 		
 		return redirectToList(form.getDate(), redirectAttributes);
+	}
+	
+	/** 月単位の読み取り専用タイムライン */
+	@GetMapping("/timeline")
+	public String timeline(
+			@RequestParam(name = "month", required = false) String monthText,
+			Model model) {
+		
+		LocalDate today = LocalDate.now(JAPAN_ZONE);
+		YearMonth month = YearMonth.from(today);
+		
+		if (monthText != null && !monthText.isBlank()) {
+			
+			try {
+				if (!monthText.matches("[0-9]{4}-(0[1-9]|1[0-2])")) {
+					throw new IllegalArgumentException("対象月の形式が不正です。");
+				}
+				month = YearMonth.parse(monthText);
+				if (month.getYear() < 1900) {
+					throw new IllegalArgumentException("対象月が表示範囲外です。");
+				}
+			} catch (DateTimeParseException e) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "対象月が不正です。", e);
+			} catch (IllegalArgumentException e) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "対象月が不正です。", e);
+			}
+		}
+		
+		model.addAttribute("timeline", lessonOpeningTimelineService.getMonth(month, today));
+		return "admin/lesson-opening/timeline";
 	}
 	
 	/** 登録・更新の共通処理 */
