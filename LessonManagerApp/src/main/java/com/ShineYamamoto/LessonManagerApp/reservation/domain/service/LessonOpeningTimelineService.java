@@ -67,7 +67,7 @@ public class LessonOpeningTimelineService {
 			
 			List<Bar> dayOpenings = openings.stream()
 					.filter(item -> overlaps(item.getStartsAt(), item.getEndsAt(), dayStart, dayEnd))
-					.map(item -> toBar(item.getOpeningId(), item.getVersion(), item.getEndsAt(), item.getEndsAt(), displayStart, displayEnd, "受付可能"))
+					.map(item -> toBar(item.getOpeningId(), item.getVersion(), item.getStartsAt(), item.getEndsAt(), displayStart, displayEnd, "受付可能"))
 					.toList();
 			
 			List<Bar> dayReservations = reservations.stream()
@@ -170,7 +170,7 @@ public class LessonOpeningTimelineService {
 			
 			ticks.add(new Tick(
 					LocalTime.of(minute / 60, minute % 60).format(TIME),
-					String.format(Locale.ROOT, "left:%/6f%%;", left),
+					String.format(Locale.ROOT, "left:%.6f%%;", left),
 					edgeClass));
 			
 		}
