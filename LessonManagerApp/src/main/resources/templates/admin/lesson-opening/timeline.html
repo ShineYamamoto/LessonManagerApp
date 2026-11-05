@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <meta charset="UTF-8">
+    <title>受付時間の管理</title>
+    <link rel="stylesheet" th:href="@{/css/lesson-opening-timeline.css}">
+</head>
+<body>
+	<main layout:fragment="content" class="lot-page">
+		<header class="lot-heading">
+			<div>
+				<p class="lot-eyebrow">授業スケジュール管理</p>
+				<h1>受付可能時間</h1>
+				<p class="lot-description">受付可能時間と、確定している授業予約を月ごとに確認できます。</p>
+			</div>
+			<div class="lot-save-area">
+				<span class="lot-readonly">観覧モード</span>
+				<button type="button" class="lot-button lot-button-primary" disabled aria-describedby="lot-readonly-note">変更を登録する</button>
+				<small id="lot-readonly-note">現在は表示のみ利用できます</small>
+			</div>
+		</header>
+		
+		<section class="lot-panel" aria-labelledby="lot-month-title">
+			<div class="lot-toolbar">
+				<div class="lot-month-navigation">
+					<a th:if="${timeline.previousMonth() != null}" class="lot-button lot-icon-button" th:href="@{/admin/lesson-openings/timeline(month=${timeline.previousMonth()})}" aria-label="前の月">‹</a>
+					<h2 id="lot-month-title" th:text="${timeline.monthLabel()}">表示月</h2>
+					<a th:if="${timeline.nextMonth() != null}" class="lot-button lot-icon-button" th:href="@{/admin/lesson-openings/timeline(month=${timeline.nextMonth()})}" aria-label="次の月">›</a>
+					<a class="lot-button" th:href="@{/admin/lesson-openings/timeline}">今月</a>
+				</div>
+				
+				<form method="get" th:action="@{/admin/lesson-openings/timeline}" class="lot-month-form">
+					<label for="lot-month">対象月</label>
+					<input id="lot-month" name="month" type="month" min="1900-01" max="9999-12" th:value="${timeline.month()}" required>
+					<button type="submit" class="lot-button">表示</button>
+				</form>
+			</div>
+			
+			<div class="lot-meta">
+				<div class="lot-legend" aria-label="凡例">
+					<span><i class="lot-swatch lot-swatch-opening" aria-hidden="true"></i>受付可能</span>
+					<span><i class="lot-swatch lot-swatch-reservation" aria-hidden="true"></i>確定予約</span>
+					<span><i class="lot-swatch lot-swatch-empty" aria-hidden="true"></i>受付なし</span>
+				</div>
+				<p class="lot-timezone" th:text="|日本時間（UTC+09:00）・${timeline.startLabel()}～${timeline.endLabel()}・30分単位|">タイムゾーン・受付時間・枠間隔</p>
+			</div>
+			
+			<p class="lot-notice" th:if="${timeline.hasClippedItems()}" role="status">
+				表示時間帯の外にあるデータを含みます。正確な日時は下の「日時を一覧で確認」で確認できます。
+			</p>
+			<p class="lot-empty-notice" th:if="${timeline.openingCount() == 0 and timeline.reservationCount() == 0}">
+				この月の受付可能時間・確定予約はまだ登録されていません。
+			</p>
+			<p id="lot-scroll-help" class="lot-scroll-help">
+				横にスクロールすると、右側の時間帯を確認できます。予約は青い斜線と下段の帯で表示されます。
+			</p>
+			
+			<div class="lot-scroll" tabindex="0" role="region" aria-label="月間受付時間タイムライン" aria-describedby="lot-scroll-help">
+				<div class="lot-timeline" role="table" aria-label="日付け別の受付可能時間と確定予約" th:style="|--lot-slot-count:${timeline.slotCount()};|">
+					<div class="lot-axis" role="row">
+						<div class="lot-date-heading" role="columnheader">日付</div>
+						<div class="lot-axis-track" role="columnheader" aria-label="時間（日本時間）">
+							<span th:each="tick : ${timeline.ticks()}" class="lot-tick" th:classpappend="${tick.edgeClass()}" th:style="${tick.positionStyle()}" th:text="${tick.label()}">時間</span>
+						</div>
+					</div>
+					
+					<div th:each="day : ${timeline.days()}" class="lot-day" role="row" th:classappend="${(day.today() ? ' lot-day-today' : '') + (day.weekend() ? ' lot-day-weekend' : '')}">
+						<div class="lot-date" role="rowheader">
+							<div>
+								<time th:datetime="${day.date()}" th:text="${day.dateLabel()}">日付</time>
+								<span class="lot-weekday" th:text="${day.weekday()}">曜日</span>
+							</div>
+							<small th:if="${day.today()}" class="lot-today-label">今日</small>
+							<small th:if="${day.hasClippedItems()}" class="lot-range-label">範囲外あり</small>
+						</div>
+						
+						<div class="lot-track" role="cell">
+							<span th:if="${#lists.isEmpty(day.openings()) and #lists.isEmpty(day.reservations())}" class="lot-no-opening">受付枠なし</span>
+							
+							<!-- 予約の背景は受付枠の背後。下段の帯は常に見える位置に配置する。 -->
+							<th:block th:each="bar : ${day.reservations()}">
+								<div th:if="${bar.visible()}" class="lot-reservation-shade" th:style="${bar.positionStyle()}" aria-hidden="true"></div>
+								<div th:if="${bar.visible()}" class="lot-reservation" role="img" th:style="${bar.positionStyle()}" th:aria-label="${bar.description()}" th:title="${bar.description()}">
+									<span aria-hidden="true">予約</span>
+								</div>
+							</th:block>
+							
+							<div th:each="bar : ${day.openings()}" th:if="${bar.visible()}" class="lot-opening" role="img"
+									th:classappend="${bar.compact() ? ' lot-bar-compact' : ''}"
+									th:style="${bar.positionStyle()}"
+									th:aria-label="${bar.description()}"
+									th:title="${bar.description()}"
+									th:attr="data-opening-id=${bar.id()},data-version=${bar.version()}">
+									<span th:text="${bar.startLabel()}" aria-hidden="true">時間</span>
+									<span class="lot-time-separator" aria-hidden="true">-</span>
+									<span th:text="${bar.endLabel()}" aria-hidden="true">時間</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<footer class="lot-panel-footer">
+				<p th:text="|受付枠 ${timeline.openingCount()}件 ・ 確定予約 ${timeline.reservationCount()}件|">受付枠 0件 ・ 確定予約 0件</p>
+				<span>予約の帯は、受付枠の下に表示しています</span>
+			</footer>
+		</section>
+		
+		<!-- タッチ操作・キーボードでも、範囲外や短いバーの正確な日時を確認できる -->
+		<details class="lot-details">
+			<summary>日時を一覧で確認</summary>
+			<div class="lot-detail-days">
+				<section th:each="day : ${timeline.days()}" th:if="${!#lists.isEmpty(day.openings()) or !#lists.isEmpty(day.reservations())}" class="lot-detail-day">
+					<h3 th:text="|${day.dateLabel()} (${day.weekday()}) |">日付</h3>
+					<ul>
+						<li th:each="bar : ${day.openings()}" th:text="${bar.description()}"></li>
+						<li th:each="bar : ${day.reservations()}" th:text="${bar.description()}"></li>
+					</ul>
+				</section>
+				<p th:if="${timeline.openingCount() == 0 and timeline.reservationCount() == 0}">登録はありません。</p>
+			</div>
+		</details>
+		
+		<a class="lot-legacy-link" th:href="@{/admin/lesson-openings(date=${timeline.month() + '-01'})}">管理画面</a>
+	</main>
+</body>
+</html>

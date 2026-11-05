@@ -51,7 +51,7 @@ public record LessonOpeningTimelineView(
 			String description,
 			boolean visible,
 			boolean clipped,
-			boolean compact,
+			boolean compact, // 60分未満か
 			String positionStyle) {
 		
 	}
