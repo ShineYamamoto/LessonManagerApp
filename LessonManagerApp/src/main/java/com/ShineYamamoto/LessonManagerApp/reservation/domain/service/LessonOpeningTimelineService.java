@@ -151,7 +151,7 @@ public class LessonOpeningTimelineService {
 				id, version, startsAt, endsAt,
 				startsAt.format(TIME), endsAt.format(TIME), description,
 				visible, clipped,
-				visible && Duration.between(displayStart, visibleEnd).toMinutes() < 60,
+				visible && Duration.between(visibleStart, visibleEnd).toMinutes() < 60,
 				style);
 		
 	}
