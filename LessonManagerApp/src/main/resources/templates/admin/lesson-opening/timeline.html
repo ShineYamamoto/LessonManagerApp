@@ -6,9 +6,15 @@
     <meta charset="UTF-8">
     <title>受付時間の管理</title>
     <link rel="stylesheet" th:href="@{/css/lesson-opening-timeline.css}">
+	<script type="module" th:src="@{/js/lesson-opening-editor.js}"></script>
 </head>
 <body>
-	<main layout:fragment="content" class="lot-page">
+	<main id="lot-editor" layout:fragment="content" class="lot-page"
+			th:attr="data-month=${timeline.month()},
+					 data-start-time=${timeline.startLabel()},
+					 data-end-time=${timeline.endLabel()},
+					 data-reservation-count=${timeline.reservationCount()}
+			">
 		<header class="lot-heading">
 			<div>
 				<p class="lot-eyebrow">授業スケジュール管理</p>
@@ -16,11 +22,25 @@
 				<p class="lot-description">受付可能時間と、確定している授業予約を月ごとに確認できます。</p>
 			</div>
 			<div class="lot-save-area">
-				<span class="lot-readonly">観覧モード</span>
+				<span id="lot-draft-status" class="lot-readonly" role="status" aria-live="polite">観覧モード</span>
 				<button type="button" class="lot-button lot-button-primary" disabled aria-describedby="lot-readonly-note">変更を登録する</button>
-				<small id="lot-readonly-note">現在は表示のみ利用できます</small>
+				<small id="lot-readonly-note">仮追加はこの画面のみ。保存はまだできません。</small>
 			</div>
 		</header>
+		
+		<!-- 画面外の枠も含め、元のID・version・日時をJavaScriptへ渡す。 -->
+		<div id="lot-opening-seeds" hidden aria-hidden="true">
+			<th:bock th:each="day : ${timeline.days()}">
+				<span th:each="bar : ${day.openings()}" data-opening-seed
+						th:attr="data-opening-id=${bar.id()}, 
+								 data-vsersion=${bar.version()},
+								 data-starts-at=${bar.startsAt()},
+								 data-ends-at=${bar.endsAt()}"></span>
+			</th:bock>
+		</div>
+		<p id="lot-editor-message" class="lot-editor-message" role="status" aria-live="polite" hidden></p>
+		<p class="lot-edit-help" data-editor-controls hidden>１時間連続して空いているセルをクリックすると、受付枠を仮追加できます。追加した枠には「仮」と表示します。</p>
+		<noscript><p class="lot-notice">仮追加にはJavaScriptを有効にしてください。現在は表示のみ利用できます。</p></noscript>
 		
 		<section class="lot-panel" aria-labelledby="lot-month-title">
 			<div class="lot-toolbar">
@@ -50,7 +70,7 @@
 			<p class="lot-notice" th:if="${timeline.hasClippedItems()}" role="status">
 				表示時間帯の外にあるデータを含みます。正確な日時は下の「日時を一覧で確認」で確認できます。
 			</p>
-			<p class="lot-empty-notice" th:if="${timeline.openingCount() == 0 and timeline.reservationCount() == 0}">
+			<p id="lot-empty-month" class="lot-empty-notice" th:hidden="${timeline.openingCount() != 0 or timeline.reservationCount() != 0}">
 				この月の受付可能時間・確定予約はまだ登録されていません。
 			</p>
 			<p id="lot-scroll-help" class="lot-scroll-help">
@@ -62,7 +82,7 @@
 					<div class="lot-axis" role="row">
 						<div class="lot-date-heading" role="columnheader">日付</div>
 						<div class="lot-axis-track" role="columnheader" aria-label="時間（日本時間）">
-							<span th:each="tick : ${timeline.ticks()}" class="lot-tick" th:classpappend="${tick.edgeClass()}" th:style="${tick.positionStyle()}" th:text="${tick.label()}">時間</span>
+							<span th:each="tick : ${timeline.ticks()}" class="lot-tick" th:classappend="${tick.edgeClass()}" th:style="${tick.positionStyle()}" th:text="${tick.label()}">時間</span>
 						</div>
 					</div>
 					
@@ -76,8 +96,10 @@
 							<small th:if="${day.hasClippedItems()}" class="lot-range-label">範囲外あり</small>
 						</div>
 						
-						<div class="lot-track" role="cell">
-							<span th:if="${#lists.isEmpty(day.openings()) and #lists.isEmpty(day.reservations())}" class="lot-no-opening">受付枠なし</span>
+						<div class="lot-track" role="cell" 
+								th:attr="data-date=${day.date()},
+										 data-reservation-count=${#lists.size(day.reservations())}">
+							<span th:hidden="${!#lists.isEmpty(day.openings()) or !#lists.isEmpty(day.reservations())}" class="lot-no-opening">受付枠なし</span>
 							
 							<!-- 予約の背景は受付枠の背後。下段の帯は常に見える位置に配置する。 -->
 							<th:block th:each="bar : ${day.reservations()}">
@@ -87,7 +109,8 @@
 								</div>
 							</th:block>
 							
-							<div th:each="bar : ${day.openings()}" th:if="${bar.visible()}" class="lot-opening" role="img"
+							<div class="lot-openings-layer">
+								<div th:each="bar : ${day.openings()}" th:if="${bar.visible()}" class="lot-opening" role="img"
 									th:classappend="${bar.compact() ? ' lot-bar-compact' : ''}"
 									th:style="${bar.positionStyle()}"
 									th:aria-label="${bar.description()}"
@@ -96,6 +119,7 @@
 									<span th:text="${bar.startLabel()}" aria-hidden="true">時間</span>
 									<span class="lot-time-separator" aria-hidden="true">-</span>
 									<span th:text="${bar.endLabel()}" aria-hidden="true">時間</span>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -103,7 +127,7 @@
 			</div>
 			
 			<footer class="lot-panel-footer">
-				<p th:text="|受付枠 ${timeline.openingCount()}件 ・ 確定予約 ${timeline.reservationCount()}件|">受付枠 0件 ・ 確定予約 0件</p>
+				<p id="lot-counts" th:text="|受付枠 ${timeline.openingCount()}件 ・ 確定予約 ${timeline.reservationCount()}件|">受付枠 0件 ・ 確定予約 0件</p>
 				<span>予約の帯は、受付枠の下に表示しています</span>
 			</footer>
 		</section>
@@ -112,18 +136,33 @@
 		<details class="lot-details">
 			<summary>日時を一覧で確認</summary>
 			<div class="lot-detail-days">
-				<section th:each="day : ${timeline.days()}" th:if="${!#lists.isEmpty(day.openings()) or !#lists.isEmpty(day.reservations())}" class="lot-detail-day">
+				<section th:each="day : ${timeline.days()}" th:hidden="${#lists.isEmpty(day.openings()) and #lists.isEmpty(day.reservations())}" class="lot-detail-day"
+						th:attr="data-date=${day.date()},
+								 data-reservation-count=${#lists.size(day.reservations())}">
 					<h3 th:text="|${day.dateLabel()} (${day.weekday()}) |">日付</h3>
-					<ul>
+					<ul class="lot-detail-openings">
 						<li th:each="bar : ${day.openings()}" th:text="${bar.description()}"></li>
+					</ul>
+					<ul class="lot-detail-reservations">
 						<li th:each="bar : ${day.reservations()}" th:text="${bar.description()}"></li>
 					</ul>
 				</section>
-				<p th:if="${timeline.openingCount() == 0 and timeline.reservationCount() == 0}">登録はありません。</p>
+				<p id="lot-empty-details" th:hidden="${timeline.openingCount() != 0 or timeline.reservationCount() != 0}">登録はありません。</p>
 			</div>
 		</details>
 		
 		<a class="lot-legacy-link" th:href="@{/admin/lesson-openings(date=${timeline.month() + '-01'})}">管理画面</a>
+		
+		<dialog id="lot-add-dialog" class="lot-add-dialog" aria-labelledby="lot-add-title" aria-describedby="lot-add-description lot-add-note">
+			<h2 id="lot-add-title">受付枠を追加</h2>
+			<p id="lot-add-description"></p>
+			<p id="lot-add-note" class="lot-dialog-note">追加した枠は仮の状態です。まだ保存されません。</p>
+			<p id="lot-add-error" class="lot-editor-error" role="alert" hidden></p>
+			<div class="lot-dialog-actions">
+				<button id="lot-cancel-add" class="lot-button" type="button" autofocus>キャンセル</button>
+				<button id="lot-confirm-add" class="lot-button" lot-button-primary type="button">追加する</button>
+			</div>
+		</dialog>
 	</main>
 </body>
 </html>
