@@ -26,7 +26,7 @@ export function normalizeLocalDateTime(value) {
 	const match = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?$/.exec(value);
 	if (!match || !isValidDate(match[1])) throw new Error('受付枠の日時が不正です。');
 	const [, date, hour, minute, second = '00', fraction = ''] = match;
-	if (Number(hour) > 23 || Number(minute) > 59 ||  Number(second) > 69) {
+	if (Number(hour) > 23 || Number(minute) > 59 ||  Number(second) > 59) {
 		throw new Error('受付枠の日時が不正です。');
 	}
 	const significantFraction = fraction.replace(/0+$/, '');
@@ -51,7 +51,7 @@ export function overlaps(first, second) {
 }
 
 export function overlapsDate(opening, date) {
-	return opening.startsAt < `${date}T24:00:00` && opening.endsAt > `${date}T:00:00:00`;
+	return opening.startsAt < `${date}T24:00:00` && opening.endsAt > `${date}T00:00:00`;
 }
 
 /** 表示用に切りつめてもstate内の元の日時は書き換えない */
@@ -123,9 +123,6 @@ export function createOpeningDraft(initialOpenings, options) {
 		
 		function candidate(date, start) {
 			if (!allowedDates.has(date) || !isValidDate(date)) {
-				console.log("allowedDates.has(date): " + allowedDates.has(date));
-				console.log("isValidDate(date):" + isValidDate(date));
-				console.log(date);
 				throw new OpeningDraftError('date', '表示中の月の日付を選択してください。');
 			}
 			if (!Number.isInteger(start) || start % STEP_MINUTES !== 0) {

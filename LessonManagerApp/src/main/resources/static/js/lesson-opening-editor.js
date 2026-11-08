@@ -76,7 +76,7 @@ function initializeEditor(root) {
 	function makeBar(opening, date) {
 		const range =visibleRange(opening, date, startMinutes, endMinutes);
 		if (!range) return null;
-		const element = document.createEelement('div');
+		const element = document.createElement('div');
 		element.className = 'lot-opening';
 		element.classList.toggle('lot-bar-compact', range.compact);
 		element.classList.toggle('lot-opening-new', opening.openingId === null);
@@ -137,7 +137,7 @@ function initializeEditor(root) {
 				reason = error.message;
 			}
 			const label = `${track.dataset.date} ${formatMinutes(start)}から1時間の受付枠を追加`;
-			button.diabled = !!reason;
+			button.disabled = !!reason;
 			button.title = reason || label;
 			button.setAttribute('aria-label', reason ? `${label}:${reason}` : label);
 		}
@@ -167,13 +167,13 @@ function initializeEditor(root) {
 				li.textContent = description(item);
 				return li;
 			}));
-			section.hidden = dayOpenings.length === 0 && Number(section.dataset.reservationCount === 0);
+			section.hidden = dayOpenings.length === 0 && Number(section.dataset.reservationCount) === 0;
 		}
 		
 		pendingList.replaceChildren(...added.map(item => {
 			const li = document.createElement('li');
 			const text = document.createElement('span');
-			text.textContent = `${item.startsAt.slice(0, 10)} ${item.startsAt.clice(11, 16)}～${item.endsAt.slice(11, 16)}`;
+			text.textContent = `${item.startsAt.slice(0, 10)} ${item.startsAt.slice(11, 16)}～${item.endsAt.slice(11, 16)}`;
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = 'lot-button lot-remove-draft';
@@ -222,7 +222,7 @@ function initializeEditor(root) {
 	
 	root.querySelector('#lot-cancel-add').addEventListener('click', () => dialog.close());
 	
-	dialog.addEventListener('close', () => { pendingCandidate == null; });
+	dialog.addEventListener('close', () => { pendingCandidate = null; });
 	
 	confirmButton.addEventListener('click', () => {
 		if (!pendingCandidate || confirmButton.disabled) return;
@@ -242,7 +242,7 @@ function initializeEditor(root) {
 	});
 	
 	resetButton.addEventListener('click', () => {
-		if (!window,confirm('この画面で仮追加した受付枠をすべて取り消しますか？')) return;
+		if (!window.confirm('この画面で仮追加した受付枠をすべて取り消しますか？')) return;
 		state.reset();
 		render();
 		showMessage('仮追加した受付枠をすべて取り消しました。');

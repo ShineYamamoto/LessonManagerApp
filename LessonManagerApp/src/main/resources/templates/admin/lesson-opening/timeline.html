@@ -30,13 +30,13 @@
 		
 		<!-- 画面外の枠も含め、元のID・version・日時をJavaScriptへ渡す。 -->
 		<div id="lot-opening-seeds" hidden aria-hidden="true">
-			<th:bock th:each="day : ${timeline.days()}">
+			<th:block th:each="day : ${timeline.days()}">
 				<span th:each="bar : ${day.openings()}" data-opening-seed
 						th:attr="data-opening-id=${bar.id()}, 
 								 data-version=${bar.version()},
 								 data-starts-at=${bar.startsAt()},
 								 data-ends-at=${bar.endsAt()}"></span>
-			</th:bock>
+			</th:block>
 		</div>
 		<p id="lot-editor-message" class="lot-editor-message" role="status" aria-live="polite" hidden></p>
 		<p class="lot-edit-help" data-editor-controls hidden>１時間連続して空いているセルをクリックすると、受付枠を仮追加できます。追加した枠には「仮」と表示します。</p>
