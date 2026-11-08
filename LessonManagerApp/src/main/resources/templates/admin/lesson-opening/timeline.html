@@ -38,6 +38,17 @@
 								 data-ends-at=${bar.endsAt()}"></span>
 			</th:block>
 		</div>
+		
+		<!-- 確定予約も、表示範囲外を含め元の日時をJavaScriptへ渡す。 -->
+		<div id="lot-reservation-seeds" hidden aria-hidden="true">
+			<th:block th:each="day : ${timeline.days()}">
+				<span th:each="bar : ${day.reservations()}" data-opening-seed
+						th:attr="data-reservation-id=${bar.id()},
+								 data-starts-at=${bar.startsAt()},
+								 data-ends-at=${bar.endsAt()}"></span>
+			</th:block>
+		</div>
+		
 		<p id="lot-editor-message" class="lot-editor-message" role="status" aria-live="polite" hidden></p>
 		<p class="lot-edit-help" data-editor-controls hidden>１時間連続して空いているセルをクリックすると、受付枠を仮追加できます。追加した枠には「仮」と表示します。</p>
 		<noscript><p class="lot-notice">仮追加にはJavaScriptを有効にしてください。現在は表示のみ利用できます。</p></noscript>
