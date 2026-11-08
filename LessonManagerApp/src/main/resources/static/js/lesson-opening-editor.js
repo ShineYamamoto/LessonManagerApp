@@ -28,8 +28,15 @@ function initializeEditor(root) {
 		endsAt: element.dataset.endsAt
 	}));
 	
+	const initialReservations = [...root.querySelectorAll('[data-reservation-seed]')]
+			.map(element => ({
+					reservationId: element.dataset.reservationId,
+					startsAt: element.dataset.startsAt,
+					endsAt: element.dataset.endsAt
+	}));
+	
 	const state = createOpeningDraft(initialOpenings, {
-		startMinutes, endMinutes, dates: tracks.map(track => track.dataset.date)
+		startMinutes, endMinutes, dates: tracks.map(track => track.dataset.date), reservations: initialReservations
 	});
 	const dialog = root.querySelector("#lot-add-dialog");
 	if (typeof dialog.showModal !== 'function') throw new Error('確認ダイアログを利用できません。');
