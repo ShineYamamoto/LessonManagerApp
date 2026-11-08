@@ -33,7 +33,7 @@
 			<th:bock th:each="day : ${timeline.days()}">
 				<span th:each="bar : ${day.openings()}" data-opening-seed
 						th:attr="data-opening-id=${bar.id()}, 
-								 data-vsersion=${bar.version()},
+								 data-version=${bar.version()},
 								 data-starts-at=${bar.startsAt()},
 								 data-ends-at=${bar.endsAt()}"></span>
 			</th:bock>
@@ -132,6 +132,17 @@
 			</footer>
 		</section>
 		
+		<section id="lot-pending" class="lot-pending" aria-labelledby="lot-pending-title" hidden>
+			<div class="lot-pending-heading">
+				<div>
+					<h2 id="lot-pending-title">仮追加した受付枠</h2>
+					<p>まだ保存されていません。</p>
+				</div>
+				<button id="lot-reset-draft" class="lot-button" type="button" disabled>すべて取り消す</button>
+			</div>
+			<ul id="lot-pending-list" class="lot-pending-list"></ul>
+		</section>
+		
 		<!-- タッチ操作・キーボードでも、範囲外や短いバーの正確な日時を確認できる -->
 		<details class="lot-details">
 			<summary>日時を一覧で確認</summary>
@@ -160,7 +171,7 @@
 			<p id="lot-add-error" class="lot-editor-error" role="alert" hidden></p>
 			<div class="lot-dialog-actions">
 				<button id="lot-cancel-add" class="lot-button" type="button" autofocus>キャンセル</button>
-				<button id="lot-confirm-add" class="lot-button" lot-button-primary type="button">追加する</button>
+				<button id="lot-confirm-add" class="lot-button lot-button-primary" type="button">追加する</button>
 			</div>
 		</dialog>
 	</main>
