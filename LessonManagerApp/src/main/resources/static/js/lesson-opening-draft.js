@@ -121,6 +121,94 @@ export function createOpeningDraft(initialOpenings, options) {
 		const originalOpenings = Object.freeze([...byId.values()].map(item => Object.freeze({ ...item })));
 		let draftOpenings = originalOpenings.map(item => ({ ...item }));
 		
+		// 予約は読み取り専用。表示範囲外の日時も保持し、受付行間の重複をIDで除去する
+		const reservationById = new Map();
+		if (!Array.isArray(options.reservations)) throw new Error('確定予約データがありません。');
+		for (const raw of options.reservations) {
+			const id = String(raw.reservationId ?? '');
+			if (!/^[1-9]\d*/.test(id)) throw new Error('確定予約のIDが不正です。');
+			const item = Object.freeze({
+				reservationId: id,
+				startsAt: normalizeLocalDateTime(raw.startsAt),
+				endsAt: normalizeLocalDateTime(raw.endsAt)
+			});
+			if (item.startsAt >= item.endsAt) throw new Error('確定予約の終了日時が不正です。');
+			const previous = reservationById.get(id);
+			if (previous && (previous.startsAt !== item.startsAt || previous.endsAt !== item.endsAt)) {
+				throw new Error('同じ確定予約の情報が一致しません。');
+			}
+			reservationById.set(id, item);
+		}
+		const reservations = Object.freeze([...reservationById.values()]);
+		
+		function findOpening(clientId) {
+			const item = draftOpenings.find(opening => opening.clientId === clientId);
+			if (!item) throw new OpeningDraftError('notFound', '受付枠が見つかりません。');
+			return item;
+		}
+		
+		function getOpening(clientId) { return { ...findOpening(clientIf) }; }
+		
+		// 古い範囲外データ・日をまたぐデータは、この画面では読み取り専用にする
+		function canResize(clientId) {
+			const item = findOpening(clientId);
+			const date = item.startsAt.slice(0, 10);
+			const start = timeToMinutes(item.startsAt.slice(11));
+			const end = timeToMinutes(item.endsAt.slice(11));
+			return allowedDates.has(date) && item.endsAt.slice(0, 10) === date
+					&& Number.isInteger(start) && Number.isInteger(end)
+					&& start % STEP_MINUTES === 0 && end % STEP_MINUTES === 0
+					&& start >= startMinutes && end <= endMinutes
+					&& end - start >= STEP_MINUTES;
+		}
+		
+		function checkReservationPreserved(before, afterOpenings) {
+			for (const reservation of reservations.filter(item => overlaps(item, before))) {
+				if (!isCoverd(reservation, afterOpenings)) {
+					throw new OpeningDraftError(
+						'reservationExists', 
+						`確定予約 ${reservation.startsAt.replace('T', ' ')}～${reservation.endsAt.replace('T', ' ')}が受付時間の外に出ます。`
+					);
+				}
+			}
+		}
+		
+		// edgeはstart/endのどちらか
+		function previewResize(clientId, edge, minute) {
+			const before = findOpening(clientId);
+			if (!canResize(clientId)) throw new OpeningDraftError('readOnly', 'この受付枠は表示のみです。');
+			if (!['start', 'end'].includes(edge)) throw new OpeningDraftError('edge', '変更する端が不正です。');
+			if (!Number.isInteger(minute) || minute % STEP_MINUTES !== 0) {
+				throw new OpeningDraftError('step', '時刻は30分単位で指定してください。');
+			}
+			const data = before.startsAt.slice(0, 10);
+			const start = edge === 'start' ? minute : timeToMinutes(before.startsAt.slice(11));
+			const end = edge === 'end' ? minute : timeToMinutes(before.endsAt.slice(11));
+			if (start < startMinutes || end > endMinutes) {
+				throw new OpeningDraftError('outsideHours', '設定時間帯以外への変更はできません。');
+			}
+			if (end - start < STEP_MINUTES) {
+				throw new OpeningDraftError('tooShort', '受付枠は最短30分です。');
+			}
+			const candidate = { ...before, startsAt: `${date}T${formatMinutes(start)}:00`, endsAt: `${date}T${formatMinutes(end)}:00` };
+			if (draftOpenings.some(item => item.clientId !== clientId && overlaps(item, candidate))) {
+				throw new OpeningDraftError('overlap', '他の受付枠と重なります。');
+			};
+			// 同じ時刻を選びなおすだけなら、変更を発生させない。
+			if (candidate.startsAt !== before.startsAt || candidate.endsAt !== before.endsAt) {
+				const after = draftOpenings.map(item => item.clientId === candidate ? candidate : item);
+				checkReservationPreserved(before, after);
+			}
+			return candidate;
+		}
+		
+		function resize(clientId, edge, minute) {
+			// pointerup時も再検証する。失敗した場合はdraftを一切変更しない
+			const candidate = previewResize(clientId, edge, minute);
+			draftOpenings = draftOpenings.map(item => item.clientId === clientId ? candidate : item);
+			return { ...candidate };
+		}
+		
 		function candidate(date, start) {
 			if (!allowedDates.has(date) || !isValidDate(date)) {
 				throw new OpeningDraftError('date', '表示中の月の日付を選択してください。');
@@ -172,7 +260,8 @@ export function createOpeningDraft(initialOpenings, options) {
 		return {
 			getOriginalOpenings: () => originalOpenings,
 			getDraftOpenings: () => draftOpenings.map(item => ({ ...item })),
-			candidate, add, removeNew, reset, getChanges, hasChanges
+			candidate, add, removeNew, reset, getChanges, hasChanges,
+			getOpening, canResize, previewResize, resize
 		};
 		
 }
