@@ -90,6 +90,19 @@ export function calclulateChanges(originaolOpenings, draftOpenings) {
 	return { creates, updates, deletes };
 }
 
+/** 複数の受付枠を開始順に連結し、予約全体を隙間なく覆えるか調べる */
+export function isCovered(reservation, openings) {
+	const sorted = [ ...openings].sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+	let coveredUntil = reservation.startsAt; // 初期値
+	for (const opening of sorted) {
+		if (opening.endsAt <= coveredUntil) continue;
+		if (opening.startsAt > coveredUntil) return false;
+		coveredUntil = opening.endsAt;
+		if (coveredUntil >= reservation.endsAt) return true;
+	}
+	return false;
+}
+
 export function createOpeningDraft(initialOpenings, options) {
 	const { startMinutes, endMinutes } = options;
 	const allowedDates = new Set(options.dates);
