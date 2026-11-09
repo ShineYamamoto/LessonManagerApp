@@ -115,6 +115,22 @@ function initializeEditor(root) {
 			badge.setAttribute('aria-hidden', 'true');
 			element.append(badge);
 		}
+		if (state.canResize(opening.clientId)) {
+			element.dataset.resizable = 'true';
+			for (const edge of ['start', 'end']) {
+				const handle = document.createElement('button');
+				handle.type = 'button';
+				handle.className = `lot-resize-handle lot-resize-${edge}`;
+				handle.dataset.edge = edge;
+				handle.textContent = '⋮';
+				const label = `${description(opening)}の${edge === 'start' ? '開始' : '終了'}時刻。左ドラッグ、または左右キーで30分ずつ変更`;
+				handle.setAttribute('aria-label', label);
+				handle.title = label;
+				element.append(handle);
+			}
+		} else {
+			element.title += '（この枠は表示のみ）';
+		}
 		return element;
 	}
 	
