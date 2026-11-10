@@ -139,3 +139,20 @@
     .lot-add-dialog { padding: 20px 16px; }
     .lot-dialog-actions .lot-button { min-height: 44px; }
 }
+
+/* ③ 左右端のみの伸縮。中央にはドラッグ操作を設定しない。 */
+.lot-opening[data-resizable="true"] { padding-left: 17px; padding-right: 17px; }
+.lot-opening-updated { background: #fff0d5; border: 2px dashed #ad721b; color: #684713; }
+.lot-opening-updated .lot-draft-badge { background: #8f5c13; }
+.lot-resize-handle { position: absolute; top: 0; bottom: 0; width: 16px; border: 0; padding: 0; border-radius: 3px; font-size: 18px; line-height: 1; color: inherit; background: rgb(255 255 255 / 30%); cursor: ew-resize; touch-action: none; user-select: none; }
+.lot-resize-start { left: 0; }
+.lot-resize-end { right: 0; }
+.lot-resize-handle:hover { background: rgb(255 255 255 / 70%); }
+.lot-resize-handle:focus-visible { outline: 2px solid #274f84; outline-offset: -2px; }
+.lot-opening .lot-start-label, .lot-opening .lot-end-label { overflow: hidden; text-overflow: clip; }
+.lot-bar-compact[data-resizable="true"] { padding-left: 14px; padding-right: 14px; font-size: 9px; }
+.lot-bar-compact[data-resizable="true"] .lot-resize-handle { width: 12px; }
+.lot-resize-preview { outline: 2px solid #446faa; outline-offset: 1px; }
+.lot-resize-invalid { outline: 3px solid #b42318; outline-offset: 1px; }
+.lot-is-resizing { user-select: none; }
+.lot-is-resizing .lot-opening { transition: none; }
