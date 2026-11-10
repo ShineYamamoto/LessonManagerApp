@@ -42,7 +42,7 @@
 		<!-- 確定予約も、表示範囲外を含め元の日時をJavaScriptへ渡す。 -->
 		<div id="lot-reservation-seeds" hidden aria-hidden="true">
 			<th:block th:each="day : ${timeline.days()}">
-				<span th:each="bar : ${day.reservations()}" data-opening-seed
+				<span th:each="bar : ${day.reservations()}" data-reservation-seed
 						th:attr="data-reservation-id=${bar.id()},
 								 data-starts-at=${bar.startsAt()},
 								 data-ends-at=${bar.endsAt()}"></span>

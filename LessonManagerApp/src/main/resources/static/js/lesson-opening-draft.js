@@ -139,7 +139,7 @@ export function createOpeningDraft(initialOpenings, options) {
 		if (!Array.isArray(options.reservations)) throw new Error('確定予約データがありません。');
 		for (const raw of options.reservations) {
 			const id = String(raw.reservationId ?? '');
-			if (!/^[1-9]\d*/.test(id)) throw new Error('確定予約のIDが不正です。');
+			if (!/^[1-9]\d*$/.test(id)) throw new Error('確定予約のIDが不正です。');
 			const item = Object.freeze({
 				reservationId: id,
 				startsAt: normalizeLocalDateTime(raw.startsAt),
@@ -209,7 +209,7 @@ export function createOpeningDraft(initialOpenings, options) {
 			};
 			// 同じ時刻を選びなおすだけなら、変更を発生させない。
 			if (candidate.startsAt !== before.startsAt || candidate.endsAt !== before.endsAt) {
-				const after = draftOpenings.map(item => item.clientId === candidate ? candidate : item);
+				const after = draftOpenings.map(item => item.clientId === clientId ? candidate : item);
 				checkReservationPreserved(before, after);
 			}
 			return candidate;

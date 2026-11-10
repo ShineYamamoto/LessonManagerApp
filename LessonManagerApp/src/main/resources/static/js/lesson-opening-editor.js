@@ -79,6 +79,11 @@ function initializeEditor(root) {
 		message.classList.toggle('lot-editor-error', isError);
 	}
 	
+	function isUpdated(opening) {
+		const original = originalsById.get(opening.openingId);
+		return !!original && (original.startsAt !== opening.startsAt || original.endsAt !== opening.endsAt);
+	}
+	
 	function description(opening) {
 		const kind = opening.openingId === null ? '仮追加' : '受付可能';
 		return `${kind} ${opening.startsAt.replace('T', ' ')}～${opening.endsAt.replace('T', ' ')}`;
@@ -91,6 +96,7 @@ function initializeEditor(root) {
 		element.className = 'lot-opening';
 		element.classList.toggle('lot-bar-compact', range.compact);
 		element.classList.toggle('lot-opening-new', opening.openingId === null);
+		element.classList.toggle('lot-opening-updated', isUpdated(opening));
 		element.dataset.clientId = opening.clientId;
 		if (opening.openingId !== null) {
 			element.dataset.openingId = opening.openingId;
@@ -102,9 +108,9 @@ function initializeEditor(root) {
 		element.setAttribute('aria-label', description(opening));
 		element.title = description(opening);
 		for (const [text, className] of [
-			[opening.startsAt.slice(11, 16), ''],
+			[opening.startsAt.slice(11, 16), 'lot-start-label'],
 			['-', 'lot-time-separator'],
-			[opening.endsAt.slice(11, 16), '']
+			[opening.endsAt.slice(11, 16), 'lot-end-label']
 		]) {
 			const span = document.createElement('span');
 			span.textContent = text;
@@ -221,7 +227,7 @@ function initializeEditor(root) {
 			return li;
 		}));
 		pendingSection.hidden = pending.length === 0;
-		resetButton.disabled = !state.getChanges();
+		resetButton.disabled = !state.hasChanges();
 		root.querySelector('#lot-draft-status').textContent = pending.length ? `未保存 ${pending.length}件（追加 ${added.length}・変更 ${updated.length}）` : '変更なし';
 		const reservationCount = Number(root.dataset.reservationCount);
 		root.querySelector('#lot-counts').textContent = `受付枠 ${draftOpenings.length}件（仮追加 ${added.length}件・変更 ${updated.length}) ・確定予約 ${reservationCount}件`;

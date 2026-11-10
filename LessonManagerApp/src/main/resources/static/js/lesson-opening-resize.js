@@ -13,7 +13,7 @@ export function installOpeningResize({ root, state, startMinutes, endMinutes, re
 	
 	function restoreFocus(clientId, edge) {
 		const handle = [...root.querySelectorAll('.lot-resize-handle')].find(element =>
-			element.dataset.edge = edge && element.closest('.lot-opening').dataset.clientId === clientId
+			element.dataset.edge === edge && element.closest('.lot-opening').dataset.clientId === clientId
 		);
 		handle?.focus({ preventScroll: true });
 	}
@@ -24,13 +24,13 @@ export function installOpeningResize({ root, state, startMinutes, endMinutes, re
 		drag.bar.style.left = `${range.left}%`;
 		drag.bar.style.width = `${range.width}%`;
 		drag.bar.classList.toggle('lot-bar-compact', range.compact);
-		drag.querySelector('.lot-start-label').textContent = candidate.startsAt.slice(11, 16);
-		drag.querySelector('.lot-end-label').textContent = candidate.endsAt.slice(11, 16);
+		drag.bar.querySelector('.lot-start-label').textContent = candidate.startsAt.slice(11, 16);
+		drag.bar.querySelector('.lot-end-label').textContent = candidate.endsAt.slice(11, 16);
 	}
 	
 	function updatePreview(event) {
 		const drag = active;
-		if (!drag || event.pointId !== drag.pointerId) return;
+		if (!drag || event.pointerId !== drag.pointerId) return;
 		event.preventDefault();
 		// 端を押しただけ・上下に動かしただけでは時刻を変更しない
 		if (!drag.moved && Math.abs(event.clientX - drag.initialX) < 4) return;
@@ -60,7 +60,7 @@ export function installOpeningResize({ root, state, startMinutes, endMinutes, re
 		if (commit && drag.moved) {
 			try {
 				const candidate = state.resize(drag.clientId, drag.edge, drag.minute);
-				const changed = candidate.startsAt !== drag.before.startsAt || candidate.endsAt !== drag.before.endAt;
+				const changed = candidate.startsAt !== drag.before.startsAt || candidate.endsAt !== drag.before.endsAt;
 				message = changed ? '受付枠を変更しました。まだ保存されていません。' : '時刻の変更はありません。';
 			} catch (cause) {
 				message = `${cause.message} 伸縮前の時刻に戻りました。`;
@@ -96,12 +96,12 @@ export function installOpeningResize({ root, state, startMinutes, endMinutes, re
 		handle.focus({ preventScroll: true});
 		active = { handle, bar, track, clientId, edge, before, date: track.dataset.date,
 				pointerId: event.pointerId, initialX: event.clientX,
-				grabOffset: event.clientX - edge, minute, moved: false
+				grabOffset: event.clientX - edgeX, minute, moved: false
 		};
 		try {
 			handle.setPointerCapture(event.pointerId);
 			root.classList.add('lot-is-resizing');
-			bar.classList.add('lot-resizing-preview');
+			bar.classList.add('lot-resize-preview');
 		} catch (error) {
 			active = null;
 			showMessage('変更をできませんでした。もう一度操作してください。', true);
