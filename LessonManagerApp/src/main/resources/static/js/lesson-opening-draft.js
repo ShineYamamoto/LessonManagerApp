@@ -160,7 +160,7 @@ export function createOpeningDraft(initialOpenings, options) {
 			return item;
 		}
 		
-		function getOpening(clientId) { return { ...findOpening(clientIf) }; }
+		function getOpening(clientId) { return { ...findOpening(clientId) }; }
 		
 		// 古い範囲外データ・日をまたぐデータは、この画面では読み取り専用にする
 		function canResize(clientId) {
@@ -177,7 +177,7 @@ export function createOpeningDraft(initialOpenings, options) {
 		
 		function checkReservationPreserved(before, afterOpenings) {
 			for (const reservation of reservations.filter(item => overlaps(item, before))) {
-				if (!isCoverd(reservation, afterOpenings)) {
+				if (!isCovered(reservation, afterOpenings)) {
 					throw new OpeningDraftError(
 						'reservationExists', 
 						`確定予約 ${reservation.startsAt.replace('T', ' ')}～${reservation.endsAt.replace('T', ' ')}が受付時間の外に出ます。`
@@ -194,7 +194,7 @@ export function createOpeningDraft(initialOpenings, options) {
 			if (!Number.isInteger(minute) || minute % STEP_MINUTES !== 0) {
 				throw new OpeningDraftError('step', '時刻は30分単位で指定してください。');
 			}
-			const data = before.startsAt.slice(0, 10);
+			const date = before.startsAt.slice(0, 10);
 			const start = edge === 'start' ? minute : timeToMinutes(before.startsAt.slice(11));
 			const end = edge === 'end' ? minute : timeToMinutes(before.endsAt.slice(11));
 			if (start < startMinutes || end > endMinutes) {

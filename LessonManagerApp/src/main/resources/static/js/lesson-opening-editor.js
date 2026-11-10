@@ -1,3 +1,4 @@
+import { installOpeningResize } from './lesson-opening-resize.js';
 import {
 	STEP_MINUTES, OpeningDraftError, createOpeningDraft, formatMinutes, timeToMinutes, overlapsDate, visibleRange
 } from './lesson-opening-draft.js';
@@ -34,10 +35,13 @@ function initializeEditor(root) {
 					startsAt: element.dataset.startsAt,
 					endsAt: element.dataset.endsAt
 	}));
-	
+	if (new Set(initialReservations.map(item => item.reservationId)).size !== Number(root.dataset.reservationCount)) {
+		throw new Error('確定予約データの件数が一致しません');
+	}
 	const state = createOpeningDraft(initialOpenings, {
 		startMinutes, endMinutes, dates: tracks.map(track => track.dataset.date), reservations: initialReservations
 	});
+	const originalsById = new Map(state.getOriginalOpenings().map(item => [item.openingId, item]));
 	const dialog = root.querySelector("#lot-add-dialog");
 	if (typeof dialog.showModal !== 'function') throw new Error('確認ダイアログを利用できません。');
 	
@@ -94,7 +98,7 @@ function initializeEditor(root) {
 		}
 		element.style.left = `${range.left}%`;
 		element.style.width = `${range.width}%`;
-		element.setAttribute('role', 'img');
+		element.setAttribute('role', 'group');
 		element.setAttribute('aria-label', description(opening));
 		element.title = description(opening);
 		for (const [text, className] of [
@@ -168,7 +172,10 @@ function initializeEditor(root) {
 	
 	function render() {
 		const draftOpenings = state.getDraftOpenings();
-		const added = state.getChanges().creates;
+		const changes = state.getChanges();
+		const added = changes.creates;
+		const updated = changes.updates;
+		const pending = [...added, ...updated];
 		
 		for (const track of tracks) {
 			const date = track.dataset.date;
@@ -193,29 +200,38 @@ function initializeEditor(root) {
 			section.hidden = dayOpenings.length === 0 && Number(section.dataset.reservationCount) === 0;
 		}
 		
-		pendingList.replaceChildren(...added.map(item => {
+		pendingList.replaceChildren(...pending.map(item => {
 			const li = document.createElement('li');
 			const text = document.createElement('span');
-			text.textContent = `${item.startsAt.slice(0, 10)} ${item.startsAt.slice(11, 16)}～${item.endsAt.slice(11, 16)}`;
-			const button = document.createElement('button');
-			button.type = 'button';
-			button.className = 'lot-button lot-remove-draft';
-			button.dataset.clientId = item.clientId;
-			button.textContent = '取り消す';
-			button.setAttribute('aria-label', `${text.textContent}の仮追加を取り消す`);
-			li.append(text, button);
+			const label = `${item.startsAt.slice(0, 10)} ${item.startsAt.slice(11, 16)}～${item.endsAt.slice(11, 16)}`;
+			if (item.openingId === null) {
+				text.textContent = `仮追加:${label}`;
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'lot-button lot-remove-draft';
+				button.dataset.clientId = item.clientId;
+				button.textContent = '取り消す';
+				button.setAttribute('aria-label', `${label}の仮追加を取り消す`);
+				li.append(text, button);
+			} else {
+				const original = originalsById.get(item.openingId);
+				text.textContent = `変更：${label}（変更前 ${original.startsAt.slice(11, 16)}～${original.endsAt.slice(11, 16)}）`;
+				li.append(text);
+			}
 			return li;
 		}));
-		pendingSection.hidden = added.length === 0;
-		resetButton.disabled = added.length === 0;
-		root.querySelector('#lot-draft-status').textContent = added.length ? `未保存 ${added.length}件` : '変更なし';
+		pendingSection.hidden = pending.length === 0;
+		resetButton.disabled = !state.getChanges();
+		root.querySelector('#lot-draft-status').textContent = pending.length ? `未保存 ${pending.length}件（追加 ${added.length}・変更 ${updated.length}）` : '変更なし';
 		const reservationCount = Number(root.dataset.reservationCount);
-		root.querySelector('#lot-counts').textContent = `受付枠 ${draftOpenings.length}件（仮追加 ${added.length}件) ・確定予約 ${reservationCount}件`;
+		root.querySelector('#lot-counts').textContent = `受付枠 ${draftOpenings.length}件（仮追加 ${added.length}件・変更 ${updated.length}) ・確定予約 ${reservationCount}件`;
 		const emptyMonth = draftOpenings.length === 0 && reservationCount === 0;
 		root.querySelector('#lot-empty-month').hidden = !emptyMonth;
 		root.querySelector('#lot-empty-details').hidden = !emptyMonth;
 		syncUnloadGuard();
 	}
+	
+	installOpeningResize({ root, state, startMinutes, endMinutes, render, showMessage });
 	
 	root.addEventListener('click', event => {
 		const cell = event.target.closest('.lot-add-cell');
