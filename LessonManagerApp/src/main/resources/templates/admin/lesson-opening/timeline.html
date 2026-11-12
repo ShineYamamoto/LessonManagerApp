@@ -185,6 +185,17 @@
 				<button id="lot-confirm-add" class="lot-button lot-button-primary" type="button">追加する</button>
 			</div>
 		</dialog>
+		
+		<dialog id="lot-delete-dialog" class="lot-add-dialog" aria-labelledby="lot-delete-title" aria-describedby="lot-delete-description lot-delete-note">
+			<h2 id="lot-delete-title">受付枠を削除</h2>
+			<p id="lot-delete-description"></p>
+			<p id="lot-delete-note" class="lot-dialog-note"></p>
+			<p id="lot-delete-error" class="lot-editor-error" role="alert" hidden></p>
+			<div class="lot-dialog-action">
+				<button id="lot-cancel-delete" class="lot-button" type="button" autofocus>キャンセル</button>
+				<button id="lot-confirm-delete" class="lot-button lot-button-danger" type="button">削除する</button>
+			</div>
+		</dialog>
 	</main>
 </body>
 </html>

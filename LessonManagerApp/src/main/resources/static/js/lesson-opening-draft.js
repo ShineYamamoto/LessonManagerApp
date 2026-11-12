@@ -252,12 +252,25 @@ export function createOpeningDraft(initialOpenings, options) {
 			return { ...item };
 		}
 		
-		function removeNew(clientId) {
-			const item = draftOpenings.find(opening => opening.clientId === clientId);
-			if (!item || item.openingId !==null) {
-				throw new Error ('仮追加した受付枠だけを取り消せます。');
+		function remove(clientId) {
+			const before = findOpening(clientId);
+			
+			// 現在の「表示のみ」の扱いを維持する
+			if (!canResize(clientId)) {
+				throw new OpeningDraftError(
+					'readOnly', 'この授業は表示のみのため、この画面では削除できません。'
+				);
 			}
-			draftOpenings = draftOpenings.filter(opening => opening.clientId != clientId);
+			
+			// まだdraftOpeningsには代入しない
+			const after = draftOpenings.filter(item => item.clientId !== clientId);
+			
+			// 削除した後も確定予約全体を覆えるか
+			checkReservationPreserved(before, after);
+			
+			draftOpenings = after;
+			
+			return { ...before };
 		}
 		
 		function reset() {
@@ -273,7 +286,7 @@ export function createOpeningDraft(initialOpenings, options) {
 		return {
 			getOriginalOpenings: () => originalOpenings,
 			getDraftOpenings: () => draftOpenings.map(item => ({ ...item })),
-			candidate, add, removeNew, reset, getChanges, hasChanges,
+			candidate, add, remove, reset, getChanges, hasChanges,
 			getOpening, canResize, previewResize, resize
 		};
 		

@@ -51,10 +51,17 @@ function initializeEditor(root) {
 	const pendingList = root.querySelector('#lot-pending-list');
 	const resetButton = root.querySelector('#lot-reset-draft');
 	const scroll = root.querySelector('.lot-scroll');
+	const deleteDialog = root.querySelector('#lot-delete-dialog');
+	const deleteDescription = root.querySelector('#lot-delete-description');
+	const deleteNote = root.querySelector('#lot-delete-note');
+	const deleteError = root.querySelector('#lot-delete-error');
+	const deleteConfirmButton = root.querySelector('#lot-confirm-delete');
 	
 	let pendingCandidate = null;
 	let leavingApproved = false;
 	let unloadGuardEnabled = false;
+	let pendingDeleteId = null;
+	let deleteTrigger = null;
 	
 	/** 画面を離れる直前に、ブラウザへ確認表示を要求する */
 	function beforeUnload(event) {
@@ -107,6 +114,10 @@ function initializeEditor(root) {
 		element.setAttribute('role', 'group');
 		element.setAttribute('aria-label', description(opening));
 		element.title = description(opening);
+		if (state.canResize(opening.clientId)) {
+			element.tabIndex = 0;
+			element.title += '。ダブルクリックで削除確認';
+		}
 		for (const [text, className] of [
 			[opening.startsAt.slice(11, 16), 'lot-start-label'],
 			['-', 'lot-time-separator'],
@@ -181,7 +192,11 @@ function initializeEditor(root) {
 		const changes = state.getChanges();
 		const added = changes.creates;
 		const updated = changes.updates;
-		const pending = [...added, ...updated];
+		const deleted = changes.deletes;
+		const pending = [
+			...added.map(item => ({ kind: 'create', item })),
+			...updated.map(item => ({ kind: 'update', item })),
+			...deleted.map(item => ({ kind: 'delete', item }))];
 		
 		for (const track of tracks) {
 			const date = track.dataset.date;
@@ -200,44 +215,125 @@ function initializeEditor(root) {
 			const list = section.querySelector('.lot-detail-openings');
 			list.replaceChildren(...dayOpenings.map(item => {
 				const li = document.createElement('li');
-				li.textContent = description(item);
+				const text = document.createElement('span');
+				text.textContent = description(item);
+				li.append(text);
+				
+				if (state.canResize(item.clientId)) {
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.className = 'lot-button lot-delete-opening';
+					button.dataset.clientId = item.clientId;
+					button.textContent = '削除';
+					button.setAttribute('aria-label', `${description(item)}の削除確認を開く`);
+					
+					li.append(button);
+				}
 				return li;
 			}));
 			section.hidden = dayOpenings.length === 0 && Number(section.dataset.reservationCount) === 0;
 		}
 		
-		pendingList.replaceChildren(...pending.map(item => {
+		pendingList.replaceChildren(...pending.map(({ kind, item }) => {
 			const li = document.createElement('li');
-			const text = document.createElement('span');
-			const label = `${item.startsAt.slice(0, 10)} ${item.startsAt.slice(11, 16)}～${item.endsAt.slice(11, 16)}`;
-			if (item.openingId === null) {
-				text.textContent = `仮追加:${label}`;
-				const button = document.createElement('button');
-				button.type = 'button';
-				button.className = 'lot-button lot-remove-draft';
-				button.dataset.clientId = item.clientId;
-				button.textContent = '取り消す';
-				button.setAttribute('aria-label', `${label}の仮追加を取り消す`);
-				li.append(text, button);
-			} else {
+			const label = `${item.startsAt.replace('T', ' ')}` + `～${item.endsAt.replace('T', ' ')}`;
+			if (kind === 'create') {
+				li.textContent = `仮追加：${label}`;
+			} else if (kind === 'update') {
 				const original = originalsById.get(item.openingId);
-				text.textContent = `変更：${label}（変更前 ${original.startsAt.slice(11, 16)}～${original.endsAt.slice(11, 16)}）`;
-				li.append(text);
+				li.textContent = `変更：${label}` + `（変更前 ${original.startsAt.slice(11, 16)}` + `～${original.endsAt.slice(11, 16)}）`;
+			} else {
+				li.textContent = `削除予定：${label}`;
+				li.classList.add('lot-pending-delete');
 			}
 			return li;
 		}));
 		pendingSection.hidden = pending.length === 0;
 		resetButton.disabled = !state.hasChanges();
-		root.querySelector('#lot-draft-status').textContent = pending.length ? `未保存 ${pending.length}件（追加 ${added.length}・変更 ${updated.length}）` : '変更なし';
+		root.querySelector('#lot-draft-status').textContent = pending.length > 0 ? `未保存 ${pending.length}件（追加 ${added.length}・変更 ${updated.length}・削除 ${deleted.length}）` : '変更なし';
 		const reservationCount = Number(root.dataset.reservationCount);
-		root.querySelector('#lot-counts').textContent = `受付枠 ${draftOpenings.length}件（仮追加 ${added.length}件・変更 ${updated.length}) ・確定予約 ${reservationCount}件`;
+		root.querySelector('#lot-counts').textContent = `受付枠 ${draftOpenings.length}件（仮追加 ${added.length}件・変更 ${updated.length}件・削除予定 ${deleted.length}件) ・確定予約 ${reservationCount}件`;
 		const emptyMonth = draftOpenings.length === 0 && reservationCount === 0;
 		root.querySelector('#lot-empty-month').hidden = !emptyMonth;
 		root.querySelector('#lot-empty-details').hidden = !emptyMonth;
 		syncUnloadGuard();
 	}
 	
-	installOpeningResize({ root, state, startMinutes, endMinutes, render, showMessage });
+	const resizeController = installOpeningResize({ root, state, startMinutes, endMinutes, render, showMessage });
+	
+	function openDeleteDialog(clientId, trigger) {
+		if (resizeController.isActive() || deleteDialog.open) return;
+		
+		try {
+			const opening = state.getOpening(clientId);
+			if (!state.canResize(clientId)) throw new Error('この受付枠は表示のみのため、この画面では削除できません。');
+			
+			pendingDeleteId = clientId;
+			deleteTrigger = trigger;
+			const startsAt = opening.startsAt.replace('T', ' ');
+			const endsAt = opening.endsAt.replace('T', ' ');
+			deleteDescription.textContent = `${startsAt}～${endsAt}の受付枠を削除しますか?`;
+			deleteNote.textContent = opening.openingId === null
+					? '仮追加を取り消します。サーバーに登録されたデータへの影響はありません。'
+					: '削除予定として画面に反映します。「変更を登録する」まではサーバーの受付枠は削除されません。';
+			deleteError.textContent = '';
+			deleteError.hidden = true;
+			deleteConfirmButton.disabled = false;
+			deleteDialog.showModal();
+		} catch (error) {
+			showMessage(error.message, true);
+		}
+	}
+	
+	root.querySelector('#lot-cancel-delete').addEventListener('click', () => {
+		deleteDialog.close();
+	});
+	
+	deleteDialog.addEventListener('close', () => {
+		pendingDeleteId = null;
+		
+		// 削除・再描画で元の要素がきえていればタイムラインへフォーカスを戻す
+		const target = deleteTrigger?.isConnected ? deleteTrigger : scroll;
+		target.focus({ preventScroll: true });
+		deleteTrigger = null;
+		
+	});
+	
+	root.addEventListener('click', event => {
+		const button = event.target.closest('.lot-delete-opening');
+		if (!button) return;
+		openDeleteDialog(button.dataset.clientId, button);
+	});
+	
+	deleteConfirmButton.addEventListener('click', () => {
+		if (pendingDeleteId === null || deleteConfirmButton.disabled) return;
+		deleteConfirmButton.disabled = true;
+		try {
+			// 確認ボタンを押した時点で予約チェックも実行する
+			const removed = state.remove(pendingDeleteId);
+			deleteDialog.close();
+			render();
+			showMessage(removed.openingId === null
+				? '仮追加した受付枠を取り消しました。'
+				: '受付枠を削除予定にしました。まだ保存されていません。'
+			);
+		} catch (error) {
+			// 削除できない場合はダイアログ内に理由を表示
+			deleteError.textContent = error.message;
+			deleteError.hidden = false;
+			deleteConfirmButton.disabled = false;
+		}
+	});
+	
+	root.addEventListener('dblclick', event => {
+		if (event.button !== 0 || resizeController.isActive()) return;
+		// 左右端の伸縮ハンドルは削除操作の対象にしない
+		if (event.target.closest('.lot-resize-handle')) return;
+		const bar = event.target.closest('.lot-opening[data-client-id');
+		if (!bar) return;
+		event.preventDefault();
+		openDeleteDialog(bar.dataset.clientId, bar);	
+	});
 	
 	root.addEventListener('click', event => {
 		const cell = event.target.closest('.lot-add-cell');
@@ -255,13 +351,6 @@ function initializeEditor(root) {
 			} catch (error) {
 				showMessage(error.message, true);
 			}
-		}
-		const removeButton = event.target.closest('.lot-remove-draft');
-		if (removeButton) {
-			state.removeNew(removeButton.dataset.clientId);
-			render();
-			showMessage('仮追加を取り消しました。');
-			scroll.focus({ preventScroll: true });
 		}
 	});
 	
@@ -287,16 +376,16 @@ function initializeEditor(root) {
 	});
 	
 	resetButton.addEventListener('click', () => {
-		if (!window.confirm('この画面で仮追加した受付枠をすべて取り消しますか？')) return;
+		if (!window.confirm('未保存の追加・変更・削除をすべて取り消しますか？')) return;
 		state.reset();
 		render();
-		showMessage('仮追加した受付枠をすべて取り消しました。');
+		showMessage('未保存の変更をすべて取り消しました。');
 		scroll.focus({ preventScroll: true });
 	});
 	
 	function approveLeaving() {
 		if (!state.hasChanges()) return true;
-		if (!window.confirm('未保存の仮追加があります。破棄して移動しますか？')) return false;
+		if (!window.confirm('未保存の変更があります。破棄して移動しますか？')) return false;
 		leavingApproved = true;
 		syncUnloadGuard(); // 同じ異動でブラウザの警告を重ねて出さない
 		return true;
