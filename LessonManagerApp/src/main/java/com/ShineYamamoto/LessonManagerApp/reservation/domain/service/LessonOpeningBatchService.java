@@ -4,13 +4,16 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningBatchException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.exception.LessonOpeningCheckException;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpening;
 import com.ShineYamamoto.LessonManagerApp.reservation.domain.model.LessonOpeningBatchError;
@@ -46,6 +49,61 @@ public class LessonOpeningBatchService {
 		
 		List<LessonOpeningBatchError> errors = new ArrayList<>();
 		
+		Set<String> clientIds = new HashSet<>();
+		
+		form.getCreates().forEach(item -> {
+			if (!clientIds.add(item.getClientId())) {
+				errors.add(new LessonOpeningBatchError(
+						item.getClientId(),
+						"clientId",
+						"lessonOpening.error.duplicateRequest"));
+			}
+		});
+		
+		form.getUpdates().forEach(item -> {
+			if (!clientIds.add(item.getClientId())) {
+				errors.add(new LessonOpeningBatchError(
+						item.getClientId(),
+						"clientId",
+						"lessonOpenign.error.duplicateRequest"));
+			}
+		});
+		
+		form.getDeletes().forEach(item -> {
+			if (!clientIds.add(item.getClientId())) {
+				errors.add(new LessonOpeningBatchError(
+						item.getClientId(),
+						"clientId",
+						"lessonOpening.error.duplicateRequest"));
+			}
+		});
+		
+		Set<Long> targetIds = new HashSet<>();
+		
+		form.getUpdates().forEach(item -> {
+			if (!targetIds.add(item.getOpeningId())) {
+				errors.add(new LessonOpeningBatchError(
+						item.getClientId(),
+						"openingId",
+						"lessonOpening.error.duplicateRequest"));
+			}
+		});
+		
+		form.getDeletes().forEach(item -> {
+			if (!targetIds.add(item.getOpeningId())) {
+				errors.add(new LessonOpeningBatchError(
+						item.getClientId(),
+						"openingId",
+						"lessonOpening.error.duplicateRequest"));
+			}
+		});
+		
+		if (!errors.isEmpty()) {
+			throw new LessonOpeningBatchException(
+					errors.stream().distinct().toList());
+		}
+		
+		// 更新する枠の、DB上の元データ
 		List<LessonOpening> currentUpdateOpenings = form.getUpdates().stream()
 				.map(item -> {
 					LessonOpening current = lessonOpeningMapper.findById(item.getOpeningId());
@@ -113,7 +171,7 @@ public class LessonOpeningBatchService {
 		
 		// 削除対象の元データ
 		List<LessonOpening> currentDeleteOpenings = form.getDeletes().stream()
-					.mapToDouble(item -> {
+					.map(item -> {
 						LessonOpening current = lessonOpeningMapper.findById(item.getOpeningId());
 						
 						if (current == null
@@ -141,6 +199,48 @@ public class LessonOpeningBatchService {
 					})
 					.filter(Objects::nonNull)
 					.toList();
+		
+		// 元データ・新規日時・更新日時の検証を終えてから中止する
+		if (!errors.isEmpty()) {
+			throw new LessonOpeningBatchException(
+					errors.stream().distinct().toList());
+		}
+		
+		LocalDateTime from = month.atDay(1).atStartOfDay();
+		LocalDateTime to = month.plusMonths(1).atDay(1).atStartOfDay();
+		
+		// 更新対象だけでなく、対象月と重なる既存枠をすべて取得
+		List<LessonOpening> currentMonthOpenings = lessonOpeningMapper.findOverlapping(from, to);
+		
+		// 更新・削除により元の状態では残らなくなる枠のID
+		Set<Long> replacedIds = new HashSet<>();
+		
+		form.getUpdates().forEach(item -> replacedIds.add(item.getOpeningId()));
+		form.getDeletes().forEach(item -> replacedIds.add(item.getOpeningId()));
+		
+		// 最終状態にそのまま残る既存枠
+		List<OpeningCandidate> finalOpenings = new ArrayList<>();
+		
+		for (LessonOpening opening : currentMonthOpenings) {
+			if (!replacedIds.contains(opening.getOpeningId())) {
+				finalOpenings.add(new OpeningCandidate(null, opening));
+			}
+		}
+		
+		// 今回追加・変更する枠
+		List<OpeningCandidate> changedOpenings = new ArrayList<>();
+		changedOpenings.addAll(createdOpenings);
+		changedOpenings.addAll(updatedOpenings);
+		
+		// 最終状態に追加
+		finalOpenings.addAll(changedOpenings);
+		
+		checkOverlaps(changedOpenings, finalOpenings, errors);
+		
+		if (!errors.isEmpty()) {
+			throw new LessonOpeningBatchException(errors);
+		}
+		
 	}
 	
 	private record OpeningCandidate(
@@ -193,6 +293,35 @@ public class LessonOpeningBatchService {
 		opening.setEndsAt(endsAt);
 		
 		return new OpeningCandidate(clientId, opening);
+	}
+	
+	private void checkOverlaps(
+			List<OpeningCandidate> changedOpenings,
+			List<OpeningCandidate> finalOpenings,
+			List<LessonOpeningBatchError> errors) {
+		
+		for (OpeningCandidate target : changedOpenings) {
+			
+			boolean duplicated = finalOpenings.stream()
+					.anyMatch(other -> 
+							other != target
+							&& overlaps(target.opening(), other.opening()));
+			
+			if (duplicated) {
+				errors.add(new LessonOpeningBatchError(
+						target.clientId(),
+						"startsAt",
+						"lessonOpening.error.overlap"));
+			}
+		}
+	}
+	
+	private boolean overlaps(
+			LessonOpening first,
+			LessonOpening second) {
+		
+		return first.getStartsAt().isBefore(second.getEndsAt())
+				&& second.getStartsAt().isBefore(first.getEndsAt());
 	}
 	
 	// 元の受付枠が編集可能か

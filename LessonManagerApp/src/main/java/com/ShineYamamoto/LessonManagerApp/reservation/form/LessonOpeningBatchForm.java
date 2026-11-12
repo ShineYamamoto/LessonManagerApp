@@ -29,17 +29,17 @@ public class LessonOpeningBatchForm {
 	@NotNull
 	@Size(max = 744)
 	@Valid
-	private List<CreateItem> creates = new ArrayList<>();
+	private List<@NotNull CreateItem> creates = new ArrayList<>();
 	
 	@NotNull
 	@Size(max = 744)
 	@Valid
-	private List<UpdateItem> updates = new ArrayList<>();
+	private List<@NotNull UpdateItem> updates = new ArrayList<>();
 	
 	@NotNull
-	@Size(max = 200)
+	@Size(max = 744)
 	@Valid
-	private List<DeleteItem> deletes = new ArrayList<>();
+	private List<@NotNull DeleteItem> deletes = new ArrayList<>();
 	
 	@Data
 	public static class CreateItem {
