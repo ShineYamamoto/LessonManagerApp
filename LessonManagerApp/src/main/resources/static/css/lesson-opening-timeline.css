@@ -156,3 +156,9 @@
 .lot-resize-invalid { outline: 3px solid #b42318; outline-offset: 1px; }
 .lot-is-resizing { user-select: none; }
 .lot-is-resizing .lot-opening { transition: none; }
+.lot-button-danger { background: #b42318; border-color: #b42318; color: #fff; }
+.lot-button-danger:hover:not(:disabled) { background: #912018; color: #fff; }
+.lot-opening[data-resizable="true"] { user-select: none; }
+.lot-opening:focus-visible { outline: 2px solid #274f84; outline-offset: 2px; }
+.lot-pending-delete { color: #9a352b; }
+.lot-detail-openings .lot-delete-opening { margin-left: 8px; }
