@@ -39,30 +39,10 @@ public class LessonOpeningCheckService {
 			LocalDateTime endsAt,
 			Long excludedOpeningId) {
 		
-		if (startsAt == null || endsAt == null) {
-			throw new LessonOpeningCheckException("lessonOpening.error.required");
-		}
-		
-		if (!startsAt.isBefore(endsAt)) {
-			throw new LessonOpeningCheckException("lessonOpening.error.timeOrder");
-		}
-		
-		if (!startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
-			throw new LessonOpeningCheckException("lessonOpening.error.sameDay");
-		}
-		
-		if (!isStepAligned(startsAt) || !isStepAligned(endsAt)) {
-			throw new LessonOpeningCheckException("lessonOpening.error.invalidStep");
-		}
-		
 		// 時間帯の制限はDBから取得する
 		ReservationSettings settings = reservationSettingsService.getSettings();
 		
-		if (startsAt.toLocalTime().isBefore(settings.getSelectableStartTime())
-				|| endsAt.toLocalTime().isAfter(settings.getSelectableEndTime())) {
-			
-			throw new LessonOpeningCheckException("lessonOpening.error.outsideHours");
-		}
+		checkPeriod(startsAt, endsAt, settings);
 		
 		// 今回の時間帯と重なる受付時間を取得する
 		List<LessonOpening> overlapping = lessonOpeningMapper.findOverlapping(startsAt, endsAt);
@@ -75,6 +55,39 @@ public class LessonOpeningCheckService {
 		// 自分自身以外で重複している受付時間があればエラーを返す
 		if (duplicated) {
 			throw new LessonOpeningCheckException("lessonOpening.error.overlap");
+		}
+	}
+	
+	public void checkPeriod(
+			LocalDateTime startsAt,
+			LocalDateTime endsAt,
+			ReservationSettings settings) {
+		
+		// 開始・終了は必須
+		if (startsAt == null || endsAt == null) {
+			throw new LessonOpeningCheckException("lessonOpening.error.required");
+		}
+		
+		// 開始より終了が後か
+		if (!startsAt.isBefore(endsAt)) {
+			throw new LessonOpeningCheckException("lessonOpening.error.timeOrder");
+		}
+		
+		// 開始と終了は同じ日付か
+		if (!startsAt.toLocalDate().equals(endsAt.toLocalDate())) {
+			throw new LessonOpeningCheckException("lessonOpening.error.sameDay");
+		}
+		
+		// 開始と終了は30分単位か
+		if (!isStepAligned(startsAt) || !isStepAligned(endsAt)) {
+			throw new LessonOpeningCheckException("lessonOpening.error.invalidStep");
+		}
+		
+		// 現在の設定時間帯に収まるか
+		if (startsAt.toLocalTime().isBefore(settings.getSelectableStartTime())
+				|| endsAt.toLocalTime().isAfter(settings.getSelectableEndTime())) {
+			
+			throw new LessonOpeningCheckException("lessonOpening.error.outsideHours");
 		}
 	}
 	
@@ -113,7 +126,7 @@ public class LessonOpeningCheckService {
 			}
 			
 			// 変更後の状態を使い、予約全体を覆えるか判定する
-			if (!isCoverd(
+			if (!isCovered(
 					reservation.getStartsAt(),
 					reservation.getEndsAt(),
 					afterOpenings)) {
@@ -133,7 +146,7 @@ public class LessonOpeningCheckService {
 	}
 	
 	/** 複数の受付時間を組み合わせて、授業全体を覆えるか */
-	private boolean isCoverd(
+	public boolean isCovered(
 			LocalDateTime startsAt,
 			LocalDateTime endsAt,
 			List<LessonOpening> openings) {
