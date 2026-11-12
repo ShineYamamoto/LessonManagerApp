@@ -23,7 +23,7 @@ public class LessonOpeningBatchForm {
 	private String editId;
 	
 	@NotBlank
-	@Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2]")
+	@Pattern(regexp = "[0-9]{4}-(0[1-9]|1[0-2])")
 	private String month;
 	
 	@NotNull
@@ -94,6 +94,6 @@ public class LessonOpeningBatchForm {
 		
 		@NotNull
 		@PositiveOrZero
-		private Long expectedVsersion;
+		private Long expectedVersion;
 	}
 }
