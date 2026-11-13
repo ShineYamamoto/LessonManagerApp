@@ -272,6 +272,11 @@ public class LessonOpeningBatchService {
 				clientIdsByOpeningId,
 				errors);
 		
+		if (!errors.isEmpty()) {
+			throw new LessonOpeningBatchException(
+					errors.stream().distinct().toList());
+		}
+		
 		// すべての検証に成功した場合だけDBへ反映する
 		persistChanges(
 				form,
