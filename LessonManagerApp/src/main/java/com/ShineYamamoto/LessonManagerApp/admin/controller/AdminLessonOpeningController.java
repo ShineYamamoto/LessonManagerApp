@@ -335,7 +335,7 @@ public class AdminLessonOpeningController {
 		// サービスが正常終了し、コミットされた後
 		timelineEditStore.remove(snapshot.editId());
 		
-		redirectAttributes.addAttribute(
+		redirectAttributes.addFlashAttribute(
 				"message",
 				messageSource.getMessage(
 						"lessonOpening.success.batchSaved",
@@ -510,8 +510,13 @@ public class AdminLessonOpeningController {
 				.toList();
 		
 		redirectAttributes.addFlashAttribute("batchErrorMessages", messages);
-		redirectAttributes.addFlashAttribute("month", snapshot.originalTimeline().month());
-		redirectAttributes.addFlashAttribute("editId", snapshot.editId());
+		
+		// 日時の型変換失敗など、バーとして安全に復元できない入力を識別する
+		redirectAttributes.addFlashAttribute("batchRestoreBlocked", bindingResult.hasErrors());
+		
+		redirectAttributes.addAttribute("month", snapshot.originalTimeline().month());
+		
+		redirectAttributes.addAttribute("editId", snapshot.editId());
 		
 		return "redirect:/admin/lesson-openings/timeline";
 	}
