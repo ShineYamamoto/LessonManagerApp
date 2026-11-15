@@ -75,12 +75,74 @@ function initializeEditor(root) {
 	const deleteNote = root.querySelector('#lot-delete-note');
 	const deleteError = root.querySelector('#lot-delete-error');
 	const deleteConfirmButton = root.querySelector('#lot-confirm-delete');
+	const saveForm = root.querySelector('#lot-save-form');
+	const saveFields = root.querySelector('#lot-save-fields');
+	const saveButton = root.querySelector('#lot-save-button');
+	const saveNote = root.querySelector('#lot-readonly-note');
 	
 	let pendingCandidate = null;
 	let leavingApproved = false;
 	let unloadGuardEnabled = false;
 	let pendingDeleteId = null;
 	let deleteTrigger = null;
+	
+	const sarverErrors = [...root.querySelectorAll('[data-server-error]')]
+			.map(element => ({
+				clientId: element.dataset.clientId || null,
+				messageKey: element.dataset.messageKey
+			}));
+	let saving = false;
+	
+	// 競合時は更新番号を置き換えて再送せず、開きなおしてもらう
+	let saveBlocked = sarverErrors.some(
+		error => error.messageKey = 'lessonOpening.error.conflict'
+	);
+	
+	function buildSaveFields() {
+		const changes = state.getChanges();approveLeaving
+		const total = changes.creates.length + changes.updates.length + changes.deletes.length;
+		if (total > 744) {
+			throw new Error('一度に保存できる変更は744までです。');
+		}
+		const fieldsByKind = {
+			creates: ['clientId', 'startsAt', 'endsAt'],
+			updates: ['clientId', 'openingId', 'expectedVersion', 'startsAt', 'endsAt'],
+			deletes: ['clientId', 'openingId', 'expectedVersion']
+		};
+		
+		const fragment = document.createDocumentFragment();
+		
+		for (const [kind, fields] of Object.entries(fieldsByKind)) {
+			changes[kind].forEach((item, index) => {
+				for (const field of fields) {
+					const value = item[field];
+					
+					if (value === null || value === undefined) {
+						throw new Error('送信する変更内容が不完全です。');
+					}
+					
+					const input = document.createElement('input');
+					input.type = 'hidden';
+					input.name = `${kind}[${index}].${field}`;
+					input.value = String(value);
+					
+					fragment.append(input);
+				}
+			});
+		}
+		// editId・month・CSRFのhidden項目は消さない
+		saveFields.replaceChildren(fragment);
+	}
+	
+	function syncSaveUi() {
+		saveButton.disabled = saving || saveBlocked || !state.getChanges();
+		
+		saveButton.textContent = saving ? '保存中...' : '変更を登録する';
+		saveNote.textContent = saving ? '保存結果を待っています'
+									  : saveBlocked
+									  		? '最新の状態で開きなおし、変更内容を確認してください。'
+											: '追加・変更・削除をまとめて保存します。';
+	}
 	
 	/** 画面を離れる直前に、ブラウザへ確認表示を要求する */
 	function beforeUnload(event) {
@@ -276,9 +338,43 @@ function initializeEditor(root) {
 		root.querySelector('#lot-empty-month').hidden = !emptyMonth;
 		root.querySelector('#lot-empty-details').hidden = !emptyMonth;
 		syncUnloadGuard();
+		syncSaveUi();
 	}
 	
 	const resizeController = installOpeningResize({ root, state, startMinutes, endMinutes, render, showMessage });
+	
+	saveForm.addEventListener('submit', event => {
+		if (event.defaultPrevented) return;
+		
+		if (saving || saveBlocked || !state.hasChanges()) {
+			event.preventDefault();
+			return;
+		}
+		
+		if (resizeController.isActive() || root.querySelector('dialog[open]')) {
+			event.preventDefault();
+			showMessage('現在の操作を終えてから保存してください。', true);
+			return;
+		}
+		
+		try {
+			buildSaveFields();
+		} catch (error) {
+			event.preventDefault();
+			showMessage(error.message, true);
+			return;
+		}
+		
+		saving = true;
+		
+		// 保存のための移動では、未保存確認を表示しない
+		leavingApproved = true;
+		syncUnloadGuard();
+		syncSaveUi();
+		
+		// 送信後に画面上の編集内容が変わらないようにする
+		root.inert = true;
+	})
 	
 	function openDeleteDialog(clientId, trigger) {
 		if (resizeController.isActive() || deleteDialog.open) return;
