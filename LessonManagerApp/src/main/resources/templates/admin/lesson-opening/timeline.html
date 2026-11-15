@@ -39,13 +39,37 @@
 		
 		<!-- 画面外の枠も含め、元のID・version・日時をJavaScriptへ渡す。 -->
 		<div id="lot-opening-seeds" hidden aria-hidden="true">
-			<th:block th:each="day : ${timeline.days()}">
+			<th:block th:each="day : ${originalTimeline.days()}">
 				<span th:each="bar : ${day.openings()}" data-opening-seed
 						th:attr="data-opening-id=${bar.id()}, 
 								 data-version=${bar.version()},
 								 data-starts-at=${bar.startsAt()},
 								 data-ends-at=${bar.endsAt()}"></span>
 			</th:block>
+		</div>
+		
+		<!-- 復元用のデータ -->
+		<div id="lot-draft-seeds" hidden th:attr="data-blocked=${batchRestoreBlocked == true}">
+			<span th:each="item : ${batchForm.creates}"
+						th:if="${item != null}"
+						data-draft-create
+						th:attr="data-client-id=${item.clientId},
+								 data-starts-at=${item.startsAt},
+								 data-ends-at=${item.endsAt}"></span>
+			<span th:eatch="item : ${batchForm.updates}"
+						th:if="${item != null}"
+						data-draft-update
+						th:attr="data-client-id=${item.clientId},
+								 data-opening-id=${item.openingId},
+								 data-expected-version=${item.expectedVersion},
+								 data-starts-at=${item.startsAt},
+								 data-ends-at=${item.endsAt}"></span>
+			<span th:each="item : ${batchForm.deletes}"
+						th:if="${item != null}"
+						data-draft-delete
+						th:attr="data-client-id=${item.clientId},
+								 data-opening-id=${item.openingId},
+								 data-expected-version=${item.expectedVersion}"></span>
 		</div>
 		
 		<!-- 確定予約も、表示範囲外を含め元の日時をJavaScriptへ渡す。 -->
@@ -58,6 +82,20 @@
 			</th:block>
 		</div>
 		
+		<section id="lot-save-errors" class="lot-save-errors" th:if="${batchErrors != null and !#lists.isEmpty(batchErrors)}" role="alert">
+			<p>前回の保存時にエラーがありました。変更は保存されていません。</p>
+			<ul>
+				<li th:each="error, status : ${batchErrors}"
+						data-server-error
+						th:attr="data-client-id=${error.clientId()},
+								 data-message-key=${error.messageKey()}">
+					<span th:text="${batchErrorMessages[status.index]}"></span>
+				</li>
+			</ul>
+		</section>
+		<a class="lot-button" th:href="@{/admin/lesson-openings/timeline(month=${timeline.month()})}">
+			最新の状態で開きなおす
+		</a>
 		<p id="lot-editor-message" class="lot-editor-message" role="status" aria-live="polite" hidden></p>
 		<p class="lot-edit-help" data-editor-controls hidden>１時間連続して空いているセルをクリックすると、受付枠を仮追加できます。追加した枠には「仮」と表示します。</p>
 		<noscript><p class="lot-notice">仮追加にはJavaScriptを有効にしてください。現在は表示のみ利用できます。</p></noscript>
