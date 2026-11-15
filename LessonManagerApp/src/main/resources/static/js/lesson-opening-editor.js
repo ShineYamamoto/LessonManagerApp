@@ -10,7 +10,7 @@ if (root) {
 	} catch (error) {
 		console.error(error);
 		const message = root.querySelector('#lot-editor-message');
-		message.textContent = '仮追加を開始できませんでした。画面を開きなおしてください。';
+		message.textContent = `編集機能を開始できませんでした。${error.message}` + '表示されたエラーを確認し、最新の状態で開きなおしてください。';
 		message.hidden = false;
 	}
 }
@@ -41,6 +41,25 @@ function initializeEditor(root) {
 	const state = createOpeningDraft(initialOpenings, {
 		startMinutes, endMinutes, dates: tracks.map(track => track.dataset.date), reservations: initialReservations
 	});
+	
+	const recovery = root.querySelector('#lot-draft-seeds');
+	if (recovery.dataset.blocked === 'true') throw new Error('入力形式などにエラーがあるため、編集内容をバーへ復元できません。');
+	function readDraftItems(kind) {
+		return [...recovery.querySelectorAll(`[data-draft-${kind}]`)]
+					.map(element => ({
+						clientId: element.dataset.clientId,
+						openintId: element.dataset.openingId,
+						expectedVersion: element.dataset.expectedVersion,
+						startsAt: element.dataset.startsAt,
+						endsAt: element.dataset.endsAt
+					}))
+	}
+	state.restoreChanges({
+		creates: readDraftItems('create'),
+		updates: readDraftItems('update'),
+		deletes: readDraftItems('delete')
+	});
+	
 	const originalsById = new Map(state.getOriginalOpenings().map(item => [item.openingId, item]));
 	const dialog = root.querySelector("#lot-add-dialog");
 	if (typeof dialog.showModal !== 'function') throw new Error('確認ダイアログを利用できません。');
