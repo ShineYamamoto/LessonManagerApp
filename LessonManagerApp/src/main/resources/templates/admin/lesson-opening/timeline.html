@@ -22,11 +22,20 @@
 				<p class="lot-description">受付可能時間と、確定している授業予約を月ごとに確認できます。</p>
 			</div>
 			<div class="lot-save-area">
-				<span id="lot-draft-status" class="lot-readonly" role="status" aria-live="polite">観覧モード</span>
-				<button type="button" class="lot-button lot-button-primary" disabled aria-describedby="lot-readonly-note">変更を登録する</button>
-				<small id="lot-readonly-note">仮追加はこの画面のみ。保存はまだできません。</small>
+				<span id="lot-draft-status" class="lot-readonly" role="status" aria-live="polite">変更なし</span>
+				<button type="submit" form="lot-save-form" class="lot-button lot-button-primary" aria-describedby="lot-readonly-note" disabled>変更を登録する</button>
+				<small id="lot-readonly-note">変更内容をまとめて保存します。</small>
 			</div>
 		</header>
+		
+		<form id="lot-save-form" method="post" th:action="@{/admin/lesson-openings/timeline/save}">
+			<input type="hidden" name="editId" th:value="${batchForm.editId}">
+			<input type="hidden" name="month" th:value="${timeline.month()}">
+			<!-- JavaScriptで生成する追加・変更・削除の送信項目 -->
+			<div id="lot-save-fields" hidden></div>
+		</form>
+		
+		<p th:if="${message != null}" th:text="${message}" class="lot-notice" role="status"></p>
 		
 		<!-- 画面外の枠も含め、元のID・version・日時をJavaScriptへ渡す。 -->
 		<div id="lot-opening-seeds" hidden aria-hidden="true">
