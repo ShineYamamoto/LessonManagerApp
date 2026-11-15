@@ -273,6 +273,85 @@ export function createOpeningDraft(initialOpenings, options) {
 			return { ...before };
 		}
 		
+		/** サーバーから返された失敗データを復元 */
+		function restoreChanges(changes) {
+			const fail = () => {
+				throw new Error('送信した編集内容を復元できません。');
+			};
+			
+			if (!changes || !['creates', 'updates', 'deletes'].every(key => Array.isArray(changes[key]))) {
+				fail();
+			}
+			
+			// 元データをコピーし、この作業用Mapに差分を適用する
+			const restored = new Map(originalOpenings.map(item => [item.clientId, { ...item }]));
+			
+			const originalById = new Map(originalOpenings.map(item => [item.openingId, item]));
+			
+			const usedIds = new Set();
+			const usedClientIds = new Set(originalOpenings.map(item => item.clientId));
+			
+			const period = raw => {
+				const startsAt = normalizeLocalDateTime(raw.startsAt);
+				const endsAt = normalizeLocalDateTime(raw.endsAt);
+				
+				if (startsAt >= endsAt) fail();
+				
+				return { startsAt, endsAt };
+			};
+			
+			// 既存枠への変更・削除を再適用する
+			for (const kind of ['updates', 'deletes']) {
+				for (const raw of changes[kind]) {
+					if (!raw) fail();
+					
+					const id = String(raw.openingId ?? '');
+					const original = originalById.get(id);
+					
+					if (!original
+						|| usedIds.has(id)
+						|| raw.clientId !== original.clientId
+						|| String(raw.expectedVersion ?? '') !== original.expectedVersion) {
+							
+						fail();
+					}
+					
+					usedIds.add(id);
+					
+					if (kind === 'deletes') {
+						restored.delete(original.clientId);
+					} else {
+						restored.set(original.clientId, {
+							...original,
+							...period(raw)
+						});
+					}
+				}
+			}
+			
+			// 仮追加した枠を、元のclientIdのまま復元する
+			for (const raw of changes.creates) {
+				if (!raw
+					|| typeof raw.clientId !== 'string'
+					|| !raw.clientId.trim()
+					|| usedClientIds.has(raw.clientId)) {
+						fail();
+				}
+				
+				usedClientIds.add(raw.clientId);
+				
+				restored.set(raw.clientId, {
+					clientId: raw.clientId,
+					openingId: null,
+					expectedVersion: null,
+					...period(row)
+				});
+			}
+			
+			// 全件復元できた場合だけ反映する
+			draftOpenings = [...restored.values()];
+		}
+		
 		function reset() {
 			draftOpenings = originalOpenings.map(item => ({ ...item }));
 		}
@@ -286,7 +365,7 @@ export function createOpeningDraft(initialOpenings, options) {
 		return {
 			getOriginalOpenings: () => originalOpenings,
 			getDraftOpenings: () => draftOpenings.map(item => ({ ...item })),
-			candidate, add, remove, reset, getChanges, hasChanges,
+			candidate, add, remove, reset, restoreChanges, getChanges, hasChanges,
 			getOpening, canResize, previewResize, resize
 		};
 		
