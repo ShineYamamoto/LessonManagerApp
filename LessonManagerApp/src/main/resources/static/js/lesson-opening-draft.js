@@ -344,7 +344,7 @@ export function createOpeningDraft(initialOpenings, options) {
 					clientId: raw.clientId,
 					openingId: null,
 					expectedVersion: null,
-					...period(row)
+					...period(raw)
 				});
 			}
 			

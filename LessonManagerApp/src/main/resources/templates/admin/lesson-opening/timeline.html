@@ -23,6 +23,9 @@
 			</div>
 			<div class="lot-save-area">
 				<span id="lot-draft-status" class="lot-readonly" role="status" aria-live="polite">変更なし</span>
+				<a class="lot-button" th:href="@{/admin/lesson-openings/timeline(month=${timeline.month()})}">
+					最新の状態で開きなおす
+				</a>
 				<button id="lot-save-button" type="submit" form="lot-save-form" class="lot-button lot-button-primary" aria-describedby="lot-readonly-note" disabled>変更を登録する</button>
 				<small id="lot-readonly-note">変更内容をまとめて保存します。</small>
 			</div>
@@ -56,7 +59,7 @@
 						th:attr="data-client-id=${item.clientId},
 								 data-starts-at=${item.startsAt},
 								 data-ends-at=${item.endsAt}"></span>
-			<span th:eatch="item : ${batchForm.updates}"
+			<span th:each="item : ${batchForm.updates}"
 						th:if="${item != null}"
 						data-draft-update
 						th:attr="data-client-id=${item.clientId},
@@ -93,9 +96,6 @@
 				</li>
 			</ul>
 		</section>
-		<a class="lot-button" th:href="@{/admin/lesson-openings/timeline(month=${timeline.month()})}">
-			最新の状態で開きなおす
-		</a>
 		<p id="lot-editor-message" class="lot-editor-message" role="status" aria-live="polite" hidden></p>
 		<p class="lot-edit-help" data-editor-controls hidden>１時間連続して空いているセルをクリックすると、受付枠を仮追加できます。追加した枠には「仮」と表示します。</p>
 		<noscript><p class="lot-notice">仮追加にはJavaScriptを有効にしてください。現在は表示のみ利用できます。</p></noscript>
@@ -238,7 +238,7 @@
 			<p id="lot-delete-description"></p>
 			<p id="lot-delete-note" class="lot-dialog-note"></p>
 			<p id="lot-delete-error" class="lot-editor-error" role="alert" hidden></p>
-			<div class="lot-dialog-action">
+			<div class="lot-dialog-actions">
 				<button id="lot-cancel-delete" class="lot-button" type="button" autofocus>キャンセル</button>
 				<button id="lot-confirm-delete" class="lot-button lot-button-danger" type="button">削除する</button>
 			</div>

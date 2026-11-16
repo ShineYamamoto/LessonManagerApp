@@ -48,7 +48,7 @@ function initializeEditor(root) {
 		return [...recovery.querySelectorAll(`[data-draft-${kind}]`)]
 					.map(element => ({
 						clientId: element.dataset.clientId,
-						openintId: element.dataset.openingId,
+						openingId: element.dataset.openingId,
 						expectedVersion: element.dataset.expectedVersion,
 						startsAt: element.dataset.startsAt,
 						endsAt: element.dataset.endsAt
@@ -95,11 +95,11 @@ function initializeEditor(root) {
 	
 	// 競合時は更新番号を置き換えて再送せず、開きなおしてもらう
 	let saveBlocked = serverErrors.some(
-		error => error.messageKey = 'lessonOpening.error.conflict'
+		error => error.messageKey === 'lessonOpening.error.conflict'
 	);
 	
 	function buildSaveFields() {
-		const changes = state.getChanges();approveLeaving
+		const changes = state.getChanges();
 		const total = changes.creates.length + changes.updates.length + changes.deletes.length;
 		if (total > 744) {
 			throw new Error('一度に保存できる変更は744までです。');
@@ -135,7 +135,7 @@ function initializeEditor(root) {
 	}
 	
 	function syncSaveUi() {
-		saveButton.disabled = saving || saveBlocked || !state.getChanges();
+		saveButton.disabled = saving || saveBlocked || !state.hasChanges();
 		
 		saveButton.textContent = saving ? '保存中...' : '変更を登録する';
 		saveNote.textContent = saving ? '保存結果を待っています'
@@ -551,7 +551,7 @@ function initializeEditor(root) {
 		
 		for (const element of targets) {
 			const hasError = errorClientIds.has(element.dataset.clientId);
-			element.classList.toggle('lot-seve-error', hasError);
+			element.classList.toggle('lot-save-error', hasError);
 			if (hasError) {
 				element.setAttribute('aria-describedby', 'lot-save-errors');
 			} else {
