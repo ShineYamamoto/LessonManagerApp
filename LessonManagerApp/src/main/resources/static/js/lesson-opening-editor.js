@@ -86,7 +86,7 @@ function initializeEditor(root) {
 	let pendingDeleteId = null;
 	let deleteTrigger = null;
 	
-	const sarverErrors = [...root.querySelectorAll('[data-server-error]')]
+	const serverErrors = [...root.querySelectorAll('[data-server-error]')]
 			.map(element => ({
 				clientId: element.dataset.clientId || null,
 				messageKey: element.dataset.messageKey
@@ -94,7 +94,7 @@ function initializeEditor(root) {
 	let saving = false;
 	
 	// 競合時は更新番号を置き換えて再送せず、開きなおしてもらう
-	let saveBlocked = sarverErrors.some(
+	let saveBlocked = serverErrors.some(
 		error => error.messageKey = 'lessonOpening.error.conflict'
 	);
 	
@@ -317,6 +317,7 @@ function initializeEditor(root) {
 		
 		pendingList.replaceChildren(...pending.map(({ kind, item }) => {
 			const li = document.createElement('li');
+			li.dataset.clientId = item.clientId;
 			const label = `${item.startsAt.replace('T', ' ')}` + `～${item.endsAt.replace('T', ' ')}`;
 			if (kind === 'create') {
 				li.textContent = `仮追加：${label}`;
@@ -339,6 +340,7 @@ function initializeEditor(root) {
 		root.querySelector('#lot-empty-details').hidden = !emptyMonth;
 		syncUnloadGuard();
 		syncSaveUi();
+		highlightServerErrors();
 	}
 	
 	const resizeController = installOpeningResize({ root, state, startMinutes, endMinutes, render, showMessage });
@@ -444,7 +446,7 @@ function initializeEditor(root) {
 		if (event.button !== 0 || resizeController.isActive()) return;
 		// 左右端の伸縮ハンドルは削除操作の対象にしない
 		if (event.target.closest('.lot-resize-handle')) return;
-		const bar = event.target.closest('.lot-opening[data-client-id');
+		const bar = event.target.closest('.lot-opening[data-client-id]');
 		if (!bar) return;
 		event.preventDefault();
 		openDeleteDialog(bar.dataset.clientId, bar);	
@@ -518,14 +520,45 @@ function initializeEditor(root) {
 	
 	document.addEventListener('submit', event => {
 		const form = event.target;
+		if (form === saveForm) return;
 		if (event.defaultPrevented || form.method === 'dialog' || (form.target && form.target !== '_self')) return;
 		if (!approveLeaving()) event.preventDefault();
 	});
 	
-	window.addEventListener('pageshow', () => {
+	window.addEventListener('pageshow', event => {
+		// 保存後に「戻る」で送信画面が復元された場合、古いeditIdで再送信しないようにする
+		if (event.persisted && saving) {
+			saveBlocked = true;
+			showMessage('送信前の画面に戻りました。最新の状態で開きなおしてください。', true);
+		}
+		
+		saving = false;
+		root.inert = false;
 		leavingApproved = false;
+		
 		syncUnloadGuard();
+		syncSaveUi();
 	});
+	
+	function highlightServerErrors() {
+		const errorClientIds = new Set(
+			serverErrors
+				.map(error => error.clientId)
+				.filter(Boolean)
+		);
+		
+		const targets = root.querySelectorAll('.lot-opening[data-client-id],' + '#lot-pending-list li[data-client-id]');
+		
+		for (const element of targets) {
+			const hasError = errorClientIds.has(element.dataset.clientId);
+			element.classList.toggle('lot-seve-error', hasError);
+			if (hasError) {
+				element.setAttribute('aria-describedby', 'lot-save-errors');
+			} else {
+				element.removeAttribute('aria-describedby');
+			}
+		}
+	}
 	
 	render();
 	root.querySelectorAll('[data-editor-controls]').forEach(element => { element.hidden = false; });
