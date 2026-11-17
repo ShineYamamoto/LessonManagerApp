@@ -30,6 +30,11 @@ INSERT INTO users (
   , ('+8613800000000', 'ユーザー8', '$2a$10$q6ySu8gBO3huPa7WkcObyul4eCaQMPknaE3NnIewBU8blOYIMa/9C', 2, 'ROLE_GENERAL')
 ;
 
+/* 中国時間を使用するテストユーザー */
+UPDATE users
+SET display_time_zone = 'Asia/Shanghai'
+WHERE e164_phone_number = '+8613800000000';
+
 /* ユーザー1の予約 */
 INSERT INTO reservations (
 	user_id
