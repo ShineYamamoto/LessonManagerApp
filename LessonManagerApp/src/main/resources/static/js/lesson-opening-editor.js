@@ -352,7 +352,7 @@ function initializeEditor(root) {
 		if (event.defaultPrevented) return;
 		
 		// 開いている確認ダイアログの「保存する」から送信されたか
-		const confirmed = event.submitter = confirmSaveButton && saveDialog.open;
+		const confirmed = event.submitter === confirmSaveButton && saveDialog.open;
 		
 		// 確認済みの場合は先にダイアログを閉じる
 		if (confirmed) saveDialog.close();
@@ -582,13 +582,13 @@ function initializeEditor(root) {
 	}
 	
 	cancelSaveButton.addEventListener('click', () => {
-		saveDialog();
+		saveDialog.close();
 	});
 	
 	saveDialog.addEventListener('close', () => {
 		// キャンセルEscで閉じた場合は保存ボタンへ戻す
 		if (!saving) {
-			saveButton.facus({ preventScroll: true });
+			saveButton.focus({ preventScroll: true });
 		}
 	});
 	
