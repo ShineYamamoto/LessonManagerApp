@@ -79,6 +79,9 @@ function initializeEditor(root) {
 	const saveFields = root.querySelector('#lot-save-fields');
 	const saveButton = root.querySelector('#lot-save-button');
 	const saveNote = root.querySelector('#lot-readonly-note');
+	const saveDialog = root.querySelector('#lot-save-dialog');
+	const cancelSaveButton = root.querySelector('#lot-cancel-save');
+	const confirmSaveButton = root.querySelector('#lot-confirm-save');
 	
 	let pendingCandidate = null;
 	let leavingApproved = false;
@@ -348,6 +351,12 @@ function initializeEditor(root) {
 	saveForm.addEventListener('submit', event => {
 		if (event.defaultPrevented) return;
 		
+		// 開いている確認ダイアログの「保存する」から送信されたか
+		const confirmed = event.submitter = confirmSaveButton && saveDialog.open;
+		
+		// 確認済みの場合は先にダイアログを閉じる
+		if (confirmed) saveDialog.close();
+		
 		if (saving || saveBlocked || !state.hasChanges()) {
 			event.preventDefault();
 			return;
@@ -360,10 +369,18 @@ function initializeEditor(root) {
 		}
 		
 		try {
+			// 確認表示時と、実際の送信時の両方で生成・確認する
 			buildSaveFields();
 		} catch (error) {
 			event.preventDefault();
 			showMessage(error.message, true);
+			return;
+		}
+		
+		if (!confirmed) {
+			// 右上のボタンでは送信せず、最終確認を表示する
+			event.preventDefault();
+			openSaveDialog();
 			return;
 		}
 		
@@ -559,6 +576,21 @@ function initializeEditor(root) {
 			}
 		}
 	}
+	
+	function openSaveDialog() {
+		saveDialog.showModal();
+	}
+	
+	cancelSaveButton.addEventListener('click', () => {
+		saveDialog();
+	});
+	
+	saveDialog.addEventListener('close', () => {
+		// キャンセルEscで閉じた場合は保存ボタンへ戻す
+		if (!saving) {
+			saveButton.facus({ preventScroll: true });
+		}
+	});
 	
 	render();
 	root.querySelectorAll('[data-editor-controls]').forEach(element => { element.hidden = false; });

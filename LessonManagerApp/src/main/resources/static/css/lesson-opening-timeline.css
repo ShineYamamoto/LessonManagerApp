@@ -165,3 +165,5 @@
 .lot-opening:focus-visible { outline: 2px solid #274f84; outline-offset: 2px; }
 .lot-pending-delete { color: #9a352b; }
 .lot-detail-openings .lot-delete-opening { margin-left: 8px; }
+.lot-save-preview-list { max-height: 35vh; overflow-y: auto; margin: 14px 0; padding-left: 22px; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.lot-save-preview-list li + li { margin-top: 8px; }
