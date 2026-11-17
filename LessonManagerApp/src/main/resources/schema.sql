@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS users (
   , password VARCHAR(100) NOT NULL
   , goal_level_id INT 
   , lesson_minutes INT NOT NULL DEFAULT 60
+  , display_time_zone VARCHAR(64) NOT NULL DEFAULT 'Asia/Tokyo'
   , role VARCHAR(50)
   , created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
   , updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
