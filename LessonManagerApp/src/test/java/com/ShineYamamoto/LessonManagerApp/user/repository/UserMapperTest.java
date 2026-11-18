@@ -237,7 +237,41 @@ public class UserMapperTest {
 				"SELECT COUNT(*) FROM reservations WHERE user_id = 101", Integer.class));
 	}
 	
-	
+	@Test
+	void タイムゾーンをDBに追加して取得できる() {
+		
+		// テストユーザーの作成
+		User user = new User();
+		
+		user.setE164PhoneNumber("+819012345678");
+		user.setUserName("タイムゾーンテスト");
+		user.setPassword("test1234");
+		user.setGoalLevelId(1);
+		user.setRole("ROLE_GENERAL");
+		
+		// 中国時間を設定
+		user.setDisplayTimeZone("Asia/Shanghai");
+		
+		// DBへ登録
+		assertEquals(1, mapper.insertOne(user));
+		
+		// IDから取得
+		User actual = mapper.findById(user.getUserId());
+		
+		assertEquals("Asia/Shanghai", actual.getDisplayTimeZone());
+		
+		// 電話番号から取得
+		User byPhone = mapper.findByE164PhoneNumber("+819012345678");
+		
+		assertEquals("Asia/Shanghai", byPhone.getDisplayTimeZone());
+		
+		// 複数件取得
+		List<User> users = mapper.findMany(new User(), PageRequest.of(0, 10));
+		
+		assertEquals(1, users.size());
+		
+		assertEquals("Asia/Shanghai", users.get(0).getDisplayTimeZone());
+	}
 	
 	/* 共通で処理するメソッド */
 	// 取得・更新テストの準備には自作したinsertOneを使わず登録処理の不具合と切り離す。
