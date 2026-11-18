@@ -56,4 +56,20 @@ public class SignupFormTest {
 		assertTrue(hasGoalCheckError);
 		
 	}
+	
+	@Test
+	void タイムゾーンには許可された値のみ設定できる() {
+		
+		SignupForm form = new SignupForm();
+		
+		// 日本時間
+		form.setDisplayTimeZone("Asia/Tokyo");
+		
+		assertTrue(validator.validateProperty(form, "displayTimeZone").isEmpty());
+		
+		// 許可されていないタイムゾーン
+		form.setDisplayTimeZone("Europe/London");
+		
+		assertFalse(validator.validateProperty(form, "displayTimeZone").isEmpty());
+	}
 }
