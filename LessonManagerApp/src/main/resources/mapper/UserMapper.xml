@@ -11,6 +11,7 @@
 		<result column="user_name" property="userName" />
 		<result column="password" property="password" />
 		<result column="goal_level_id" property="goalLevelId" />
+		<result column="display_time_zone" property="displayTimeZone" />
 		<result column="role" property="role" />
 		<result column="created_at" property="createdAt" />
 		<result column="updated_at" property="updatedAt" />
@@ -48,6 +49,7 @@
 		  , user_name
 		  , password
 		  , goal_level_id
+		  , display_time_zone
 		  , role
 		)
 		VALUES (
@@ -55,6 +57,7 @@
 		  , #{userName}
 		  , #{password}
 		  , #{goalLevelId}
+		  , #{displayTimeZone}
 		  , #{role}
 		)
 	</insert>
@@ -82,6 +85,7 @@
 		  , users.e164_phone_number
 		  , users.user_name
 		  , users.goal_level_id
+		  , users.display_time_zone
 		  , users.role
 		  , users.created_at
 		  , users.updated_at
@@ -117,6 +121,7 @@
 		  , users.e164_phone_number
 		  , users.user_name
 		  , users.goal_level_id
+		  , users.display_time_zone
 		  , users.role
 		  , users.created_at
 		  , users.updated_at
@@ -154,6 +159,7 @@
 		  , user_name
 		  , password
 		  , goal_level_id
+		  , display_time_zone
 		  , role
 		  , created_at
 		  , updated_at

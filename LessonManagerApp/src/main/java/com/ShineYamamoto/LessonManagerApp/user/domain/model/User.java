@@ -21,6 +21,8 @@ public class User {
 	
 	private Integer goalLevelId;
 	
+	private String displayTimeZone = "Asia/Tokyo";
+	
 	private String role;
 	
 	private LocalDateTime createdAt;

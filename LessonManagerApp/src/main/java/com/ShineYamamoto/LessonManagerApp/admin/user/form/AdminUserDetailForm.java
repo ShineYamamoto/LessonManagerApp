@@ -16,6 +16,7 @@ public class AdminUserDetailForm {
 	private String password;
 	private String userName;
 	private Integer goalLevelId;
+	private String displayTimeZone;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	private GoalLevel goallevel;

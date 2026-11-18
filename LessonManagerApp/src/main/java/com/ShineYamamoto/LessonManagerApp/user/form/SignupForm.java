@@ -30,4 +30,8 @@ public class SignupForm {
 	@NotNull
 	@GoalCheck
 	private Integer goalLevelId;
+	
+	@NotNull
+	@Pattern(regexp = "^(Asia/Tokyo|Asia/Shanghai)$")
+	private String displayTimeZone = "Asia/Tokyo";
 }
