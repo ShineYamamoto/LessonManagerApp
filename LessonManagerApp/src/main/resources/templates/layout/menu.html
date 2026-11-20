@@ -5,30 +5,62 @@
 <head>
 </head>
 <body>
- 	<ul class="nav nav-pills nav-stacked" layout:fragment="menu-contents">
-		<li role="presentation" sec:authorize="hasRole('ADMIN')">
-			<a class="nav-link" th:href="@{'/admin/user/list'}">ユーザー一覧</a>
+ 	<ul class="app-menu" layout:fragment="menu-contents">
+		<li class="app-menu-heading">メニュー</li>
+		<li>
+			<a class="app-menu-link" th:href="@{'/user/reservation/single'}">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M3 10h18M12 13v5M.5 15.5h5" />
+				</svg>
+				<span>予約</span>
+			</a>
 		</li>
 		
-		<li role="presentation" sec:authorize="hasRole('ADMIN')">
-			<a class="nav-link" th:href="@{/admin/lesson-openings}">受付時間の管理</a>
+		<li>
+			<a class="app-menu-link" th:href="@{'/user/reservation/list'}">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect x="3" y="5" width="18" height="16" rx="2" /><path d="M7 3v4M17 3v4M3 10h18M8 15l2.5 2.5L16 12" />
+				</svg>
+				<span>予約の確認</span>
+			</a>
 		</li>
 		
-		<li role="presentation" sec:authorize="hasRole('ADMIN')">
-			<a class="nav-link" th:href="@{/admin/lesson-openings/timeline}">受付時間の管理2</a>
+		<li>
+			<a class="app-menu-link" th:href="@{'/user/detail'}">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="12" cy="8" r="4" /><path d="M4.5 21c0-4 3.3-7 7.5-7s7.5 3 7.5 7" />
+				</svg>
+				<span>アカウント情報</span>
+			</a>
 		</li>
 		
-		<li role="presentation">
-			<a class="nav-link" th:href="@{'/user/reservation/single'}">予約</a>
+		<li class="app-menu-heading app-menu-admin-heading" sec:authorize="hasRole('ADMIN')">管理者メニュー</li>
+		<li sec:authorize="hasRole('ADMIN')">
+			<a class="app-menu-link" th:href="@{'/admin/user/list'}">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<circle cx="9" cy="8" r="3" /><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v1" />
+				</svg>
+				<span>ユーザー一覧</span>
+			</a>
 		</li>
 		
-		<li role="presentation">
-			<a class="nav-link" th:href="@{/user/reservation/list}">予約の確認</a>
+		<li sec:authorize="hasRole('ADMIN')">
+		    <a class="app-menu-link" th:href="@{/admin/lesson-openings}">
+		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 17h3"/>
+		        </svg>
+		        <span>受付時間の管理</span>
+		    </a>
+		</li>
+		<li sec:authorize="hasRole('ADMIN')">
+		    <a class="app-menu-link" th:href="@{/admin/lesson-openings/timeline}">
+		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+		            <path d="M3 6h18M3 12h18M3 18h18M7 4v16M13 4v16M19 4v16"/>
+		        </svg>
+		        <span>受付時間タイムライン</span>
+		    </a>
 		</li>
 		
-		<li role="presentation">
-			<a class="nav-link" th:href="@{'/user/detail'}">アカウント情報</a>
-		</li>
 	</ul>
 </body>
 </html>
