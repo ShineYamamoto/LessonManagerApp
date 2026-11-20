@@ -3,21 +3,22 @@
 <head>
 </head>
 <body>
-	<nav layout:fragment="header-contents" class="navbar navbar-inverse navbar-fixed-top navbar-dark bg-dark">
-		<div class="container-fluid">
-			<div class="navbar-header">
-				<a class="navbar-brand" th:href="@{/home}">予約管理アプリ</a>
+	<nav layout:fragment="header-contents" class="navbar app-header" aria-label="ヘッダー">
+		<div class="app-header-inner">
+			<div class="app-header-left">
+				<button id="sidebar-toggle" class="app-menu-toggle" type="button" aria-label="メニューを開閉する" aria-controls="app-sidebar" aria-expanded="true">
+					<span class="app-menu-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+				</button>
+				<a class="app-brand" th:href="@{/home}">予約管理アプリ</a>
 			</div>
 			
+			
 			<!-- 中のみ表示 -->
-			<div sec:authorize="isAuthenticated()" class="d-flex align-items-center gap-3">
+			<div class="app-header-right" sec:authorize="isAuthenticated()">
+				<span class="app-header-user" th:text="${#authentication.principal.displayUserName}">ユーザー名</span>
 				
-				<div class="pull-right navbar-brand">
-					<span th:text="${#authentication.principal.displayUserName}">name</span>
-				</div>
-
-				<form method="post" th:action="@{/logout}">
-					<button class="btn btn-link pull-right navbar-brand" type="submit">
+				<form method="post" th:action="@{/logout}" class="app-logout-form">
+					<button class="app-logout-button" type="submit">
 						ログアウト
 					</button>
 				</form>	

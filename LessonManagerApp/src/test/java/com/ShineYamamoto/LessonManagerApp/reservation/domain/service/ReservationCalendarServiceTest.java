@@ -27,7 +27,7 @@ public class ReservationCalendarServiceTest {
 		
 		var result = calendarService.getMonth(YearMonth.of(2026, 11), null);
 		
-		var day = result.get("2026-11-10");
+		var day = result.get("2026-12-10");
 		
 		assertEquals(
 				new CalendarDayAvailability.MinuteRange(540, 840),
