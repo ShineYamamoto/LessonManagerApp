@@ -92,6 +92,38 @@
 			 </div>
 		</div>
 		
+		<!-- 授業時間の表示基準 -->
+		<div class="mb-3">
+			
+			<label class="form-label"
+				   for="displayTimeZone"
+				   th:text="#{user.signup.timeZone.label}">
+			</label>
+			
+			<select class="form-select"
+					th:field="*{displayTimeZone}"
+					th:errorclass="is-invalid">
+				
+				<option value="Asia/Tokyo"
+						th:text="#{user.signup.timeZone.japan}">
+				</option>
+				
+				<option value="Asia/Shanghai"
+						th:text="#{user.signup.timeZone.china}">
+				</option>
+			</select>
+			
+			<!-- 入力エラー -->
+			<div class="invalid-feedback"
+				 th:errors="*{displayTimeZone}">
+			</div>
+			
+			<!-- 補足説明 -->
+			<div class="form-text"
+				 th:text="#{user.signup.timeZone.help}">
+			</div>
+		</div>
+		
 		<!-- エラーメッセージ -->
 		<p th:if="${errorMessage != null}" class="text-danger mt-3" th:text="${errorMessage}"></p>
 		
