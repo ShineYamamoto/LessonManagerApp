@@ -147,8 +147,24 @@ public class SignupController {
 		form.setRegionCode(request.getParameter("regionCode"));
 		form.setPhoneNumber(request.getParameter("phoneNumber"));
 		form.setUserName(request.getParameter("userName"));
-		form.setGoalLevelId(
-				Integer.valueOf(request.getParameter("goalLevelId")));
+		
+		// 目標レベル
+		String goalLevelId = request.getParameter("goalLevelId");
+		if (goalLevelId != null) {
+			try {
+				form.setGoalLevelId(Integer.valueOf(goalLevelId));
+			} catch (NumberFormatException e) {
+				// 不正な値の場合は未選択にする
+				form.setGoalLevelId(null);
+			}
+		}
+		
+		// タイムゾーンの復元
+		String displayTimeZone = request.getParameter("displayTimeZone");
+		
+		if ("Asia/Tokyo".equals(displayTimeZone) || "Asia/Shanghai".equals(displayTimeZone)) {
+			form.setDisplayTimeZone(displayTimeZone);
+		}
 		
 		return form;
 	}
