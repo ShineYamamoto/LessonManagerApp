@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 
 import com.ShineYamamoto.LessonManagerApp.admin.user.form.AdminUserDetailForm;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
-import com.ShineYamamoto.LessonManagerApp.user.form.UserDetailForm;
+import com.ShineYamamoto.LessonManagerApp.user.dto.UserDetailDto;
 
 @Configuration
 public class JavaConfig {
@@ -44,7 +44,7 @@ public class JavaConfig {
 		modelMapper.addMappings(
 				
 				// UserからUserDetailFormへ値を移す
-				new PropertyMap<User, UserDetailForm>() {
+				new PropertyMap<User, UserDetailDto>() {
 					
 					// UserDetailFormのgoalLevelIdには、User.goalLevelIdを入れる
 					@Override
