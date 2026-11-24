@@ -4,16 +4,19 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.ShineYamamoto.LessonManagerApp.security.LoginUser;
 import com.ShineYamamoto.LessonManagerApp.user.domain.model.User;
 import com.ShineYamamoto.LessonManagerApp.user.domain.service.UserService;
+import com.ShineYamamoto.LessonManagerApp.user.dto.UserDetailDto;
 import com.ShineYamamoto.LessonManagerApp.user.form.UserDetailForm;
 
 import lombok.RequiredArgsConstructor;
@@ -35,13 +38,15 @@ public class UserDetailController {
 		
 		// ユーザー1件取得
 		User user = userService.getUserById(loginUser.getUserId());
+		if (user == null) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ユーザーが存在しません");
+		}
 		
 		// Userをformに変換
-		UserDetailForm form = modelMapper.map(user, UserDetailForm.class);
+		UserDetailDto dto = modelMapper.map(user, UserDetailDto.class);
 		
 		// Modelに登録
-		model.addAttribute("userDetailForm", form);
-		//model.addAttribute("reservationList", user.getReservationList());
+		model.addAttribute("userDetailDto", dto);
 		
 		// ユーザー詳細画面を表示
 		return "user/detail";
