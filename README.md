@@ -80,3 +80,54 @@
 
 <img width="1610" height="1040" alt="image" src="https://github.com/user-attachments/assets/a1e60026-27a1-4156-9144-077334aa3682" />
 
+### 補足
+- `users.goal_level_id` → `goal_levels.id`：ユーザーごとの学習目標
+- `reservations.user_id` → `users.user_id`：ユーザーと授業予約（1対多）
+- 電話番号は E.164形式 に正規化し、`users.e164_phone_number` に一意制約を設定
+- 予約の日時と受付枠を照合して、予約可能な時間かどうかを判定
+
+## システム構成
+```
+Webブラウザ
+    |
+    | HTTPS
+    v
+AWS EC2 (Ubuntu)
+    |
+    +-- Nginx (リバースプロキシ)
+    |       |
+    |       v
+    |   Spring Boot アプリケーション
+    |       |
+    |       +-- Spring Security：認証・認可
+    |       +-- Controller / Service：画面処理・業務ロジック
+    |       +-- MyBatis：SQL・データアクセス
+    |               |
+    +---------------|------------------
+                    v
+             Amazon RDS (MySQL)
+```
+
+## 起動手順
+1. リポジトリを取得します。
+   ```Bash
+   git clone https://github.com/ShineYamamoto/LessonManagerApp.git
+   cd LessonManagerApp
+   ```
+2.  ローカル用の設定ファイル・プロファイルに合わせて、DB接続などの設定を行います。ソースコードではymlファイルで設定しています。
+3.  Maven Wrapperで起動します。
+    ```powershell
+    .\mvnw.cmd spring-boot:run
+    ```
+    ※Windowsの場合です。
+4. アプリケーションの設定ポート（デフォルトでは 8080）にアクセスします。
+   ```
+   http://localhost:8080/login
+   ```
+
+## テスト
+JUnit 5・Mockitoなどを用いて、認証、ユーザー管理、予約可否判定、予約の競合などの主要なロジックをテストしています。
+テストを実行するには`mvnw.cmd`ファイルのあるディレクトリのpowershellを開き、以下を実行します。
+```powershell
+.\mvnw.cmd test
+```
