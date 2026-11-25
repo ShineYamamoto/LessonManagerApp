@@ -50,6 +50,7 @@ public class JavaConfig {
 					@Override
 					protected void configure() {
 						map().setGoalLevelId(source.getGoalLevelId());
+						map().setGoalLevelCode(source.getGoalLevel().getLevelCode());
 					}
 				}
 		);

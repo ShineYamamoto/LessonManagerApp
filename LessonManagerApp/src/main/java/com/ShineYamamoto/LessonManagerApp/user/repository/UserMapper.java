@@ -28,6 +28,11 @@ public interface UserMapper {
 	/** E164PhoneNumberから1件取得 */
 	public User findByE164PhoneNumber(String e164PhoneNumber);
 	
+	/** ユーザー名更新 */
+	int updateUserName(
+			@Param("userId") Long userId,
+			@Param("userName") String userName);
+	
 	/** ユーザー更新(1件) */
 	public int updateById(
 			@Param("userId") Long userId,

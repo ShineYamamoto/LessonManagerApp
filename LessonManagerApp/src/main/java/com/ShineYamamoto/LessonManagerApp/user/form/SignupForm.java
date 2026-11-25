@@ -20,6 +20,7 @@ public class SignupForm {
 	private String phoneNumber;
 	
 	@NotBlank
+	@Length(min = 1, max = 100)
 	private String userName;
 	
 	@NotBlank
@@ -31,7 +32,7 @@ public class SignupForm {
 	@GoalCheck
 	private Integer goalLevelId;
 	
-	@NotNull
+	@NotBlank
 	@Pattern(regexp = "^(Asia/Tokyo|Asia/Shanghai)$")
 	private String displayTimeZone = "Asia/Tokyo";
 }

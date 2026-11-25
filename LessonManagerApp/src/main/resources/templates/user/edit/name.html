@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/base}">
+<head>
+<meta charset="UTF-8">
+<title>ユーザー名の編集</title>
+<link rel="stylesheet" th:href="@{/css/user-profile.css}">
+</head>
+<body>
+	<main layout:fragment="content" class="profile-page">
+		<header class="profile-heading">
+			<h1>ユーザー名の編集</h1>
+			<p>新しいユーザー名を入力してください。</p>
+		</header>
+		
+		<section class="profile-card profile-edit-card">
+			<form method="post" th:action="@{/user/edit/name}" th:object="${userNameEditForm}">
+				<div class="profile-input-group">
+					<label for="userName">ユーザー名</label>
+					<input id="userName" type="text" th:field="*{userName}"
+						   minlength="1" maxlength="50" autocomplate="name" required aria-describedby="userNameHelp"
+						   th:attr="aria-invalid=${#fields.hasErrors('userName')}">
+					<small id="userNameHelp">50文字以内で入力してください。</small>
+					<p class="profile-error" role="alert" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}">入力エラー</p>
+				</div>
+				<div class="profile-actions">
+					<button type="submit" class="profile-button profile-button-primary">変更を保存する</button>
+					<a class="profile-button profile-button-outline" th:href="@{/user/detail}">キャンセル</a>
+				</div>
+			</form>
+		</section>
+	</main>
+</body>
+</html>

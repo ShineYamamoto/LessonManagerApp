@@ -169,6 +169,17 @@
 			e164_phone_number = #{e164PhoneNumber}
 	</select>
 	
+	<!-- ユーザー名更新 -->
+	<update id="updateUserName">
+		UPDATE
+			users
+		SET
+			user_name = #{userName},
+			updated_at = CURRENT_TIMESTAMP
+		WHERE
+			user_id = #{userId}
+	</update>
+	
 	<!-- ユーザー1件更新 -->
 	<update id="updateById">
 		UPDATE

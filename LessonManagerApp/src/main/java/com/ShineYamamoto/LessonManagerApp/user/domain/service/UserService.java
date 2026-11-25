@@ -65,6 +65,21 @@ public class UserService {
 		return mapper.findById(userId);
 	}
 	
+	/** ユーザー名更新 */
+	public String updateUserName(Long userId, String userName) {
+		if (userId == null || userName == null) {
+			throw new IllegalArgumentException("更新するユーザーまたは名前が不正です");
+		}
+		String normalized = userName.strip();
+		if (normalized.isBlank() || normalized.length() > 50) {
+			throw new IllegalArgumentException("ユーザー名は1～50文字で入力してください");
+		}
+		if (mapper.updateUserName(userId, normalized) != 1) {
+			throw new IllegalStateException("ユーザー名を更新できませんでした。");
+		}
+		return normalized;
+	}
+	
 	/** ユーザー更新（1件） */
 	public void updateUserById(Long userId, String password, String userName) {
 		
