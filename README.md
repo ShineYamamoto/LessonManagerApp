@@ -21,6 +21,11 @@
 
 また、Spring Securityによる認証・認可、MyBatisによるデータアクセス、JUnit・Mockitoによるテストなど、バックエンド開発に必要な設計・実装にも取り組んでいます。
 
+### 参考文献
+授業管理アプリを作成するうえで、アプリケーションの骨格部分の構築は以下の本を参考にしました。
+
+田村 達也（2026）『[手を動かしてわかるSpring Boot入門　ステップバイステップで学ぶWebアプリ開発の基本](https://www.amazon.co.jp/%E6%89%8B%E3%82%92%E5%8B%95%E3%81%8B%E3%81%97%E3%81%A6%E3%82%8F%E3%81%8B%E3%82%8BSpring-Boot%E5%85%A5%E9%96%80-%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E3%83%90%E3%82%A4%E3%82%B9%E3%83%86%E3%83%83%E3%83%97%E3%81%A7%E5%AD%A6%E3%81%B6Web%E3%82%A2%E3%83%97%E3%83%AA%E9%96%8B%E7%99%BA%E3%81%AE%E5%9F%BA%E6%9C%AC-%E7%94%B0%E6%9D%91-%E9%81%94%E4%B9%9F/dp/4295023825?th=1)』
+
 ## 主な機能
 
 ### 学習者・管理者向け
@@ -62,6 +67,18 @@
 | ビルド | Maven（Maven Wrapper） |
 | インフラ | AWS EC2、Amazon RDS、Nginx、Ubuntu、systemd、HTTPS（Let's Encrypt / Certbot） |
 | 開発環境・バージョン管理 | Eclipse、Git、GitHub |
+
+ローカル環境で作成したSpring BootアプリケーションをEC2で公開する作業は以下の記事にまとめています。
+
+⇒ [Spring Bootで作成したWebアプリをAWS EC2で公開する手順（パート1）](https://qiita.com/ShineYamamoto/items/59941da1c9538807e356)
+
+Nginxを使って独自ドメインへのアクセス方式へ切り替える作業は以下の記事の手順でおこないました。
+
+⇒ [EC2にデプロイしたSpringBoot WebアプリをNginxを使って独自ドメインへのアクセスに切りかえる](https://qiita.com/ShineYamamoto/items/82ccb5a7564164d2ff58)
+
+EC2上で作成したSpring BootアプリケーションとRDSを紐づけるために行った作業は以下の記事にまとめています。
+
+⇒ [AWSのRDSに作成したMySQLとEC2にあるSpringBootアプリを紐づける](https://qiita.com/ShineYamamoto/items/ee89705712755b337729)
 
 ## データベース
 開発・テストではH2 Database、本番環境ではAmazon RDS for MySQL8を使用しています。
