@@ -62,3 +62,15 @@
 | ビルド | Maven（Maven Wrapper） |
 | インフラ | AWS EC2、Amazon RDS、Nginx、Ubuntu、systemd、HTTPS（Let's Encrypt / Certbot） |
 | 開発環境・バージョン管理 | Eclipse、Git、GitHub |
+
+## データベース
+開発・テストではH2 Database、本番環境ではAmazon RDS for MySQL8を使用しています。
+アプリケーションからのデータ操作にはMyBatisを利用しています。
+|テーブル|役割|
+| --- | --- |
+| `users` | 学習者・管理者のアカウント情報 |
+| `goal_levels` | 学習目標レベルのマスタ |
+| `reservations` | 授業予約の日時・状態 |
+| `lesson_openings` | 管理者が設定する授業の受付枠 |
+| `reservation_settings` | 受付枠の開始・終了時刻の設定 |
+| `reservation_lock` | 授業・受付枠の登録時に排他制御をおこなうためのテーブル |
