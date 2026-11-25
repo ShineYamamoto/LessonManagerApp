@@ -74,3 +74,22 @@
 | `lesson_openings` | 管理者が設定する授業の受付枠 |
 | `reservation_settings` | 受付枠の開始・終了時刻の設定 |
 | `reservation_lock` | 授業・受付枠の登録時に排他制御をおこなうためのテーブル |
+
+
+## ER図
+
+```mermaid
+erDiagram
+    users ||--o{ reservations : has
+
+    users {
+        BIGINT user_id PK
+        VARCHAR user_name
+    }
+
+    reservations {
+        BIGINT reservation_id PK
+        BIGINT user_id FK
+    }
+```
+
