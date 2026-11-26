@@ -36,7 +36,7 @@ public class UserNameEditController {
 	private final UserService userService;
 	
 	@GetMapping
-	public String edit(@AuthenticationPrincipal LoginUser loginUser, Model model) {
+	public String getEdit(@AuthenticationPrincipal LoginUser loginUser, Model model) {
 		User user = userService.getUserById(loginUser.getUserId());
 		if (user == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "ユーザーが存在しません。");
