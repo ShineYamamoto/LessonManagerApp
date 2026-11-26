@@ -80,6 +80,71 @@ public class UserService {
 		return normalized;
 	}
 	
+	/** ユーザーの電話番号を変更する */
+	public PhoneUpdateResult updatePhoneNumber(
+			Long userId,
+			String oldPhoneNumber,
+			String regionCode,
+			String rawPhoneNumber,
+			String currentPassword) {
+		
+		// 対応する国・地域か確認
+		if (!"JP".equals(regionCode) && !"CN".equals(regionCode)) {
+			return PhoneUpdateResult.INVALID_PHONE;
+		}
+		
+		// E.164形式に変換
+		String newPhoneNumber;
+		
+		try {
+			
+			newPhoneNumber = phoneNumberService.toE164(regionCode, rawPhoneNumber);
+			
+		} catch (IllegalArgumentException e) {
+			
+			return PhoneUpdateResult.INVALID_PHONE;
+		}
+		
+		// 選択された国と一致する電話番号か確認
+		String countryCode = "JP".equals(regionCode) ? "+81" : "+86";
+		
+		if (!newPhoneNumber.startsWith(countryCode)) {
+			
+			return PhoneUpdateResult.INVALID_PHONE;
+		}
+		
+		// 現在のユーザー情報を取得
+		User user = mapper.findByE164PhoneNumber(newPhoneNumber);
+		
+		// ログイン情報とDBの情報が一致するか確認
+		if (user == null || !userId.equals(user.getUserId())) {
+			return PhoneUpdateResult.STALE_LOGIN;
+		}
+		
+		// 現在のパスワードを照合
+		if (!encoder.matches(currentPassword, user.getPassword())) {
+			return PhoneUpdateResult.INVALID_PASSWORD;
+		}
+		
+		// 同じ電話番号か確認
+		if (newPhoneNumber.equals(user.getE164PhoneNumber())) {
+			return PhoneUpdateResult.SAME_PHONE;
+		}
+		
+		// 電話番号を更新
+		int count = mapper.updatePhoneNumber(
+				userId,
+				oldPhoneNumber,
+				newPhoneNumber,
+				user.getPassword());
+		
+		if (count != 1) {
+			return PhoneUpdateResult.STALE_LOGIN;
+		}
+		
+		return PhoneUpdateResult.SUCCESS;
+	}
+	
 	/** ユーザー更新（1件） */
 	public void updateUserById(Long userId, String password, String userName) {
 		
@@ -93,5 +158,19 @@ public class UserService {
 	public void deleteUserById(Long userId) {
 		int count = mapper.deleteById(userId);
 		log.info("削除件数={}", count);
+	}
+	
+	/**　電話番号更新結果を定義 */
+	public enum PhoneUpdateResult {
+		
+		SUCCESS,
+		
+		INVALID_PHONE,
+		
+		INVALID_PASSWORD,
+		
+		SAME_PHONE,
+		
+		STALE_LOGIN
 	}
 }

@@ -180,6 +180,19 @@
 			user_id = #{userId}
 	</update>
 	
+	<!-- ユーザー電話番号更新 -->
+	<update id="updatePhoneNumber">
+		UPDATE
+			users
+		SET
+			e164_phone_number = #{newPhoneNumber},
+			updated_at = CURRENT_TIMESTAMP
+		WHERE
+			user_id = #{userId}
+			AND e164_phone_number = #{oldPhoneNumber}
+			AND password = #{expectedPasswordHash}
+	</update>
+	
 	<!-- ユーザー1件更新 -->
 	<update id="updateById">
 		UPDATE

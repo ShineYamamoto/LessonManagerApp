@@ -33,6 +33,13 @@ public interface UserMapper {
 			@Param("userId") Long userId,
 			@Param("userName") String userName);
 	
+	/** ユーザー電話番号更新 */
+	int updatePhoneNumber(
+			@Param("userId") Long userId,
+			@Param("oldPhoneNumber") String oldPhoneNumber,
+			@Param("newPhoneNumber") String newPhoneNumber,
+			@Param("expectedPasswordHash") String expectedPasswordHash);
+	
 	/** ユーザー更新(1件) */
 	public int updateById(
 			@Param("userId") Long userId,
