@@ -29,7 +29,7 @@
 					<span class="profile-label">電話番号</span>
 					<span class="profile-value" th:text="*{e164PhoneNumber}">電話番号</span>
 				</div>
-				<button type="button" class="profile-button profile-button-disabled" disabled title="今後実装する予定です">編集する</button>
+				<a class="profile-button" th:href="@{/user/edit/phone}">編集する</a>
 			</div>
 			
 			<div class="profile-row">
