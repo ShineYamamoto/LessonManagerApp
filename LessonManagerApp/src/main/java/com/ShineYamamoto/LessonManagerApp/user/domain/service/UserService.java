@@ -114,7 +114,7 @@ public class UserService {
 		}
 		
 		// 現在のユーザー情報を取得
-		User user = mapper.findByE164PhoneNumber(newPhoneNumber);
+		User user = mapper.findByE164PhoneNumber(oldPhoneNumber);
 		
 		// ログイン情報とDBの情報が一致するか確認
 		if (user == null || !userId.equals(user.getUserId())) {
