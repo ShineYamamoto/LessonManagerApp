@@ -29,7 +29,7 @@
 						
 						<label class="form-label" for="phoneNumber" th:text="#{user.phone.edit.new}"></label>
 						
-						<edit class="input-group">
+						<div class="input-group">
 							<select class="form-select" th:field="*{regionCode}" th:errorclass="is-invalid" aria-label="国・地域">
 								<option th:each="country : ${countryList}"
 										th:value="${country.regionCode}"
@@ -44,7 +44,7 @@
 								   autocomplete="tel-national"
 								   maxlength="40"
 								   required>
-						</edit>
+						</div>
 						
 						<div class="text-danger small" th:errors="*{regionCode}"></div>
 						<div class="text-danger small" th:errors="*{phoneNumber}"></div>
