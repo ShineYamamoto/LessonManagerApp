@@ -23,7 +23,7 @@
 					<p class="profile-error" role="alert" th:if="${#fields.hasErrors('userName')}" th:errors="*{userName}">入力エラー</p>
 				</div>
 				<div class="profile-actions">
-					<button type="submit" class="profile-button profile-button-primary">変更を保存する</button>
+					<button type="submit" class="profile-button profile-button-primary" th:text="#{user.edit.submit}">変更を保存する</button>
 					<a class="profile-button profile-button-outline" th:href="@{/user/detail}">キャンセル</a>
 				</div>
 			</form>

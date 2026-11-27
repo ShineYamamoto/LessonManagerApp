@@ -8,78 +8,79 @@
 </head>
 <body>
 	<main layout:fragment="content" class="profile-page">
+		
 		<header class="profile-heading">
-			<h1 class="profile-heading" th:text="#{user.phone.edit.title}">電話番号の変更</h1>
+			<h1 th:text="#{user.phone.edit.title}">電話番号の変更</h1>
+			<p th:text="#{user.phone.edit.notice}"></p>
 		</header>
 		
-		<section class="card border-0 shadow-sm mt-4" style="max-width: 640px;">
+		<section class="profile-card profile-edit-card">
 			
 			<div class="card-body p-4">
 				
 				<!-- 現在の電話番号 -->
-				<div class="mb-4">
-					<label class="form-label" th:text="#{user.phone.edit.current}"></label>
-					<p class="fw-semibold fs-5" th:text="${currentPhoneNumber}"></p>
+				<div class="profile-current-phone">
+					<span class="profile-label" th:text="#{user.phone.edit.current}"></span>
+					<span class="profile-value" th:text="${currentPhoneNumber}"></span>
 				</div>
 				
 				<form method="post" th:action="@{/user/edit/phone}" th:object="${userPhoneEditForm}">
 					
 					<!-- 新しい電話番号 -->
-					<div class="mb-4">
+					<div class="profile-input-group">
 						
-						<label class="form-label" for="phoneNumber" th:text="#{user.phone.edit.new}"></label>
+						<label for="phoneNumber" th:text="#{user.phone.edit.new}"></label>
 						
-						<div class="input-group">
-							<select class="form-select" th:field="*{regionCode}" th:errorclass="is-invalid" aria-label="国・地域">
+						<div class="profile-phone-fields">
+							<!-- 国・地域 -->
+							<select th:field="*{regionCode}" aria-label="国・地域" th:attr="aria-invalid=${#fields.hasErrors('regionCode')}">
 								<option th:each="country : ${countryList}"
 										th:value="${country.regionCode}"
 										th:text="${country.name + ' ' + country.countryCode}"
 										th:data-placeholder="${country.phoneExample}">
 								</option>
 							</select>
+							<!-- 電話番号 -->
 							<input type="tel"
-								   class="form-control"
 								   th:field="*{phoneNumber}"
-								   th:errorclass="is-invalid"
 								   autocomplete="tel-national"
 								   maxlength="40"
-								   required>
+								   required
+								   th:attr="aria-invalid=${#fields.hasErrors('phoneNumber')}">
 						</div>
 						
-						<div class="text-danger small" th:errors="*{regionCode}"></div>
-						<div class="text-danger small" th:errors="*{phoneNumber}"></div>
+						<!-- 入力エラー -->
+						<p class="profile-error" role="alert" th:if="${#fields.hasErrors('regionCode')}" th:errors="*{regionCode}"></p>
+						<p class="profile-error" role="alert" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></p>
 					</div>
 					
 					<!-- 現在のパスワード -->
-					<div class="mb-4">
+					<div class="profile-input-group">
 						
-						<label class="form-label" for="currentPassword" th:text="#{user.phone.edit.password}"></label>
+						<label for="currentPassword" th:text="#{user.phone.edit.password}"></label>
 						
 						<input type="password"
-							   class="form-control"
 							   id="currentPassword"
 							   name="currentPassword"
 							   autocomplete="current-password"
 							   maxlength="100"
-							   required>
+							   required
+							   th:attr="aria-invalid=${#fields.hasErrors('currentPassword')}">
 						</input>
 						
-						<div class="text-danger small" th:errors="*{currentPassword}"></div>
+						<p class="profile=error" role="alert" th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}"></p>
 					</div>
 					
-					<!-- 注意事項 -->
-					<div class="alert alert-light border small" th:text="#{user.phone.edit.notice}"></div>
-					
 					<!-- ボタン -->
-					<div class="d-flex justify-content-end gap-2">
+					<div class="profile-actions">
 						
-						<a class="btn btn-outline-secondary" th:href="@{/user/detail}" th:text="#{user.phone.edit.cancel}">
-							キャンセル
-						</a>
-						
-						<button type="submit" class="btn btn-primary" th:text="#{user.phone.edit.submit}">
+						<button type="submit" class="profile-button profile-button-primary" th:text="#{user.edit.submit}">
 							変更する
 						</button>
+						
+						<a class="profile-button profile-button-outline" th:href="@{/user/detail}" th:text="#{user.phone.edit.cancel}">
+							キャンセル
+						</a>
 					</div>
 				</form>
 			</div>

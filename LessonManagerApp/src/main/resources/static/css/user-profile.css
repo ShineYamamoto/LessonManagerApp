@@ -10,7 +10,7 @@
 .profile-value { color: #111827; overflow-wrap: anywhere; font-size: 1rem; font-weight: 600; }
 .profile-button { display: inline-flex; justify-content: center; align-items: center; min-height: 40px; padding: 9px 18px; border: 1px solid #cbd5e1; border-radius: 9px; background: #fff; color: #334155; font: inherit; font-size: .875rem; font-weight: 650; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .15s ease, border-color .15s ease, transform .15s ease; }
 .profile-button:hover { background: #f8fafc; border-color: #94a3b8; }
-.profile-button:focus-visible, .profile-input-group input:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
+.profile-button:focus-visible, .profile-input-group input:focus-visible, .profile-input-group select:focus-visible { outline: 3px solid #93c5fd; outline-offset: 2px; }
 .profile-button-disabled, .profile-button-disabled:hover { color: #94a3b8; background: #f8fafc; border-color: #e2e8f0; cursor: not-allowed; }
 .profile-button-primary { background: #2563eb; border-color: #2563eb; color: #fff; }
 .profile-button-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
@@ -20,15 +20,61 @@
 .profile-edit-card { padding: clamp(20px, 3vw, 32px); }
 .profile-input-group { display: flex; flex-direction: column; align-items: flex-start; gap: 9px; }
 .profile-input-group label { font-size: .95rem; font-weight: 650; }
-.profile-input-group input { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font: inherit; background: #fff; color: #111827; }
-.profile-input-group input[aria-invalid="true"] { border-color: #dc2626; }
+.profile-input-group input,
+.profile-input-group select { width: 100%; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; font: inherit; background: #fff; color: #111827; }
+.profile-input-group input[aria-invalid="true"], .profile-input-group select[aria-invalid="true"] { border-color: #dc2626; }
 .profile-input-group small { color: #64748b; }
 .profile-error { color: #b91c1c; font-size: .875rem; margin: 0; }
 .profile-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+/* ========================================
+   編集画面共通
+======================================== */
+
+/* 複数の入力項目がある場合の間隔 */
+.profile-input-group + .profile-input-group { margin-top: 24px; }
+
+/* ========================================
+   電話番号編集画面
+======================================== */
+.profile-current-phone { display: flex; flex-direction: column; gap: 7px; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #eef0f3; }
+.profile-phone-fields { display: flex; align-items: stretch; gap: 10px; width: 100%; }
+.profile-phone-fields select { width: 136px; flex: 0 0 136px; min-width: 0; cursor: pointer; }
+.profile-phone-fields input { flex: 1 1 0; min-width: 0; width: 0; }
+
 @media (max-width: 520px) {
   .profile-page { padding: 18px 12px 40px; }
   .profile-row { gap: 12px; padding: 18px 14px; }
   .profile-value { font-size: .93rem; }
   .profile-button { padding: 9px 12px; }
   .profile-actions > * { flex: 1 1 100%; }
+}
+
+@media (max-width: 520px) {
+
+    .profile-phone-fields {
+        gap: 8px;
+    }
+
+    .profile-phone-fields select {
+        width: 116px;
+        flex-basis: 116px;
+        padding: 12px 10px;
+    }
+
+    .profile-input-group + .profile-input-group {
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 360px) {
+
+    .profile-phone-fields {
+        flex-direction: column;
+    }
+
+    .profile-phone-fields select,
+    .profile-phone-fields input {
+        width: 100%;
+        flex: 0 0 auto;
+    }
 }

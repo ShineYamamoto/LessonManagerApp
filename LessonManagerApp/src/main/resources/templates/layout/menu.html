@@ -44,14 +44,15 @@
 			</a>
 		</li>
 		
-		<li sec:authorize="hasRole('ADMIN')">
+		<!--<li sec:authorize="hasRole('ADMIN')">
 		    <a class="app-menu-link" th:href="@{/admin/lesson-openings}">
 		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 		            <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M8 14h3M8 17h3"/>
 		        </svg>
 		        <span>受付時間の管理</span>
 		    </a>
-		</li>
+		</li>-->
+		
 		<li sec:authorize="hasRole('ADMIN')">
 		    <a class="app-menu-link" th:href="@{/admin/lesson-openings/timeline}">
 		        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
