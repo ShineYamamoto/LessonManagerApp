@@ -193,6 +193,19 @@
 			AND password = #{expectedPasswordHash}
 	</update>
 	
+	<!-- ユーザーパスワード更新 -->
+	<update id="updatePassword">
+		UPDATE
+			users
+		SET
+			password = #{newPasswordHash},
+			updated_at = CURRENT_TIMESTAMP
+		WHERE
+			user_id = #{userId}
+			AND e164_phone_number = #{e164PhoneNumber}
+			AND password = #{expectedPasswordHash}
+	</update>
+	
 	<!-- ユーザー1件更新 -->
 	<update id="updateById">
 		UPDATE

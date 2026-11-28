@@ -145,6 +145,52 @@ public class UserService {
 		return PhoneUpdateResult.SUCCESS;
 	}
 	
+	/** ユーザーのパスワードを変更する */
+	public PasswordUpdateResult updatePassword(
+			Long userId,
+			String e164PhoneNumber,
+			String currentPassword,
+			String newPassword) {
+		
+		// 新しいパスワードの妥当性チェック
+		if (newPassword == null || !newPassword.matches("^[\\x21-\\x7E]{4, 100}$")) {
+			return PasswordUpdateResult.INVALID_NEW_PASSWORD;
+		}
+		
+		// 現在のユーザー情報の取得
+		User user = mapper.findByE164PhoneNumber(e164PhoneNumber);
+		
+		// ログイン情報とDBの情報が一致するか確認
+		if (user == null || !userId.equals(user.getUserId())) {
+			return PasswordUpdateResult.STALE_LOGIN;
+		}
+		
+		// 現在のパスワードを照合
+		if (currentPassword == null
+				|| !encoder.matches(currentPassword, user.getPassword())) {
+			
+			return PasswordUpdateResult.INVALID_CURRENT_PASSWORD;
+		}
+		
+		// 現在と同じパスワードか確認
+		if (encoder.matches(newPassword, user.getPassword())) {
+			return PasswordUpdateResult.SAME_PASSWORD;
+		}
+		
+		// 新しいパスワードをハッシュ化
+		String newPasswordHash = encoder.encode(newPassword);
+		
+		// パスワードを更新
+		int count = mapper.updatePassword(userId, e164PhoneNumber, newPasswordHash, user.getPassword());
+		
+		// 更新結果を確認
+		if (count != 1) {
+			return PasswordUpdateResult.STALE_LOGIN;
+		}
+		
+		return PasswordUpdateResult.SUCCESS;
+	}
+	
 	/** ユーザー更新（1件） */
 	public void updateUserById(Long userId, String password, String userName) {
 		
@@ -170,6 +216,20 @@ public class UserService {
 		INVALID_PASSWORD,
 		
 		SAME_PHONE,
+		
+		STALE_LOGIN
+	}
+	
+	/** パスワード更新結果を定義 */
+	public enum PasswordUpdateResult {
+		
+		SUCCESS,
+		
+		INVALID_CURRENT_PASSWORD,
+		
+		INVALID_NEW_PASSWORD,
+		
+		SAME_PASSWORD,
 		
 		STALE_LOGIN
 	}

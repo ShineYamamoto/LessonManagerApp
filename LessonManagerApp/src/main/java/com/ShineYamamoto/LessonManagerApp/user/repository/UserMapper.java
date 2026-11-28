@@ -40,6 +40,13 @@ public interface UserMapper {
 			@Param("newPhoneNumber") String newPhoneNumber,
 			@Param("expectedPasswordHash") String expectedPasswordHash);
 	
+	/** ユーザーパスワード更新 */
+	int updatePassword(
+			@Param("userId") Long userId,
+			@Param("e164PhoneNumber") String e164PhoneNumber,
+			@Param("newPasswordHash") String newPasswordHash,
+			@Param("expectedPasswordHash") String expectedPasswordHash);
+	
 	/** ユーザー更新(1件) */
 	public int updateById(
 			@Param("userId") Long userId,
