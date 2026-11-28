@@ -37,7 +37,7 @@
 					<span class="profile-label">パスワード</span>
 					<span class="profile-value" aria-label="パスワードは非表示です">••••••••</span>
 				</div>
-				<button type="button" class="profile-button profile-button-disabled" disabled title="今後実装する予定です">編集する</button>
+				<a class="profile-button" th:href="@{/user/edit/password}">編集する</a>
 			</div>
 			
 			<div class="profile-row">
@@ -56,7 +56,10 @@
 				<button type="button" class="profile-button profile-button-disabled" disabled title="今後実装する予定です">編集する</button>
 			</div>		
 		</section>
-		<p class="profile-footnote">現在編集できる項目はユーザー名のみです。その他の項目は順次対応します。</p>
+		<p class="profile-footnote">
+			現在編集できる項目はユーザー名、電話番号、パスワードです。
+			その他の項目は順次対応します。
+		</p>
 	</main>
 </body>
 </html>
