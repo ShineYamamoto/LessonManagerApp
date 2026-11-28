@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ShineYamamoto.LessonManagerApp.user.form.UserDetailForm;
+import com.ShineYamamoto.LessonManagerApp.user.dto.UserDetailDto;
 
 @SpringBootTest(properties = {
 		"spring.sql.init.mode=always",
@@ -110,15 +110,14 @@ public class SecurityIntegrationTest {
 		
 		assertNotNull(result.getModelAndView());
 		
-		UserDetailForm form = (UserDetailForm)
+		UserDetailDto dto = (UserDetailDto)
 				result.getModelAndView()
 					.getModel()
-					.get("userDetailForm");
+					.get("userDetailDto");
 		
-		assertNotNull(form);
-		assertEquals(Long.valueOf(SELF_ID), form.getUserId());
-		assertEquals("本人", form.getUserName());
-		assertEquals(SELF_PHONE, form.getE164PhoneNumber());
+		assertNotNull(dto);
+		assertEquals("本人", dto.getUserName());
+		assertEquals(SELF_PHONE, dto.getE164PhoneNumber());
 	}
 	
 	@Test
